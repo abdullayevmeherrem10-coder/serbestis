@@ -496,8 +496,22 @@
 
     async function adminLogin() {
         adminPass = document.getElementById('adminPassword').value;
+        if (!adminPass) { showToast('Şifrəni daxil edin!', 'error'); return; }
+
         try {
-            // Test by fetching status
+            // Verify password first
+            const loginRes = await fetch('/api/admin/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ password: adminPass })
+            });
+            const loginData = await loginRes.json();
+            if (!loginRes.ok) {
+                showToast(loginData.error, 'error');
+                return;
+            }
+
+            // Password correct, load data
             const res = await fetch('/api/status');
             const data = await res.json();
             selections = data.selections;
@@ -506,7 +520,6 @@
 
             const teamsRes = await fetch('/api/teams').then(r => r.json());
             teams = teamsRes.teams;
-            // Fetch works (same list for display)
             const worksRes = await fetch('/api/works?team=YTF24A1').then(r => r.json());
             works = worksRes.works;
 

@@ -270,6 +270,14 @@ def select_works():
     return jsonify({"success": True, "message": "Seçimləriniz uğurla qeydə alındı!", "selected": selected_titles})
 
 
+@app.route('/api/admin/login', methods=['POST'])
+def admin_login():
+    body = request.get_json()
+    if body.get('password') != ADMIN_PASSWORD:
+        return jsonify({"error": "Admin şifrəsi yanlışdır!"}), 403
+    return jsonify({"success": True})
+
+
 @app.route('/api/admin/generate-keys', methods=['POST'])
 def admin_generate_keys():
     body = request.get_json()
