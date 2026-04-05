@@ -72,15 +72,17 @@
             to { opacity: 1; transform: translateY(0); }
         }
         @keyframes scaleIn {
-            from { opacity: 0; transform: scale(0.5); }
-            to { opacity: 1; transform: scale(1); }
+            0% { opacity: 0; transform: scale(0) rotate(-10deg); }
+            60% { opacity: 1; transform: scale(1.15) rotate(3deg); }
+            80% { transform: scale(0.95) rotate(-1deg); }
+            100% { opacity: 1; transform: scale(1) rotate(0deg); }
         }
         @keyframes slideRight {
             from { opacity: 0; transform: translateX(-30px); }
             to { opacity: 1; transform: translateX(0); }
         }
 
-        .logo-wrapper { animation: scaleIn 0.8s cubic-bezier(0.4, 0, 0.2, 1), logoPulse 4s ease-in-out 0.8s infinite; }
+        .logo-wrapper { animation: scaleIn 1.2s cubic-bezier(0.4, 0, 0.2, 1), logoPulse 4s ease-in-out 1.2s infinite; }
         .header h1 { opacity: 0; animation: fadeUp 0.7s cubic-bezier(0.4, 0, 0.2, 1) 0.3s forwards; }
         .header p { opacity: 0; animation: fadeUp 0.7s cubic-bezier(0.4, 0, 0.2, 1) 0.5s forwards; }
         .steps { opacity: 0; animation: fadeUp 0.7s cubic-bezier(0.4, 0, 0.2, 1) 0.7s forwards; }
