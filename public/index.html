@@ -1287,7 +1287,11 @@
             if (badge) badge.remove();
         } else {
             if (selectedWorks.size >= 2) {
-                showToast('Yalnız 2 sərbəst iş seçə bilərsiniz!', 'error');
+                if (window.innerWidth <= 768) {
+                    // mobil/planşet - yalnız inline warning
+                } else {
+                    showToast('Yalnız 2 sərbəst iş seçə bilərsiniz!', 'error');
+                }
                 const warn = document.getElementById('limitWarn');
                 warn.classList.add('show');
                 setTimeout(() => warn.classList.remove('show'), 2500);
