@@ -9,6 +9,9 @@ UPSTASH_URL = os.environ.get('UPSTASH_REDIS_REST_URL', '')
 UPSTASH_TOKEN = os.environ.get('UPSTASH_REDIS_REST_TOKEN', '')
 ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', 'Qmz4!')
 DB_KEY = 'serbestis_db'
+RATE_KEY = 'serbestis_rate'
+MAX_ATTEMPTS = 7
+BLOCK_MINUTES = 15
 
 DEFAULT_DB = {
     "teams": {
@@ -182,6 +185,45 @@ def save_db(db):
     redis_execute(['SET', DB_KEY, json.dumps(db, ensure_ascii=False)])
 
 
+def get_client_ip():
+    return request.headers.get('X-Forwarded-For', request.remote_addr or '').split(',')[0].strip()
+
+
+def check_rate_limit(ip):
+    """Returns (blocked, attempts). If blocked=True, IP is rate limited."""
+    try:
+        raw = redis_execute(['GET', f'{RATE_KEY}:{ip}'])
+        if raw:
+            data = json.loads(raw)
+            if data.get('blocked') and data.get('attempts', 0) >= MAX_ATTEMPTS:
+                return True, data['attempts']
+            return False, data.get('attempts', 0)
+    except:
+        pass
+    return False, 0
+
+
+def record_failed_attempt(ip):
+    try:
+        raw = redis_execute(['GET', f'{RATE_KEY}:{ip}'])
+        attempts = 1
+        if raw:
+            data = json.loads(raw)
+            attempts = data.get('attempts', 0) + 1
+        blocked = attempts >= MAX_ATTEMPTS
+        redis_execute(['SET', f'{RATE_KEY}:{ip}', json.dumps({'attempts': attempts, 'blocked': blocked})])
+        redis_execute(['EXPIRE', f'{RATE_KEY}:{ip}', str(BLOCK_MINUTES * 60)])
+    except:
+        pass
+
+
+def clear_rate_limit(ip):
+    try:
+        redis_execute(['DEL', f'{RATE_KEY}:{ip}'])
+    except:
+        pass
+
+
 def generate_key(length=6):
     chars = string.ascii_uppercase + string.digits
     return ''.join(random.choice(chars) for _ in range(length))
@@ -227,13 +269,22 @@ def get_status():
 
 @app.route('/api/student-status')
 def student_status():
+    ip = get_client_ip()
+    blocked, attempts = check_rate_limit(ip)
+    if blocked:
+        return jsonify({"error": f"Çox sayda yanlış cəhd! {BLOCK_MINUTES} dəqiqə gözləyin."}), 429
+
     name = request.args.get('name', '')
     key = request.args.get('key', '')
     db = load_db()
     if name not in db["keys"]:
+        record_failed_attempt(ip)
         return jsonify({"error": "Bu kursant üçün açar təyin edilməyib"}), 403
     if db["keys"][name] != key:
-        return jsonify({"error": "Açar yanlışdır"}), 403
+        record_failed_attempt(ip)
+        remaining = MAX_ATTEMPTS - attempts - 1
+        return jsonify({"error": f"Açar yanlışdır! {remaining} cəhd qalıb."}), 403
+    clear_rate_limit(ip)
     selected = db["selections"].get(name, [])
     return jsonify({"name": name, "selections": selected})
 
