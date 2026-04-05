@@ -1142,6 +1142,13 @@
     let currentStep = 1;
 
     // Init
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') {
+            document.getElementById('rulesModal').classList.remove('active');
+            document.getElementById('confirmModal').classList.remove('active');
+        }
+    });
+
     async function init() {
         try {
             const teamsRes = await fetch('/api/teams').then(r => r.json());
