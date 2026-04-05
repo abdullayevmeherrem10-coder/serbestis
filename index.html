@@ -1,0 +1,1198 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sərbəst İş Seçim Platforması</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0f172a;
+            --primary-light: #1e293b;
+            --accent: #d4a853;
+            --accent-glow: #f0c75e;
+            --accent-dark: #b8922e;
+            --surface: rgba(15,23,42,0.75);
+            --surface-hover: rgba(15,23,42,0.85);
+            --border: rgba(212,168,83,0.15);
+            --border-strong: rgba(212,168,83,0.3);
+            --text: #f1f5f9;
+            --text-muted: #94a3b8;
+            --text-dim: #64748b;
+            --success: #22c55e;
+            --danger: #ef4444;
+            --danger-bg: rgba(239,68,68,0.1);
+            --radius: 16px;
+            --radius-sm: 10px;
+            --shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--primary);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Background image */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: url('background.webp') center/cover no-repeat;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* Dark overlay for contrast */
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(15, 23, 42, 0.82);
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            padding: 40px 20px 30px;
+            position: relative;
+        }
+
+        .logo-wrapper {
+            width: 110px;
+            height: 110px;
+            margin: 0 auto 24px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+            padding: 3px;
+            box-shadow: 0 0 40px rgba(212,168,83,0.2), 0 0 80px rgba(212,168,83,0.1);
+            animation: logoPulse 4s ease-in-out infinite;
+        }
+
+        @keyframes logoPulse {
+            0%, 100% { box-shadow: 0 0 40px rgba(212,168,83,0.2), 0 0 80px rgba(212,168,83,0.1); }
+            50% { box-shadow: 0 0 60px rgba(212,168,83,0.3), 0 0 100px rgba(212,168,83,0.15); }
+        }
+
+        .logo-wrapper img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            background: var(--primary);
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, var(--accent-glow), var(--accent), var(--accent-dark));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            font-weight: 400;
+        }
+
+        /* Steps indicator */
+        .steps {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+
+        .step {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 18px;
+            border-radius: 50px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .step.active {
+            background: rgba(212,168,83,0.1);
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .step.done {
+            background: rgba(34,197,94,0.1);
+            border-color: var(--success);
+            color: var(--success);
+        }
+
+        .step-num {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.7rem;
+            background: var(--surface);
+            border: 1px solid currentColor;
+        }
+
+        .step.done .step-num::after { content: '\2713'; }
+        .step.done .step-num span { display: none; }
+
+        /* Sections */
+        .section {
+            display: none;
+            animation: fadeSlideIn 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .section.active { display: block; }
+
+        @keyframes fadeSlideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Card styles */
+        .card {
+            background: rgba(15,23,42,0.85);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid var(--border-strong);
+            border-radius: var(--radius);
+            padding: 28px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-title .icon {
+            width: 36px;
+            height: 36px;
+            border-radius: var(--radius-sm);
+            background: rgba(212,168,83,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+        }
+
+        /* Team grid */
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 14px;
+        }
+
+        .team-card {
+            background: rgba(15,23,42,0.8);
+            border: 1px solid var(--border-strong);
+            border-radius: var(--radius);
+            padding: 24px;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(16px);
+        }
+
+        .team-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent), var(--accent-glow));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .team-card:hover {
+            border-color: var(--border-strong);
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+
+        .team-card:hover::before { opacity: 1; }
+
+        .team-card h3 {
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: var(--accent);
+            margin-bottom: 6px;
+            letter-spacing: 1px;
+        }
+
+        .team-card .count {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+        }
+
+        .team-card .arrow {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.4rem;
+            color: var(--text-dim);
+            transition: all 0.3s ease;
+        }
+
+        .team-card:hover .arrow {
+            color: var(--accent);
+            transform: translateY(-50%) translateX(4px);
+        }
+
+        /* Student select */
+        .select-wrapper {
+            position: relative;
+            margin-bottom: 16px;
+        }
+
+        .select-wrapper select, .input-wrapper input {
+            width: 100%;
+            padding: 14px 18px;
+            background: rgba(15,23,42,0.9);
+            border: 1px solid var(--border-strong);
+            border-radius: var(--radius-sm);
+            color: var(--text);
+            font-size: 0.95rem;
+            font-family: inherit;
+            outline: none;
+            transition: all 0.3s ease;
+            -webkit-appearance: none;
+        }
+
+        .select-wrapper select:focus, .input-wrapper input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(212,168,83,0.1);
+        }
+
+        .select-wrapper select option {
+            background: var(--primary);
+            color: var(--text);
+        }
+
+        .input-wrapper {
+            position: relative;
+            margin-bottom: 16px;
+        }
+
+        .input-wrapper label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 14px 28px;
+            border-radius: var(--radius-sm);
+            font-family: inherit;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+            color: var(--primary);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(212,168,83,0.3);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn-secondary {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            color: var(--text);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--border-strong);
+            background: var(--surface-hover);
+        }
+
+        .btn-block {
+            width: 100%;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        /* Works grid */
+        .works-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+            max-height: 60vh;
+            overflow-y: auto;
+            padding-right: 8px;
+        }
+
+        .works-grid::-webkit-scrollbar { width: 6px; }
+        .works-grid::-webkit-scrollbar-track { background: transparent; }
+        .works-grid::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+        .works-grid::-webkit-scrollbar-thumb:hover { background: var(--border-strong); }
+
+        .work-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            padding: 16px 18px;
+            background: rgba(15,23,42,0.7);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            backdrop-filter: blur(8px);
+        }
+
+        .work-item:hover:not(.taken):not(.selected) {
+            border-color: var(--border-strong);
+            background: var(--surface-hover);
+        }
+
+        .work-item.selected {
+            background: rgba(212,168,83,0.08);
+            border-color: var(--accent);
+            box-shadow: 0 0 20px rgba(212,168,83,0.1);
+        }
+
+        .work-item.taken {
+            opacity: 0.4;
+            cursor: not-allowed;
+            background: var(--danger-bg);
+            border-color: rgba(239,68,68,0.2);
+        }
+
+        .work-num {
+            min-width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: rgba(212,168,83,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.8rem;
+            color: var(--accent);
+            flex-shrink: 0;
+        }
+
+        .work-item.taken .work-num {
+            background: var(--danger-bg);
+            color: var(--danger);
+        }
+
+        .work-item.selected .work-num {
+            background: var(--accent);
+            color: var(--primary);
+        }
+
+        .work-title {
+            font-size: 0.9rem;
+            line-height: 1.5;
+            flex: 1;
+        }
+
+        .work-taken-badge {
+            font-size: 0.7rem;
+            padding: 3px 8px;
+            border-radius: 4px;
+            background: var(--danger-bg);
+            color: var(--danger);
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .work-selected-badge {
+            font-size: 0.7rem;
+            padding: 3px 8px;
+            border-radius: 4px;
+            background: rgba(212,168,83,0.15);
+            color: var(--accent);
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        /* Selection counter */
+        .selection-bar {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background: rgba(15,23,42,0.92);
+            backdrop-filter: blur(24px);
+            border: 1px solid var(--border-strong);
+            border-radius: var(--radius-sm);
+            padding: 16px 20px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+        }
+
+        .selection-count {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .selection-count strong {
+            color: var(--accent);
+            font-size: 1.2rem;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(8px);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-overlay.active { display: flex; }
+
+        .modal {
+            background: rgba(15,23,42,0.95);
+            border: 1px solid var(--border-strong);
+            border-radius: var(--radius);
+            padding: 36px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.6);
+            backdrop-filter: blur(30px);
+            animation: modalIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes modalIn {
+            from { opacity: 0; transform: scale(0.9) translateY(20px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        .modal h2 {
+            font-size: 1.3rem;
+            margin-bottom: 8px;
+            color: var(--accent);
+        }
+
+        .modal p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .modal .selected-list {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 16px;
+            margin-bottom: 20px;
+        }
+
+        .modal .selected-list li {
+            padding: 6px 0;
+            font-size: 0.85rem;
+            color: var(--text);
+            border-bottom: 1px solid var(--border);
+            list-style: none;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .modal .selected-list li:last-child { border: none; }
+
+        .modal .selected-list li::before {
+            content: '\2713';
+            color: var(--accent);
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        /* Toast / Alert */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 16px 24px;
+            border-radius: var(--radius-sm);
+            font-size: 0.9rem;
+            font-weight: 500;
+            z-index: 200;
+            animation: toastIn 0.4s ease, toastOut 0.4s ease 3s forwards;
+            max-width: 400px;
+        }
+
+        .toast.success {
+            background: rgba(34,197,94,0.15);
+            border: 1px solid rgba(34,197,94,0.3);
+            color: var(--success);
+        }
+
+        .toast.error {
+            background: rgba(239,68,68,0.15);
+            border: 1px solid rgba(239,68,68,0.3);
+            color: var(--danger);
+        }
+
+        @keyframes toastIn { from { opacity: 0; transform: translateX(50px); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes toastOut { from { opacity: 1; } to { opacity: 0; } }
+
+        /* Success page */
+        .success-page {
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .success-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: rgba(34,197,94,0.1);
+            border: 2px solid var(--success);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            color: var(--success);
+            margin: 0 auto 24px;
+            animation: successPop 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes successPop {
+            0% { transform: scale(0); opacity: 0; }
+            60% { transform: scale(1.2); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .success-page h2 {
+            font-size: 1.5rem;
+            color: var(--success);
+            margin-bottom: 12px;
+        }
+
+        .success-page .selected-works {
+            text-align: left;
+            max-width: 600px;
+            margin: 24px auto;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 24px;
+        }
+
+        .success-page .selected-works li {
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border);
+            list-style: none;
+            display: flex;
+            gap: 12px;
+            font-size: 0.9rem;
+        }
+
+        .success-page .selected-works li:last-child { border: none; }
+
+        /* Download button */
+        .download-section {
+            margin-top: 30px;
+            padding: 24px;
+            background: rgba(15,23,42,0.85);
+            border: 1px solid var(--border-strong);
+            border-radius: var(--radius);
+            text-align: center;
+            backdrop-filter: blur(16px);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+
+        .download-section p {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            margin-bottom: 14px;
+        }
+
+        .btn-download {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: #fff;
+        }
+
+        .btn-download:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(59,130,246,0.3);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header h1 { font-size: 1.5rem; }
+            .team-grid { grid-template-columns: 1fr; }
+            .card { padding: 20px; }
+            .modal { padding: 24px; }
+            .steps { gap: 6px; }
+            .step { padding: 6px 12px; font-size: 0.75rem; }
+        }
+
+        /* Loading spinner */
+        .spinner {
+            width: 20px; height: 20px;
+            border: 2px solid transparent;
+            border-top-color: currentColor;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+            display: inline-block;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Search */
+        .search-box {
+            width: 100%;
+            padding: 12px 18px;
+            padding-left: 44px;
+            background: rgba(15,23,42,0.9);
+            border: 1px solid var(--border-strong);
+            border-radius: var(--radius-sm);
+            color: var(--text);
+            font-size: 0.9rem;
+            font-family: inherit;
+            outline: none;
+            margin-bottom: 16px;
+            transition: all 0.3s ease;
+        }
+        .search-box:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(212,168,83,0.1);
+        }
+        .search-wrapper {
+            position: relative;
+        }
+        .search-wrapper::before {
+            content: '\1F50D';
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1rem;
+            z-index: 1;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- Header -->
+    <div class="header">
+        <div class="logo-wrapper">
+            <img src="loqo.webp" alt="Logo">
+        </div>
+        <h1>Sərbəst İş Seçim Platforması</h1>
+        <p>Hərbi Mühəndis Texnikası kafedrası</p>
+    </div>
+
+    <!-- Steps -->
+    <div class="steps">
+        <div class="step active" id="step1">
+            <div class="step-num"><span>1</span></div>
+            Taqım
+        </div>
+        <div class="step" id="step2">
+            <div class="step-num"><span>2</span></div>
+            Kursant
+        </div>
+        <div class="step" id="step3">
+            <div class="step-num"><span>3</span></div>
+            Seçim
+        </div>
+        <div class="step" id="step4">
+            <div class="step-num"><span>4</span></div>
+            Təsdiq
+        </div>
+    </div>
+
+    <!-- Section 1: Team Selection -->
+    <div class="section active" id="sec-team">
+        <div class="card">
+            <div class="card-title">
+                <div class="icon">&#9776;</div>
+                Taqımınızı seçin
+            </div>
+            <div class="team-grid" id="teamGrid"></div>
+        </div>
+
+        <div class="download-section">
+            <p>Sərbəst iş üzlüyü sənədini yükləyin</p>
+            <a href="s%C9%99rb%C9%99st%20i%C5%9F%20%C3%BCzl%C3%BCy%C3%BC.docx" download class="btn btn-download">
+                &#11015; Sərbəst iş üzlüyünü yüklə
+            </a>
+        </div>
+    </div>
+
+    <!-- Section 2: Student + Key -->
+    <div class="section" id="sec-student">
+        <div class="card">
+            <div class="card-title">
+                <div class="icon">&#128100;</div>
+                <span>Kursant məlumatları — <strong id="selectedTeamName"></strong></span>
+            </div>
+
+            <div class="select-wrapper">
+                <select id="studentSelect">
+                    <option value="">— Adınızı seçin —</option>
+                </select>
+            </div>
+
+            <div class="input-wrapper">
+                <label>Təsdiq açarı</label>
+                <input type="text" id="keyInput" placeholder="Müəllimin verdiyi açarı daxil edin" autocomplete="off" maxlength="10" style="text-transform: uppercase;">
+            </div>
+
+            <div class="btn-group">
+                <button class="btn btn-secondary" onclick="goToStep(1)">&#8592; Geri</button>
+                <button class="btn btn-primary" id="btnVerify" onclick="verifyStudent()">Daxil ol &#8594;</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 3: Work Selection -->
+    <div class="section" id="sec-works">
+        <div class="selection-bar">
+            <div>
+                <span style="font-weight:600;" id="currentStudentName"></span>
+                <span style="color:var(--text-dim);font-size:0.8rem;margin-left:8px" id="currentTeamBadge"></span>
+            </div>
+            <div class="selection-count">
+                Seçilən: <strong><span id="selCount">0</span> / 2</strong>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">
+                <div class="icon">&#128218;</div>
+                Sərbəst işləri seçin (2 ədəd)
+            </div>
+            <div class="search-wrapper">
+                <input type="text" class="search-box" id="workSearch" placeholder="Axtarış...">
+            </div>
+            <div class="works-grid" id="worksGrid"></div>
+        </div>
+
+        <div class="btn-group" style="justify-content:space-between;">
+            <button class="btn btn-secondary" onclick="goToStep(2)">&#8592; Geri</button>
+            <button class="btn btn-primary" id="btnConfirm" onclick="showConfirmModal()" disabled>Seçimi təsdiqlə &#8594;</button>
+        </div>
+    </div>
+
+    <!-- Section 4: Success -->
+    <div class="section" id="sec-success">
+        <div class="success-page">
+            <div class="success-icon">&#10003;</div>
+            <h2>Seçim uğurla tamamlandı!</h2>
+            <p style="color:var(--text-muted);">Seçdiyiniz sərbəst işlər qeydə alındı.</p>
+            <div class="selected-works">
+                <ul id="successList"></ul>
+            </div>
+            <div class="download-section" style="margin-top:24px;">
+                <p>Sərbəst iş üzlüyü sənədini yükləyin</p>
+                <a href="s%C9%99rb%C9%99st%20i%C5%9F%20%C3%BCzl%C3%BCy%C3%BC.docx" download class="btn btn-download">
+                    &#11015; Sərbəst iş üzlüyünü yüklə
+                </a>
+            </div>
+            <button class="btn btn-secondary" style="margin-top:20px;" onclick="resetAll()">&#8592; Əsas səhifəyə qayıt</button>
+        </div>
+    </div>
+</div>
+
+<!-- Confirm Modal -->
+<div class="modal-overlay" id="confirmModal">
+    <div class="modal">
+        <h2>&#128274; Seçimi təsdiqlə</h2>
+        <p>Bu sərbəst işləri seçmək istədiyinizə əminsiniz? Təsdiq etdikdən sonra dəyişiklik etmək mümkün olmayacaq.</p>
+        <div class="selected-list">
+            <ul id="confirmList"></ul>
+        </div>
+        <div class="input-wrapper">
+            <label>Təsdiq üçün açarı yenidən daxil edin</label>
+            <input type="text" id="confirmKeyInput" placeholder="Açarınız" autocomplete="off" maxlength="10" style="text-transform: uppercase;">
+        </div>
+        <div class="btn-group" style="justify-content:flex-end;">
+            <button class="btn btn-secondary" onclick="closeModal()">Ləğv et</button>
+            <button class="btn btn-primary" id="btnFinalConfirm" onclick="submitSelection()">&#128274; Təsdiqlə</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // State
+    let teams = {};
+    let works = [];
+    let selectedTeam = '';
+    let selectedStudent = '';
+    let studentKey = '';
+    let selectedWorks = new Set();
+    let currentStep = 1;
+
+    // Init
+    async function init() {
+        try {
+            const [teamsRes, worksRes] = await Promise.all([
+                fetch('/api/teams').then(r => r.json()),
+                fetch('/api/works').then(r => r.json())
+            ]);
+            teams = teamsRes.teams;
+            works = worksRes.works;
+            renderTeams();
+        } catch(e) {
+            showToast('Server ilə əlaqə qurula bilmədi!', 'error');
+        }
+    }
+
+    // Render teams
+    function renderTeams() {
+        const grid = document.getElementById('teamGrid');
+        grid.innerHTML = '';
+        for (const [name, members] of Object.entries(teams)) {
+            const card = document.createElement('div');
+            card.className = 'team-card';
+            card.innerHTML = `
+                <h3>${name}</h3>
+                <div class="count">${members.length} kursant</div>
+                <div class="arrow">&#8594;</div>
+            `;
+            card.onclick = () => selectTeam(name);
+            grid.appendChild(card);
+        }
+    }
+
+    // Select team
+    function selectTeam(name) {
+        selectedTeam = name;
+        document.getElementById('selectedTeamName').textContent = name;
+        const select = document.getElementById('studentSelect');
+        select.innerHTML = '<option value="">— Adınızı seçin —</option>';
+        teams[name].forEach(s => {
+            const opt = document.createElement('option');
+            opt.value = s;
+            opt.textContent = s;
+            select.appendChild(opt);
+        });
+        goToStep(2);
+    }
+
+    // Verify student
+    async function verifyStudent() {
+        const name = document.getElementById('studentSelect').value;
+        const key = document.getElementById('keyInput').value.trim().toUpperCase();
+
+        if (!name) { showToast('Adınızı seçin!', 'error'); return; }
+        if (!key) { showToast('Açarı daxil edin!', 'error'); return; }
+
+        const btn = document.getElementById('btnVerify');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner"></span> Yoxlanılır...';
+
+        try {
+            const res = await fetch(`/api/student-status?name=${encodeURIComponent(name)}&key=${encodeURIComponent(key)}`);
+            const data = await res.json();
+
+            if (!res.ok) {
+                showToast(data.error, 'error');
+                btn.disabled = false;
+                btn.innerHTML = 'Daxil ol &#8594;';
+                return;
+            }
+
+            selectedStudent = name;
+            studentKey = key;
+
+            // If already selected, show success
+            if (data.selections && data.selections.length >= 2) {
+                showAlreadySelected(data.selections);
+                btn.disabled = false;
+                btn.innerHTML = 'Daxil ol &#8594;';
+                return;
+            }
+
+            document.getElementById('currentStudentName').textContent = name;
+            document.getElementById('currentTeamBadge').textContent = selectedTeam;
+            renderWorks();
+            goToStep(3);
+
+        } catch(e) {
+            showToast('Xəta baş verdi!', 'error');
+        }
+
+        btn.disabled = false;
+        btn.innerHTML = 'Daxil ol &#8594;';
+    }
+
+    function showAlreadySelected(workIds) {
+        const list = document.getElementById('successList');
+        list.innerHTML = '';
+        workIds.forEach((id, i) => {
+            const li = document.createElement('li');
+            li.innerHTML = `<span style="color:var(--accent);font-weight:700;">${i+1}.</span> ${works[id].title}`;
+            list.appendChild(li);
+        });
+        goToStep(4);
+    }
+
+    // Render works
+    async function renderWorks() {
+        // Refresh works data
+        try {
+            const res = await fetch('/api/works').then(r => r.json());
+            works = res.works;
+        } catch(e) {}
+
+        selectedWorks.clear();
+        updateSelCount();
+        const grid = document.getElementById('worksGrid');
+        grid.innerHTML = '';
+
+        works.forEach((w, i) => {
+            const div = document.createElement('div');
+            div.className = 'work-item' + (w.taken ? ' taken' : '');
+            div.dataset.id = w.id;
+
+            let badge = '';
+            if (w.taken) {
+                badge = `<span class="work-taken-badge">Tutulub</span>`;
+            }
+
+            div.innerHTML = `
+                <div class="work-num">${w.id + 1}</div>
+                <div class="work-title">${w.title}</div>
+                ${badge}
+            `;
+
+            if (!w.taken) {
+                div.onclick = () => toggleWork(w.id, div);
+            }
+
+            grid.appendChild(div);
+        });
+    }
+
+    // Toggle work selection
+    function toggleWork(id, el) {
+        if (selectedWorks.has(id)) {
+            selectedWorks.delete(id);
+            el.classList.remove('selected');
+            const badge = el.querySelector('.work-selected-badge');
+            if (badge) badge.remove();
+        } else {
+            if (selectedWorks.size >= 2) {
+                showToast('Yalnız 2 sərbəst iş seçə bilərsiniz!', 'error');
+                return;
+            }
+            selectedWorks.add(id);
+            el.classList.add('selected');
+            const badge = document.createElement('span');
+            badge.className = 'work-selected-badge';
+            badge.textContent = 'Seçildi';
+            el.appendChild(badge);
+        }
+        updateSelCount();
+    }
+
+    function updateSelCount() {
+        document.getElementById('selCount').textContent = selectedWorks.size;
+        document.getElementById('btnConfirm').disabled = selectedWorks.size !== 2;
+    }
+
+    // Search works
+    document.addEventListener('DOMContentLoaded', () => {
+        document.getElementById('workSearch').addEventListener('input', function() {
+            const q = this.value.toLowerCase();
+            document.querySelectorAll('.work-item').forEach(el => {
+                const title = el.querySelector('.work-title').textContent.toLowerCase();
+                el.style.display = title.includes(q) ? '' : 'none';
+            });
+        });
+    });
+
+    // Confirm modal
+    function showConfirmModal() {
+        const list = document.getElementById('confirmList');
+        list.innerHTML = '';
+        selectedWorks.forEach(id => {
+            const li = document.createElement('li');
+            li.textContent = works[id].title;
+            list.appendChild(li);
+        });
+        document.getElementById('confirmKeyInput').value = '';
+        document.getElementById('confirmModal').classList.add('active');
+    }
+
+    function closeModal() {
+        document.getElementById('confirmModal').classList.remove('active');
+    }
+
+    // Submit
+    async function submitSelection() {
+        const confirmKey = document.getElementById('confirmKeyInput').value.trim().toUpperCase();
+        if (confirmKey !== studentKey) {
+            showToast('Açar uyğun gəlmir!', 'error');
+            return;
+        }
+
+        const btn = document.getElementById('btnFinalConfirm');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner"></span> Göndərilir...';
+
+        try {
+            const res = await fetch('/api/select', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name: selectedStudent,
+                    key: studentKey,
+                    work_ids: Array.from(selectedWorks)
+                })
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                showToast(data.error, 'error');
+                btn.disabled = false;
+                btn.innerHTML = '&#128274; Təsdiqlə';
+                return;
+            }
+
+            closeModal();
+
+            // Show success
+            const list = document.getElementById('successList');
+            list.innerHTML = '';
+            data.selected.forEach((title, i) => {
+                const li = document.createElement('li');
+                li.innerHTML = `<span style="color:var(--accent);font-weight:700;">${i+1}.</span> ${title}`;
+                list.appendChild(li);
+            });
+
+            goToStep(4);
+            showToast('Seçim uğurla qeydə alındı!', 'success');
+
+        } catch(e) {
+            showToast('Xəta baş verdi!', 'error');
+        }
+
+        btn.disabled = false;
+        btn.innerHTML = '&#128274; Təsdiqlə';
+    }
+
+    // Navigation
+    function goToStep(n) {
+        currentStep = n;
+        const sections = ['sec-team', 'sec-student', 'sec-works', 'sec-success'];
+        sections.forEach((s, i) => {
+            document.getElementById(s).classList.toggle('active', i === n - 1);
+        });
+
+        for (let i = 1; i <= 4; i++) {
+            const step = document.getElementById('step' + i);
+            step.classList.remove('active', 'done');
+            if (i < n) step.classList.add('done');
+            if (i === n) step.classList.add('active');
+        }
+
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function resetAll() {
+        selectedTeam = '';
+        selectedStudent = '';
+        studentKey = '';
+        selectedWorks.clear();
+        document.getElementById('keyInput').value = '';
+        document.getElementById('studentSelect').value = '';
+        goToStep(1);
+        init();
+    }
+
+    // Toast
+    function showToast(msg, type) {
+        const existing = document.querySelectorAll('.toast');
+        existing.forEach(t => t.remove());
+
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        toast.textContent = msg;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 3500);
+    }
+
+    // Start
+    init();
+</script>
+
+</body>
+</html>
