@@ -726,6 +726,119 @@
             box-shadow: 0 10px 30px rgba(59,130,246,0.3);
         }
 
+        .btn-rules {
+            background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+            color: var(--primary);
+        }
+
+        .btn-rules:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(212,168,83,0.3);
+        }
+
+        /* Rules Modal */
+        .rules-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.75);
+            backdrop-filter: blur(8px);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .rules-modal.active { display: flex; }
+
+        .rules-content {
+            background: rgba(15,23,42,0.95);
+            border: 1px solid var(--border-strong);
+            border-radius: var(--radius);
+            padding: 36px;
+            max-width: 700px;
+            width: 100%;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.6);
+            backdrop-filter: blur(30px);
+            animation: modalIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .rules-content h2 {
+            font-size: 1.3rem;
+            color: var(--accent);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .rules-content p {
+            color: var(--text);
+            font-size: 0.9rem;
+            line-height: 1.8;
+            margin-bottom: 14px;
+        }
+
+        .rules-content .rule-section {
+            background: rgba(212,168,83,0.05);
+            border-left: 3px solid var(--accent);
+            padding: 14px 18px;
+            border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+            margin-bottom: 14px;
+        }
+
+        .rules-content .rule-section p { margin-bottom: 6px; }
+
+        .rules-content ul {
+            list-style: none;
+            padding: 0;
+            margin-bottom: 14px;
+        }
+
+        .rules-content ul li {
+            padding: 6px 0 6px 20px;
+            position: relative;
+            color: var(--text);
+            font-size: 0.88rem;
+            line-height: 1.6;
+        }
+
+        .rules-content ul li::before {
+            content: '\25C6';
+            position: absolute;
+            left: 0;
+            color: var(--accent);
+            font-size: 0.6rem;
+            top: 10px;
+        }
+
+        .rules-content .warning {
+            background: rgba(239,68,68,0.08);
+            border: 1px solid rgba(239,68,68,0.2);
+            border-radius: var(--radius-sm);
+            padding: 12px 16px;
+            margin-bottom: 14px;
+            color: var(--danger);
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .rules-content .note {
+            background: rgba(59,130,246,0.08);
+            border: 1px solid rgba(59,130,246,0.2);
+            border-radius: var(--radius-sm);
+            padding: 10px 16px;
+            margin-bottom: 8px;
+            color: #60a5fa;
+            font-size: 0.85rem;
+        }
+
+        .rules-content::-webkit-scrollbar { width: 6px; }
+        .rules-content::-webkit-scrollbar-track { background: transparent; }
+        .rules-content::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
         /* Responsive */
         @media (max-width: 768px) {
             .header h1 { font-size: 1.5rem; }
@@ -822,11 +935,19 @@
             <div class="team-grid" id="teamGrid"></div>
         </div>
 
-        <div class="download-section">
-            <p>Sərbəst iş üzlüyü sənədini yükləyin</p>
-            <a href="s%C9%99rb%C9%99st%20i%C5%9F%20%C3%BCzl%C3%BCy%C3%BC.docx" download class="btn btn-download">
-                &#11015; Sərbəst iş üzlüyünü yüklə
-            </a>
+        <div class="download-section" style="display:flex;gap:14px;flex-wrap:wrap;justify-content:center;">
+            <div style="flex:1;min-width:250px;">
+                <p>Sərbəst iş üzlüyü sənədini yükləyin</p>
+                <a href="s%C9%99rb%C9%99st%20i%C5%9F%20%C3%BCzl%C3%BCy%C3%BC.docx" download class="btn btn-download" style="width:100%;margin-top:8px;">
+                    &#11015; Sərbəst iş üzlüyünü yüklə
+                </a>
+            </div>
+            <div style="flex:1;min-width:250px;">
+                <p>Sərbəst işin hazırlanma qaydası</p>
+                <button class="btn btn-rules" onclick="document.getElementById('rulesModal').classList.add('active')" style="width:100%;margin-top:8px;">
+                    &#128220; Hazırlanma qaydasını oxu
+                </button>
+            </div>
         </div>
     </div>
 
@@ -901,6 +1022,52 @@
                 </a>
             </div>
             <button class="btn btn-secondary" style="margin-top:20px;" onclick="resetAll()">&#8592; Əsas səhifəyə qayıt</button>
+        </div>
+    </div>
+</div>
+
+<!-- Rules Modal -->
+<div class="rules-modal" id="rulesModal" onclick="if(event.target===this)this.classList.remove('active')">
+    <div class="rules-content">
+        <h2>&#128220; Sərbəst İşin Hazırlanma Qaydası</h2>
+
+        <div class="warning">&#9888; Kursant tərəfindən mövzunun dəyişdirilməsinə qətiyyən icazə verilmir və fərqli mövzu üzrə sərbəst iş təqdim etmək istəyən kursantın işi müəllim tərəfindən qəbul edilməyəcəkdir!</div>
+
+        <p>Hər bir kursant fənn müəllimi tərəfindən əvvəlcədən yerləşdirilmiş mövzulardan <strong>ikisini</strong> seçib hazırlayaraq təqdim etməlidir.</p>
+
+        <p>Kursantlar sərbəst işin nəticəsini, müəllimin tələbinə uyğun olaraq, <strong>təqdimat (slaydlar)</strong> və ya <strong>mətn şəklində</strong> (yaxud hər iki formada) təqdim etməlidir.</p>
+
+        <div class="rule-section">
+            <p><strong>Təqdimat tələbləri:</strong></p>
+            <p>Slayd sayı <strong>5-10</strong> arasında olmalıdır. Slaydlar yığcam olmalı və mövzunu tam əhatə etməlidir.</p>
+        </div>
+
+        <div class="rule-section">
+            <p><strong>Mətn tələbləri:</strong></p>
+            <p>Həcm: <strong>5 səhifə</strong> (titul vərəqi istisna olmaqla)</p>
+            <p>Strukturu: <strong>giriş, əsas hissə, nəticə</strong> və istifadə olunan ədəbiyyat siyahısı</p>
+            <p>Şrift: <strong>Times New Roman, 14 ölçü</strong>, sətirlərarası məsafə <strong>1.5</strong></p>
+            <p>Kənar boşluqları: soldan <strong>3 sm</strong>, digər yanlardan <strong>2 sm</strong></p>
+        </div>
+
+        <p>Sərbəst işlər maksimum <strong>10 bal</strong> üzərindən qiymətləndiriləcəkdir.</p>
+
+        <p><strong>Qiymətləndirmə meyarları:</strong></p>
+        <ul>
+            <li>Süni intellekt tərəfindən yazılmaması</li>
+            <li>Köçürmə ("copy-paste") olmaması</li>
+            <li>Mövzunu əhatə etmə səviyyəsi</li>
+            <li>Kursantın mövzunu mənimsəmə və axıcı şəkildə çatdırma dərəcəsi</li>
+            <li>Təqdimat zamanı verilən sualları cavablandırma səviyyəsi</li>
+            <li>Mətnlərin tələblərə uyğunluğu</li>
+            <li>Slaydların keyfiyyəti</li>
+        </ul>
+
+        <div class="note">&#128221; <strong>Qeyd 1:</strong> Süni intellekt yoxlaması aparılacaqdır.</div>
+        <div class="note">&#128197; <strong>Qeyd 2:</strong> Sərbəst işlərin qəbulu və qiymətləndirilməsi müəllim tərəfindən DƏRSDƏN KƏNAR vaxtda həyata keçirilir.</div>
+
+        <div style="text-align:center;margin-top:24px;">
+            <button class="btn btn-primary" onclick="document.getElementById('rulesModal').classList.remove('active')">Bağla</button>
         </div>
     </div>
 </div>
