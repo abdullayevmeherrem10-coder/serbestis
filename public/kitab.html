@@ -93,6 +93,19 @@
             transition: all 0.3s;
         }
         .back-btn:hover { color: #d4a853; border-color: rgba(212,168,83,0.4); }
+
+        @media (max-width: 768px) {
+            .back-btn {
+                position: static;
+                transform: none;
+                margin-bottom: 10px;
+            }
+            .header { padding: 16px 12px 12px; }
+            .header h1 { font-size: 1.1rem; }
+            .nav { gap: 8px; }
+            .nav button { padding: 8px 14px; font-size: 0.8rem; }
+            .nav .page-info { font-size: 0.8rem; flex-direction: row; white-space: nowrap; }
+        }
         .page-container {
             max-width: 900px;
             margin: 20px auto;
@@ -113,7 +126,7 @@
         <p>İstifadə ediləcək ədəbiyyat</p>
         <div class="nav">
             <button onclick="prevPage()">&#8592; Əvvəlki</button>
-            <div class="page-info">Səhifə <input type="number" class="page-input" id="pageInput" value="1" min="1" max="224" onchange="goToPage(this.value)" onkeydown="if(event.key==='Enter')goToPage(this.value)"> / 224</div>
+            <div class="page-info">Səhifə&nbsp;<input type="number" class="page-input" id="pageInput" value="1" min="1" max="224" onchange="goToPage(this.value)" onkeydown="if(event.key==='Enter')goToPage(this.value)">&nbsp;/&nbsp;224</div>
             <button onclick="nextPage()">Növbəti &#8594;</button>
         </div>
     </div>
