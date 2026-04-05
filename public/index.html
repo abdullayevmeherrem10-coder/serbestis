@@ -901,12 +901,8 @@
     // Init
     async function init() {
         try {
-            const [teamsRes, worksRes] = await Promise.all([
-                fetch('/api/teams').then(r => r.json()),
-                fetch('/api/works').then(r => r.json())
-            ]);
+            const teamsRes = await fetch('/api/teams').then(r => r.json());
             teams = teamsRes.teams;
-            works = worksRes.works;
             renderTeams();
         } catch(e) {
             showToast('Server ilə əlaqə qurula bilmədi!', 'error');
@@ -1007,7 +1003,7 @@
     async function renderWorks() {
         // Refresh works data
         try {
-            const res = await fetch('/api/works').then(r => r.json());
+            const res = await fetch(`/api/works?team=${encodeURIComponent(selectedTeam)}`).then(r => r.json());
             works = res.works;
         } catch(e) {}
 
@@ -1114,6 +1110,7 @@
                 body: JSON.stringify({
                     name: selectedStudent,
                     key: studentKey,
+                    team: selectedTeam,
                     work_ids: Array.from(selectedWorks)
                 })
             });

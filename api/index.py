@@ -123,7 +123,12 @@ DEFAULT_DB = {
     ],
     "keys": {},
     "selections": {},
-    "work_taken_by": {}
+    "work_taken_by": {
+        "YTF24A1": {},
+        "YTF24A2": {},
+        "HFT24A1": {},
+        "HFT24A2": {}
+    }
 }
 
 
@@ -143,10 +148,31 @@ def redis_execute(cmd_list):
         return result.get('result')
 
 
+def find_team(db, student_name):
+    for team, members in db["teams"].items():
+        if student_name in members:
+            return team
+    return None
+
+
 def load_db():
     raw = redis_execute(['GET', DB_KEY])
     if raw:
-        return json.loads(raw)
+        db = json.loads(raw)
+        # Migrate old flat work_taken_by to per-team structure
+        if db.get("work_taken_by") and not any(isinstance(v, dict) for v in db["work_taken_by"].values()):
+            old = db["work_taken_by"]
+            db["work_taken_by"] = {t: {} for t in db["teams"]}
+            for wid, name in old.items():
+                team = find_team(db, name)
+                if team:
+                    db["work_taken_by"][team][wid] = name
+            save_db(db)
+        # Ensure all teams have entries
+        for t in db["teams"]:
+            if t not in db.get("work_taken_by", {}):
+                db.setdefault("work_taken_by", {})[t] = {}
+        return db
     db = json.loads(json.dumps(DEFAULT_DB))
     save_db(db)
     return db
@@ -171,10 +197,12 @@ def get_teams():
 
 @app.route('/api/works')
 def get_works():
+    team = request.args.get('team', '')
     db = load_db()
+    team_taken = db["work_taken_by"].get(team, {})
     works = []
     for i, w in enumerate(db["works"]):
-        taken_by = db["work_taken_by"].get(str(i))
+        taken_by = team_taken.get(str(i))
         works.append({
             "id": i,
             "title": w,
@@ -212,6 +240,7 @@ def select_works():
     body = request.get_json()
     name = body.get('name', '')
     key = body.get('key', '')
+    team = body.get('team', '')
     work_ids = body.get('work_ids', [])
 
     db = load_db()
@@ -225,15 +254,16 @@ def select_works():
     if len(work_ids) != 2:
         return jsonify({"error": "Tam olaraq 2 sərbəst iş seçməlisiniz!"}), 400
 
+    team_taken = db["work_taken_by"].get(team, {})
     for wid in work_ids:
-        taken = db["work_taken_by"].get(str(wid))
+        taken = team_taken.get(str(wid))
         if taken and taken != name:
             title = db["works"][wid] if wid < len(db["works"]) else "?"
             return jsonify({"error": f"'{title}' artıq başqası tərəfindən seçilib!"}), 409
 
     db["selections"][name] = work_ids
     for wid in work_ids:
-        db["work_taken_by"][str(wid)] = name
+        db["work_taken_by"].setdefault(team, {})[str(wid)] = name
     save_db(db)
 
     selected_titles = [db["works"][wid] for wid in work_ids]
@@ -282,9 +312,11 @@ def admin_reset_selection():
     name = body.get('name', '')
     db = load_db()
     if name in db["selections"]:
-        for wid in db["selections"][name]:
-            if str(wid) in db["work_taken_by"] and db["work_taken_by"][str(wid)] == name:
-                del db["work_taken_by"][str(wid)]
+        team = find_team(db, name)
+        if team and team in db["work_taken_by"]:
+            for wid in db["selections"][name]:
+                if str(wid) in db["work_taken_by"][team] and db["work_taken_by"][team][str(wid)] == name:
+                    del db["work_taken_by"][team][str(wid)]
         del db["selections"][name]
         save_db(db)
     return jsonify({"success": True})
@@ -298,7 +330,7 @@ def admin_reset_all():
 
     db = load_db()
     db["selections"] = {}
-    db["work_taken_by"] = {}
+    db["work_taken_by"] = {t: {} for t in db["teams"]}
     db["keys"] = {}
     save_db(db)
     return jsonify({"success": True})

@@ -50,10 +50,13 @@ class Handler(http.server.BaseHTTPRequestHandler):
             self.send_json({"teams": {t: members for t, members in db["teams"].items()}})
 
         elif path == "/api/works":
+            params = urllib.parse.parse_qs(parsed.query)
+            team = params.get("team", [""])[0]
             db = load_db()
+            team_taken = db["work_taken_by"].get(team, {})
             works = []
             for i, w in enumerate(db["works"]):
-                taken_by = db["work_taken_by"].get(str(i))
+                taken_by = team_taken.get(str(i))
                 works.append({
                     "id": i,
                     "title": w,
@@ -126,6 +129,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
             body = self.read_body()
             name = body.get("name", "")
             key = body.get("key", "")
+            team = body.get("team", "")
             work_ids = body.get("work_ids", [])
 
             db = load_db()
@@ -148,9 +152,10 @@ class Handler(http.server.BaseHTTPRequestHandler):
                 self.send_json({"error": "Tam olaraq 2 sərbəst iş seçməlisiniz!"}, 400)
                 return
 
-            # Check availability
+            # Check availability per team
+            team_taken = db["work_taken_by"].get(team, {})
             for wid in work_ids:
-                taken = db["work_taken_by"].get(str(wid))
+                taken = team_taken.get(str(wid))
                 if taken and taken != name:
                     title = db["works"][wid] if wid < len(db["works"]) else "?"
                     self.send_json({"error": f"'{title}' artıq başqası tərəfindən seçilib!"}, 409)
@@ -158,8 +163,10 @@ class Handler(http.server.BaseHTTPRequestHandler):
 
             # Save selections
             db["selections"][name] = work_ids
+            if team not in db["work_taken_by"]:
+                db["work_taken_by"][team] = {}
             for wid in work_ids:
-                db["work_taken_by"][str(wid)] = name
+                db["work_taken_by"][team][str(wid)] = name
             save_db(db)
 
             selected_titles = [db["works"][wid] for wid in work_ids]
@@ -210,9 +217,16 @@ class Handler(http.server.BaseHTTPRequestHandler):
             name = body.get("name", "")
             db = load_db()
             if name in db["selections"]:
-                for wid in db["selections"][name]:
-                    if str(wid) in db["work_taken_by"] and db["work_taken_by"][str(wid)] == name:
-                        del db["work_taken_by"][str(wid)]
+                # Find which team this student belongs to
+                student_team = None
+                for t, members in db["teams"].items():
+                    if name in members:
+                        student_team = t
+                        break
+                if student_team and student_team in db["work_taken_by"]:
+                    for wid in db["selections"][name]:
+                        if str(wid) in db["work_taken_by"][student_team] and db["work_taken_by"][student_team][str(wid)] == name:
+                            del db["work_taken_by"][student_team][str(wid)]
                 del db["selections"][name]
                 save_db(db)
             self.send_json({"success": True})
@@ -226,7 +240,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
 
             db = load_db()
             db["selections"] = {}
-            db["work_taken_by"] = {}
+            db["work_taken_by"] = {t: {} for t in db["teams"]}
             db["keys"] = {}
             save_db(db)
             self.send_json({"success": True})

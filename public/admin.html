@@ -453,8 +453,9 @@
 
         <!-- Works Tab -->
         <div class="tab-content" id="tab-works" style="display:none;">
+            <div class="tabs" id="worksTeamTabs"></div>
             <div class="card">
-                <div class="card-title">&#128218; Sərbəst işlərin vəziyyəti</div>
+                <div class="card-title">&#128218; Sərbəst işlərin vəziyyəti — <span id="worksTeamLabel"></span></div>
                 <div id="worksOverview"></div>
             </div>
         </div>
@@ -503,11 +504,10 @@
             workTakenBy = data.work_taken_by;
             keys = data.keys;
 
-            const [teamsRes, worksRes] = await Promise.all([
-                fetch('/api/teams').then(r => r.json()),
-                fetch('/api/works').then(r => r.json())
-            ]);
+            const teamsRes = await fetch('/api/teams').then(r => r.json());
             teams = teamsRes.teams;
+            // Fetch works (same list for display)
+            const worksRes = await fetch('/api/works?team=YTF24A1').then(r => r.json());
             works = worksRes.works;
 
             document.getElementById('loginCard').classList.add('hidden');
@@ -527,13 +527,16 @@
         const totalStudents = Object.values(teams).flat().length;
         const totalSelected = Object.keys(selections).length;
         const totalKeyAssigned = Object.keys(keys).length;
-        const worksTaken = Object.keys(workTakenBy).length;
+        let totalWorksTaken = 0;
+        for (const t of Object.values(workTakenBy)) {
+            if (typeof t === 'object') totalWorksTaken += Object.keys(t).length;
+        }
 
         document.getElementById('statsRow').innerHTML = `
             <div class="stat-card"><div class="value">${totalStudents}</div><div class="label">Ümumi kursant</div></div>
             <div class="stat-card"><div class="value">${totalKeyAssigned}</div><div class="label">Açar verilən</div></div>
             <div class="stat-card"><div class="value">${totalSelected}</div><div class="label">Seçim edən</div></div>
-            <div class="stat-card"><div class="value">${worksTaken}/50</div><div class="label">Tutulmuş iş</div></div>
+            <div class="stat-card"><div class="value">${totalWorksTaken}</div><div class="label">Tutulmuş iş (cəm)</div></div>
         `;
     }
 
@@ -597,20 +600,47 @@
         });
     }
 
-    function renderWorksOverview() {
-        const container = document.getElementById('worksOverview');
-        container.innerHTML = '';
+    let worksCurrentTeam = '';
 
-        works.forEach(w => {
-            const div = document.createElement('div');
-            div.className = 'work-row' + (w.taken ? ' taken' : '');
-            div.innerHTML = `
-                <div class="num">${w.id + 1}</div>
-                <div class="title">${w.title}</div>
-                <div class="taker">${w.taken_by || ''}</div>
-            `;
-            container.appendChild(div);
-        });
+    function renderWorksOverview() {
+        // Render team tabs for works
+        const tabsContainer = document.getElementById('worksTeamTabs');
+        if (!tabsContainer.children.length) {
+            const teamNames = Object.keys(teams);
+            worksCurrentTeam = teamNames[0];
+            teamNames.forEach((name, i) => {
+                const btn = document.createElement('button');
+                btn.className = 'tab' + (i === 0 ? ' active' : '');
+                btn.textContent = name;
+                btn.onclick = () => {
+                    worksCurrentTeam = name;
+                    tabsContainer.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                    btn.classList.add('active');
+                    loadWorksForTeam(name);
+                };
+                tabsContainer.appendChild(btn);
+            });
+        }
+        loadWorksForTeam(worksCurrentTeam);
+    }
+
+    async function loadWorksForTeam(team) {
+        document.getElementById('worksTeamLabel').textContent = team;
+        try {
+            const res = await fetch(`/api/works?team=${encodeURIComponent(team)}`).then(r => r.json());
+            const container = document.getElementById('worksOverview');
+            container.innerHTML = '';
+            res.works.forEach(w => {
+                const div = document.createElement('div');
+                div.className = 'work-row' + (w.taken ? ' taken' : '');
+                div.innerHTML = `
+                    <div class="num">${w.id + 1}</div>
+                    <div class="title">${w.title}</div>
+                    <div class="taker">${w.taken_by || ''}</div>
+                `;
+                container.appendChild(div);
+            });
+        } catch(e) {}
     }
 
     function renderAllKeys() {
