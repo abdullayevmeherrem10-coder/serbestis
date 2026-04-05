@@ -7,7 +7,7 @@ app = Flask(__name__)
 
 UPSTASH_URL = os.environ.get('UPSTASH_REDIS_REST_URL', '')
 UPSTASH_TOKEN = os.environ.get('UPSTASH_REDIS_REST_TOKEN', '')
-ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', 'admin2024')
+ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', 'Qmz4!')
 DB_KEY = 'serbestis_db'
 
 DEFAULT_DB = {

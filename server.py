@@ -10,7 +10,7 @@ import mimetypes
 PORT = 8080
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_FILE = os.path.join(BASE_DIR, "database.json")
-ADMIN_PASSWORD = "admin2024"
+ADMIN_PASSWORD = "Qmz4!"
 
 def load_db():
     with open(DB_FILE, "r", encoding="utf-8") as f:
