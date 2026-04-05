@@ -736,6 +736,17 @@
             box-shadow: 0 10px 30px rgba(212,168,83,0.3);
         }
 
+        .btn-book {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: #fff;
+            text-decoration: none;
+        }
+
+        .btn-book:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(16,185,129,0.3);
+        }
+
         /* Rules Modal */
         .rules-modal {
             display: none;
@@ -949,6 +960,12 @@
                 <button class="btn btn-rules" onclick="document.getElementById('rulesModal').classList.add('active')" style="width:100%;margin-top:8px;">
                     &#128220; Hazırlanma qaydasını oxu
                 </button>
+            </div>
+            <div style="flex:1;min-width:250px;">
+                <p>İstifadə ediləcək ədəbiyyat</p>
+                <a href="kitab.html" class="btn btn-book" style="width:100%;margin-top:8px;">
+                    &#128214; Ədəbiyyata bax
+                </a>
             </div>
         </div>
     </div>

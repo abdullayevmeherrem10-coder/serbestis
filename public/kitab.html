@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ədəbiyyat — Mühəndis Texnikası Təminatı</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0f172a;
+            color: #f1f5f9;
+            min-height: 100vh;
+        }
+        .header {
+            text-align: center;
+            padding: 24px 20px 16px;
+            background: rgba(15,23,42,0.95);
+            border-bottom: 1px solid rgba(212,168,83,0.2);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            backdrop-filter: blur(20px);
+        }
+        .header h1 {
+            font-size: 1.3rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #f0c75e, #d4a853);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 6px;
+        }
+        .header p { color: #94a3b8; font-size: 0.85rem; }
+        .nav {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            margin-top: 12px;
+        }
+        .nav button {
+            padding: 8px 20px;
+            border-radius: 8px;
+            border: 1px solid rgba(212,168,83,0.3);
+            background: rgba(15,23,42,0.8);
+            color: #d4a853;
+            font-family: inherit;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .nav button:hover { background: rgba(212,168,83,0.1); }
+        .nav .page-info {
+            font-size: 0.9rem;
+            color: #94a3b8;
+            min-width: 100px;
+            text-align: center;
+        }
+        .nav .page-info strong { color: #d4a853; }
+        .back-btn {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: 1px solid rgba(212,168,83,0.2);
+            background: transparent;
+            color: #94a3b8;
+            font-family: inherit;
+            font-size: 0.8rem;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+        .back-btn:hover { color: #d4a853; border-color: rgba(212,168,83,0.4); }
+        .page-container {
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 0 20px;
+        }
+        .page-img {
+            width: 100%;
+            border-radius: 8px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+            border: 1px solid rgba(212,168,83,0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="header" style="position:relative;">
+        <a href="/" class="back-btn">&#8592; Geri</a>
+        <h1>Mühəndis Texnikası Təminatı</h1>
+        <p>İstifadə ediləcək ədəbiyyat</p>
+        <div class="nav">
+            <button onclick="prevPage()">&#8592; Əvvəlki</button>
+            <div class="page-info">Səhifə <strong><span id="cur">1</span></strong> / <span id="total">224</span></div>
+            <button onclick="nextPage()">Növbəti &#8594;</button>
+        </div>
+    </div>
+    <div class="page-container">
+        <img class="page-img" id="pageImg" src="kitab/1.jpg" alt="Səhifə 1">
+    </div>
+
+<script>
+    const total = 224;
+    let current = 1;
+
+    function show(n) {
+        current = n;
+        document.getElementById('pageImg').src = `kitab/${n}.jpg`;
+        document.getElementById('cur').textContent = n;
+    }
+
+    function prevPage() { if (current > 1) show(current - 1); }
+    function nextPage() { if (current < total) show(current + 1); }
+
+    document.addEventListener('keydown', e => {
+        if (e.key === 'ArrowLeft') prevPage();
+        if (e.key === 'ArrowRight') nextPage();
+    });
+
+    // Swipe support
+    let touchStartX = 0;
+    document.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; });
+    document.addEventListener('touchend', e => {
+        const diff = touchStartX - e.changedTouches[0].clientX;
+        if (diff > 50) nextPage();
+        if (diff < -50) prevPage();
+    });
+</script>
+</body>
+</html>
