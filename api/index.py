@@ -212,8 +212,11 @@ def get_works():
     return jsonify({"works": works})
 
 
-@app.route('/api/status')
+@app.route('/api/status', methods=['POST'])
 def get_status():
+    body = request.get_json()
+    if body.get('password') != ADMIN_PASSWORD:
+        return jsonify({"error": "Admin şifrəsi yanlışdır!"}), 403
     db = load_db()
     return jsonify({
         "selections": db["selections"],

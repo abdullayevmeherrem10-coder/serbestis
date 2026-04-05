@@ -499,21 +499,19 @@
         if (!adminPass) { showToast('Şifrəni daxil edin!', 'error'); return; }
 
         try {
-            // Verify password first
-            const loginRes = await fetch('/api/admin/login', {
+            // Verify password via status endpoint (requires password)
+            const res = await fetch('/api/status', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ password: adminPass })
             });
-            const loginData = await loginRes.json();
-            if (!loginRes.ok) {
-                showToast(loginData.error, 'error');
+            const data = await res.json();
+
+            if (!res.ok) {
+                showToast(data.error || 'Şifrə yanlışdır!', 'error');
                 return;
             }
 
-            // Password correct, load data
-            const res = await fetch('/api/status');
-            const data = await res.json();
             selections = data.selections;
             workTakenBy = data.work_taken_by;
             keys = data.keys;
@@ -540,16 +538,20 @@
         const totalStudents = Object.values(teams).flat().length;
         const totalSelected = Object.keys(selections).length;
         const totalKeyAssigned = Object.keys(keys).length;
-        let totalWorksTaken = 0;
-        for (const t of Object.values(workTakenBy)) {
-            if (typeof t === 'object') totalWorksTaken += Object.keys(t).length;
+
+        let teamStatsHtml = '';
+        for (const [teamName, teamData] of Object.entries(workTakenBy)) {
+            if (typeof teamData === 'object') {
+                const count = Object.keys(teamData).length;
+                teamStatsHtml += `<div class="stat-card"><div class="value">${count}/50</div><div class="label">${teamName}</div></div>`;
+            }
         }
 
         document.getElementById('statsRow').innerHTML = `
             <div class="stat-card"><div class="value">${totalStudents}</div><div class="label">Ümumi kursant</div></div>
             <div class="stat-card"><div class="value">${totalKeyAssigned}</div><div class="label">Açar verilən</div></div>
             <div class="stat-card"><div class="value">${totalSelected}</div><div class="label">Seçim edən</div></div>
-            <div class="stat-card"><div class="value">${totalWorksTaken}</div><div class="label">Tutulmuş iş (cəm)</div></div>
+            ${teamStatsHtml}
         `;
     }
 
@@ -740,8 +742,12 @@
 
     async function refreshData() {
         const [statusRes, worksRes] = await Promise.all([
-            fetch('/api/status').then(r => r.json()),
-            fetch('/api/works').then(r => r.json())
+            fetch('/api/status', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ password: adminPass })
+            }).then(r => r.json()),
+            fetch('/api/works?team=YTF24A1').then(r => r.json())
         ]);
         selections = statusRes.selections;
         workTakenBy = statusRes.work_taken_by;
