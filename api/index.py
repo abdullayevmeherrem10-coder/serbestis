@@ -256,9 +256,16 @@ def get_works():
 
 @app.route('/api/status', methods=['POST'])
 def get_status():
+    ip = get_client_ip()
+    blocked, attempts = check_rate_limit(ip)
+    if blocked:
+        return jsonify({"error": f"Çox sayda yanlış cəhd! {BLOCK_MINUTES} dəqiqə gözləyin."}), 429
     body = request.get_json()
     if body.get('password') != ADMIN_PASSWORD:
-        return jsonify({"error": "Admin şifrəsi yanlışdır!"}), 403
+        record_failed_attempt(ip)
+        remaining = MAX_ATTEMPTS - attempts - 1
+        return jsonify({"error": f"Admin şifrəsi yanlışdır! {remaining} cəhd qalıb."}), 403
+    clear_rate_limit(ip)
     db = load_db()
     return jsonify({
         "selections": db["selections"],
