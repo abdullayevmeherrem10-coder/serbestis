@@ -896,7 +896,12 @@
         }
         .search-wrapper {
             position: relative;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 16px;
         }
+        .search-wrapper .search-box { margin-bottom: 0; flex: 1; }
         .search-wrapper::before {
             content: '\1F50D';
             position: absolute;
@@ -905,6 +910,19 @@
             transform: translateY(-50%);
             font-size: 1rem;
             z-index: 1;
+        }
+        .limit-warn {
+            display: none;
+            color: var(--danger);
+            font-size: 0.75rem;
+            font-weight: 600;
+            white-space: nowrap;
+            animation: fadeWarn 0.3s ease;
+        }
+        .limit-warn.show { display: block; }
+        @keyframes fadeWarn { from { opacity: 0; } to { opacity: 1; } }
+        @media (min-width: 769px) {
+            .limit-warn { display: none !important; }
         }
     </style>
 </head>
@@ -1017,6 +1035,7 @@
             </div>
             <div class="search-wrapper">
                 <input type="text" class="search-box" id="workSearch" placeholder="Axtarış...">
+                <span class="limit-warn" id="limitWarn">Maks. 2 iş!</span>
             </div>
             <div class="works-grid" id="worksGrid"></div>
         </div>
@@ -1269,6 +1288,9 @@
         } else {
             if (selectedWorks.size >= 2) {
                 showToast('Yalnız 2 sərbəst iş seçə bilərsiniz!', 'error');
+                const warn = document.getElementById('limitWarn');
+                warn.classList.add('show');
+                setTimeout(() => warn.classList.remove('show'), 2500);
                 return;
             }
             selectedWorks.add(id);
