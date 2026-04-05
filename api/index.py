@@ -339,9 +339,8 @@ def admin_reset_all():
     if body.get('password') != ADMIN_PASSWORD:
         return jsonify({"error": "Admin şifrəsi yanlışdır!"}), 403
 
-    db = load_db()
-    db["selections"] = {}
-    db["work_taken_by"] = {t: {} for t in db["teams"]}
-    db["keys"] = {}
+    # Delete Redis key completely and reinitialize
+    redis_execute(['DEL', DB_KEY])
+    db = json.loads(json.dumps(DEFAULT_DB))
     save_db(db)
     return jsonify({"success": True})
