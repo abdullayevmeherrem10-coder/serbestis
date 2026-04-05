@@ -181,6 +181,30 @@
     document.addEventListener('contextmenu', e => e.preventDefault());
     document.addEventListener('dragstart', e => e.preventDefault());
     document.addEventListener('copy', e => e.preventDefault());
+
+    // Hide content when page loses focus (Alt+Tab, Win+Shift+S, etc.)
+    const pageImg = document.getElementById('pageImg');
+    const overlay = document.createElement('div');
+    overlay.id = 'ssOverlay';
+    overlay.style.cssText = 'display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:#0f172a;z-index:9999;align-items:center;justify-content:center;color:#d4a853;font-size:1.2rem;font-family:Inter,sans-serif;font-weight:700;';
+    overlay.textContent = 'Ekran görüntüsü almaq qadağandır!';
+    document.body.appendChild(overlay);
+
+    function hideContent() {
+        overlay.style.display = 'flex';
+        pageImg.style.visibility = 'hidden';
+    }
+    function showContent() {
+        overlay.style.display = 'none';
+        pageImg.style.visibility = 'visible';
+    }
+
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) hideContent(); else setTimeout(showContent, 300);
+    });
+    window.addEventListener('blur', () => hideContent());
+    window.addEventListener('focus', () => setTimeout(showContent, 300));
+
     document.addEventListener('keydown', e => {
         // Block Ctrl+S, Ctrl+P, Ctrl+Shift+S, PrintScreen
         if ((e.ctrlKey || e.metaKey) && (e.key === 's' || e.key === 'p' || e.key === 'S' || e.key === 'P')) {
@@ -188,7 +212,10 @@
         }
         if (e.key === 'PrintScreen') {
             e.preventDefault();
+            hideContent();
+            setTimeout(showContent, 1500);
         }
+        // Win+Shift+S detection (key combo triggers blur)
     });
 </script>
 </body>
