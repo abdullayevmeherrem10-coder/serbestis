@@ -539,18 +539,29 @@
         const totalSelected = Object.keys(selections).length;
         const totalKeyAssigned = Object.keys(keys).length;
 
-        let teamStatsHtml = '';
-        for (const [teamName, teamData] of Object.entries(workTakenBy)) {
-            if (typeof teamData === 'object') {
-                const count = Object.keys(teamData).length;
-                teamStatsHtml += `<div class="stat-card"><div class="value">${count}/50</div><div class="label">${teamName}</div></div>`;
+        // Calculate per-team taken works from selections data
+        let teamWorkCounts = {};
+        for (const t of Object.keys(teams)) { teamWorkCounts[t] = 0; }
+        for (const [student, workIds] of Object.entries(selections)) {
+            for (const [teamName, members] of Object.entries(teams)) {
+                if (members.includes(student)) {
+                    teamWorkCounts[teamName] += workIds.length;
+                    break;
+                }
             }
+        }
+        const totalWorksTaken = Object.values(teamWorkCounts).reduce((a, b) => a + b, 0);
+
+        let teamStatsHtml = '';
+        for (const [teamName, count] of Object.entries(teamWorkCounts)) {
+            teamStatsHtml += `<div class="stat-card"><div class="value">${count}/50</div><div class="label">${teamName}</div></div>`;
         }
 
         document.getElementById('statsRow').innerHTML = `
             <div class="stat-card"><div class="value">${totalStudents}</div><div class="label">Ümumi kursant</div></div>
             <div class="stat-card"><div class="value">${totalKeyAssigned}</div><div class="label">Açar verilən</div></div>
             <div class="stat-card"><div class="value">${totalSelected}</div><div class="label">Seçim edən</div></div>
+            <div class="stat-card"><div class="value">${totalWorksTaken}</div><div class="label">Ümumi tutulmuş iş</div></div>
             ${teamStatsHtml}
         `;
     }
