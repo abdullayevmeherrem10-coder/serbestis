@@ -117,6 +117,14 @@
             border-radius: 8px;
             box-shadow: 0 10px 40px rgba(0,0,0,0.4);
             border: 1px solid rgba(212,168,83,0.1);
+            -webkit-user-select: none;
+            user-select: none;
+            pointer-events: none;
+            -webkit-touch-callout: none;
+        }
+        .page-container {
+            -webkit-user-select: none;
+            user-select: none;
         }
     </style>
 </head>
@@ -167,6 +175,20 @@
         const diff = touchStartX - e.changedTouches[0].clientX;
         if (diff > 50) nextPage();
         if (diff < -50) prevPage();
+    });
+
+    // Block: right click, drag, copy, print screen, save
+    document.addEventListener('contextmenu', e => e.preventDefault());
+    document.addEventListener('dragstart', e => e.preventDefault());
+    document.addEventListener('copy', e => e.preventDefault());
+    document.addEventListener('keydown', e => {
+        // Block Ctrl+S, Ctrl+P, Ctrl+Shift+S, PrintScreen
+        if ((e.ctrlKey || e.metaKey) && (e.key === 's' || e.key === 'p' || e.key === 'S' || e.key === 'P')) {
+            e.preventDefault();
+        }
+        if (e.key === 'PrintScreen') {
+            e.preventDefault();
+        }
     });
 </script>
 </body>
