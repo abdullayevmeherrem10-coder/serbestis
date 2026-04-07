@@ -135,7 +135,7 @@
         <p>İstifadə ediləcək ədəbiyyat</p>
         <div class="nav">
             <button onclick="prevPage()">&#8592; Əvvəlki</button>
-            <div class="page-info">Səhifə&nbsp;<input type="number" class="page-input" id="pageInput" value="1" min="1" max="224" onchange="goToPage(this.value)" onkeydown="if(event.key==='Enter')goToPage(this.value)">&nbsp;/&nbsp;224</div>
+            <div class="page-info">Səhifə&nbsp;<input type="number" class="page-input" id="pageInput" value="1" min="1" max="224" onchange="goToPage(this.value)" onkeydown="if(event.key==='Enter')goToPage(this.value)"><span id="pageLabel" style="display:none;color:#d4a853;font-weight:700;font-size:0.9rem;"></span>&nbsp;/&nbsp;224</div>
             <button onclick="nextPage()">Növbəti &#8594;</button>
         </div>
     </div>
@@ -144,24 +144,48 @@
     </div>
 
 <script>
-    const total = 224;
+    // Page mapping: 1,2 = kitab, then 4 mundericat, then kitab 3-224
+    // Display pages: 1,2, M1,M2,M3,M4, 3,4,...224
+    // Total display pages: 224 + 4 = 228
+    const totalDisplay = 228;
     let current = 1;
+
+    function getPageFile(n) {
+        if (n <= 2) return `kitab/${n}.jpg`;
+        if (n === 3) return 'kitab/m1.jpg';
+        if (n === 4) return 'kitab/m2.jpg';
+        if (n === 5) return 'kitab/m3.jpg';
+        if (n === 6) return 'kitab/m4.jpg';
+        return `kitab/${n - 4}.jpg`;
+    }
+
+    function getPageLabel(n) {
+        if (n <= 2) return n;
+        if (n >= 3 && n <= 6) return 'Mündəricat';
+        return n - 4;
+    }
 
     function show(n) {
         current = n;
-        document.getElementById('pageImg').src = `kitab/${n}.jpg`;
-        document.getElementById('pageInput').value = n;
+        document.getElementById('pageImg').src = getPageFile(n);
+        const label = getPageLabel(n);
+        document.getElementById('pageInput').value = typeof label === 'number' ? label : '';
+        document.getElementById('pageLabel').textContent = typeof label === 'string' ? label : '';
+        document.getElementById('pageInput').style.display = typeof label === 'number' ? '' : 'none';
+        document.getElementById('pageLabel').style.display = typeof label === 'string' ? 'inline' : 'none';
     }
 
     function goToPage(val) {
         let n = parseInt(val);
         if (isNaN(n) || n < 1) n = 1;
-        if (n > total) n = total;
-        show(n);
+        if (n > 224) n = 224;
+        // Convert book page to display page
+        if (n <= 2) { show(n); return; }
+        show(n + 4);
     }
 
     function prevPage() { if (current > 1) show(current - 1); }
-    function nextPage() { if (current < total) show(current + 1); }
+    function nextPage() { if (current < totalDisplay) show(current + 1); }
 
     document.addEventListener('keydown', e => {
         if (e.key === 'ArrowLeft') prevPage();
