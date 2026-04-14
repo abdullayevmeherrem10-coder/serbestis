@@ -1267,12 +1267,20 @@
         btn.innerHTML = 'Daxil ol &#8594;';
     }
 
-    function showAlreadySelected(workIds) {
+    async function showAlreadySelected(workIds) {
+        // Load works if not loaded yet
+        if (!works.length) {
+            try {
+                const res = await fetch(`/api/works?team=${encodeURIComponent(selectedTeam)}`).then(r => r.json());
+                works = res.works;
+            } catch(e) {}
+        }
         const list = document.getElementById('successList');
         list.innerHTML = '';
         workIds.forEach((id, i) => {
+            const title = works[id] ? works[id].title : `Sərbəst iş #${id + 1}`;
             const li = document.createElement('li');
-            li.innerHTML = `<span style="color:var(--accent);font-weight:700;">${i+1}.</span> ${works[id].title}`;
+            li.innerHTML = `<span style="color:var(--accent);font-weight:700;">${i+1}.</span> ${title}`;
             list.appendChild(li);
         });
         goToStep(4);
