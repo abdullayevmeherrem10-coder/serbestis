@@ -1091,6 +1091,99 @@
             .deadline-banner .dl-icon { font-size: 1.3rem; }
         }
 
+        /* Results table (Kollokvium və s.) */
+        .results-table-wrap {
+            overflow-x: auto;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            max-height: 60vh;
+        }
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+        .results-table th {
+            text-align: left;
+            padding: 12px 16px;
+            background: rgba(212,168,83,0.1);
+            color: var(--accent);
+            font-weight: 700;
+            font-size: 0.74rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            position: sticky;
+            top: 0;
+            border-bottom: 1px solid var(--border-strong);
+            backdrop-filter: blur(8px);
+        }
+        .results-table td {
+            padding: 11px 16px;
+            border-bottom: 1px solid var(--border);
+            color: var(--text);
+        }
+        .results-table tbody tr:last-child td { border-bottom: none; }
+        .results-table tbody tr:hover { background: var(--surface-hover); }
+        .results-table .col-num { color: var(--text-dim); width: 46px; text-align: center; }
+        .results-table .col-bal { text-align: center; width: 80px; }
+        .bal {
+            display: inline-block;
+            min-width: 36px;
+            padding: 4px 11px;
+            border-radius: 999px;
+            font-weight: 800;
+            font-size: 0.85rem;
+        }
+        .bal-high { background: rgba(34,197,94,0.15); color: var(--success); border: 1px solid rgba(34,197,94,0.35); }
+        .bal-mid  { background: rgba(212,168,83,0.15); color: var(--accent); border: 1px solid var(--border-strong); }
+        .bal-low  { background: rgba(239,68,68,0.12); color: var(--danger); border: 1px solid rgba(239,68,68,0.35); }
+        .results-summary {
+            display: flex;
+            gap: 14px;
+            flex-wrap: wrap;
+            margin-top: 18px;
+        }
+        .rs-item {
+            flex: 1;
+            min-width: 140px;
+            background: rgba(11,33,71,0.7);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 14px 18px;
+            text-align: center;
+        }
+        .rs-label { display: block; font-size: 0.74rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+        .rs-val { display: block; font-size: 1.5rem; font-weight: 800; color: var(--accent); }
+        .no-result td { text-align: center; color: var(--text-dim); padding: 22px; }
+
+        /* Sub-tab (taqım seçimi) */
+        .subtab-nav {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+        .subtab-btn {
+            padding: 8px 18px;
+            border-radius: 999px;
+            background: rgba(11,33,71,0.7);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            font-family: inherit;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+        .subtab-btn:hover { border-color: var(--border-strong); color: var(--text); }
+        .subtab-btn.active {
+            background: rgba(212,168,83,0.15);
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+        .kollok-view { display: none; }
+        .kollok-view.active { display: block; }
+
         /* Site footer */
         .site-footer {
             text-align: center;
@@ -1334,11 +1427,68 @@
 
     <!-- ===================== TAB: Kollokvium nəticələri ===================== -->
     <div class="tab-panel" id="tab-kollokvium">
-        <div class="placeholder">
-            <div class="ph-icon">&#128221;</div>
-            <h2>Kollokvium nəticələri</h2>
-            <p>Kollokvium nəticələri burada dərc olunacaq.</p>
-            <span class="ph-badge">Tezliklə</span>
+        <div class="subtab-nav">
+            <button class="subtab-btn active" onclick="switchKollok('a1', this)">YT 24A1</button>
+            <button class="subtab-btn" onclick="switchKollok('a2', this)">YT 24A2</button>
+        </div>
+
+        <div class="kollok-view active" id="kollok-a1">
+        <div class="card">
+            <div class="card-title">
+                <div class="icon">&#128221;</div>
+                <span>Kollokvium &#8211; 3 N&#601;tic&#601;l&#601;r &#8212; <strong style="color:var(--accent)">YT 24A1</strong></span>
+            </div>
+            <div class="search-wrapper">
+                <input type="text" class="search-box" id="kollokSearch" placeholder="Ad&#305;n&#305;z&#305; axtar&#305;n..." oninput="filterResults(this,'kollokBody')">
+            </div>
+            <div class="results-table-wrap">
+                <table class="results-table">
+                    <thead>
+                        <tr><th class="col-num">&#8470;</th><th>Kursant&#305;n ad&#305;</th><th class="col-bal">Bal</th></tr>
+                    </thead>
+                    <tbody id="kollokBody">
+                        <tr data-name="Qasımov Fateh Taleh oğlu"><td class="col-num">1</td><td>Qasımov Fateh Taleh oğlu</td><td class="col-bal"><span class="bal bal-mid">6</span></td></tr>
+                        <tr data-name="Rəhimzadə Ramin Səbuhi oğlu"><td class="col-num">2</td><td>Rəhimzadə Ramin Səbuhi oğlu</td><td class="col-bal"><span class="bal bal-mid">6</span></td></tr>
+                        <tr data-name="Eldarlı Hüseyn Baba oğlu"><td class="col-num">3</td><td>Eldarlı Hüseyn Baba oğlu</td><td class="col-bal"><span class="bal bal-high">9</span></td></tr>
+                        <tr data-name="Zəkiyev Sadıq Mehman oğlu"><td class="col-num">4</td><td>Zəkiyev Sadıq Mehman oğlu</td><td class="col-bal"><span class="bal bal-mid">5</span></td></tr>
+                        <tr data-name="Əliyev Anar Alim oğlu"><td class="col-num">5</td><td>Əliyev Anar Alim oğlu</td><td class="col-bal"><span class="bal bal-mid">5</span></td></tr>
+                        <tr data-name="İsmayılov Nihad Habil oğlu"><td class="col-num">6</td><td>İsmayılov Nihad Habil oğlu</td><td class="col-bal"><span class="bal bal-mid">5</span></td></tr>
+                        <tr data-name="Quliyev Rəvan Soltan oğlu"><td class="col-num">7</td><td>Quliyev Rəvan Soltan oğlu</td><td class="col-bal"><span class="bal bal-mid">5</span></td></tr>
+                        <tr data-name="Qardiyev Nicat Elməddin oğlu"><td class="col-num">8</td><td>Qardiyev Nicat Elməddin oğlu</td><td class="col-bal"><span class="bal bal-mid">5</span></td></tr>
+                        <tr data-name="Məmmədli Polad Faiq oğlu"><td class="col-num">9</td><td>Məmmədli Polad Faiq oğlu</td><td class="col-bal"><span class="bal bal-low">4</span></td></tr>
+                        <tr data-name="Yusifzadə Mahmud Natiq oğlu"><td class="col-num">10</td><td>Yusifzadə Mahmud Natiq oğlu</td><td class="col-bal"><span class="bal bal-mid">6</span></td></tr>
+                        <tr data-name="Ələkbərli Məhəmməd Elmar oğlu"><td class="col-num">11</td><td>Ələkbərli Məhəmməd Elmar oğlu</td><td class="col-bal"><span class="bal bal-high">8</span></td></tr>
+                        <tr data-name="Qurbanov Nicat Amil oğlu"><td class="col-num">12</td><td>Qurbanov Nicat Amil oğlu</td><td class="col-bal"><span class="bal bal-high">7</span></td></tr>
+                        <tr data-name="Məmmədov Bəhman Mehman oğlu"><td class="col-num">13</td><td>Məmmədov Bəhman Mehman oğlu</td><td class="col-bal"><span class="bal bal-low">4</span></td></tr>
+                        <tr data-name="Məmmədov Rəşid Rəşad oğlu"><td class="col-num">14</td><td>Məmmədov Rəşid Rəşad oğlu</td><td class="col-bal"><span class="bal bal-mid">5</span></td></tr>
+                        <tr data-name="Abbasov Ramal Ramil oğlu"><td class="col-num">15</td><td>Abbasov Ramal Ramil oğlu</td><td class="col-bal"><span class="bal bal-mid">5</span></td></tr>
+                        <tr data-name="Ağabalayev Oktay Mahmud oğlu"><td class="col-num">16</td><td>Ağabalayev Oktay Mahmud oğlu</td><td class="col-bal"><span class="bal bal-high">9</span></td></tr>
+                        <tr data-name="Axundzadə Onur Zəki oğlu"><td class="col-num">17</td><td>Axundzadə Onur Zəki oğlu</td><td class="col-bal"><span class="bal bal-high">9</span></td></tr>
+                        <tr data-name="Sadıqov Kəmaləddin Seyfəddin oğlu"><td class="col-num">18</td><td>Sadıqov Kəmaləddin Seyfəddin oğlu</td><td class="col-bal"><span class="bal bal-high">9</span></td></tr>
+                        <tr data-name="Tağıyev Ziya Zaur oğlu"><td class="col-num">19</td><td>Tağıyev Ziya Zaur oğlu</td><td class="col-bal"><span class="bal bal-low">4</span></td></tr>
+                        <tr data-name="Kərimli Eşqin Niyaməddin oğlu"><td class="col-num">20</td><td>Kərimli Eşqin Niyaməddin oğlu</td><td class="col-bal"><span class="bal bal-high">8</span></td></tr>
+                        <tr data-name="Yaqubzadə Yaqub Səbuhi oğlu"><td class="col-num">21</td><td>Yaqubzadə Yaqub Səbuhi oğlu</td><td class="col-bal"><span class="bal bal-mid">5</span></td></tr>
+                        <tr data-name="Allahverdiyev Ümid Elmir oğlu"><td class="col-num">22</td><td>Allahverdiyev Ümid Elmir oğlu</td><td class="col-bal"><span class="bal bal-high">8</span></td></tr>
+                        <tr data-name="Əliyev Vahid Surxay oğlu"><td class="col-num">23</td><td>Əliyev Vahid Surxay oğlu</td><td class="col-bal"><span class="bal bal-mid">6</span></td></tr>
+                        <tr data-name="Vəliyev Qalib Cəlil oğlu"><td class="col-num">24</td><td>Vəliyev Qalib Cəlil oğlu</td><td class="col-bal"><span class="bal bal-low">4</span></td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="results-summary">
+                <div class="rs-item"><span class="rs-label">Kursant say&#305;</span><span class="rs-val">24</span></div>
+                <div class="rs-item"><span class="rs-label">Orta bal</span><span class="rs-val">6.13</span></div>
+                <div class="rs-item"><span class="rs-label">Maksimum</span><span class="rs-val">9</span></div>
+            </div>
+        </div>
+        </div><!-- /kollok-a1 -->
+
+        <div class="kollok-view" id="kollok-a2">
+            <div class="placeholder">
+                <div class="ph-icon">&#128221;</div>
+                <h2>Kollokvium n&#601;tic&#601;l&#601;ri &#8212; YT 24A2</h2>
+                <p>YT 24A2 taq&#305;m&#305;n&#305;n n&#601;tic&#601;l&#601;ri tezlikl&#601; d&#601;rc olunacaq.</p>
+                <span class="ph-badge">Tezlikl&#601;</span>
+            </div>
         </div>
     </div>
 
@@ -1709,6 +1859,41 @@
 
         btn.disabled = false;
         btn.innerHTML = '&#128274; Təsdiqlə';
+    }
+
+    // Kollokvium taqım alt-seçimi
+    function switchKollok(id, btn) {
+        document.querySelectorAll('#tab-kollokvium .kollok-view').forEach(v => v.classList.remove('active'));
+        document.querySelectorAll('#tab-kollokvium .subtab-btn').forEach(b => b.classList.remove('active'));
+        const view = document.getElementById('kollok-' + id);
+        if (view) view.classList.add('active');
+        if (btn) btn.classList.add('active');
+    }
+
+    // Filter results table by name
+    function filterResults(input, bodyId) {
+        const q = input.value.toLowerCase().trim();
+        const tbody = document.getElementById(bodyId);
+        let visible = 0;
+        tbody.querySelectorAll('tr').forEach(tr => {
+            if (tr.classList.contains('no-result')) return;
+            const name = (tr.dataset.name || '').toLowerCase();
+            const show = name.includes(q);
+            tr.style.display = show ? '' : 'none';
+            if (show) visible++;
+        });
+        let nr = tbody.querySelector('.no-result');
+        if (visible === 0) {
+            if (!nr) {
+                nr = document.createElement('tr');
+                nr.className = 'no-result';
+                nr.innerHTML = '<td colspan="3">Nəticə tapılmadı</td>';
+                tbody.appendChild(nr);
+            }
+            nr.style.display = '';
+        } else if (nr) {
+            nr.style.display = 'none';
+        }
     }
 
     // Tab navigation
