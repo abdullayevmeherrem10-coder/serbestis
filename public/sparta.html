@@ -552,9 +552,22 @@
         }
         const totalWorksTaken = Object.values(teamWorkCounts).reduce((a, b) => a + b, 0);
 
+        // Per-team: neçə kursant seçim edib (taqımdakı ümumi kursant sayından)
+        let teamSelectedCounts = {};
+        for (const t of Object.keys(teams)) { teamSelectedCounts[t] = 0; }
+        for (const [student, workIds] of Object.entries(selections)) {
+            if (!workIds || workIds.length === 0) continue;
+            for (const [teamName, members] of Object.entries(teams)) {
+                if (members.includes(student)) {
+                    teamSelectedCounts[teamName] += 1;
+                    break;
+                }
+            }
+        }
+
         let teamStatsHtml = '';
-        for (const [teamName, count] of Object.entries(teamWorkCounts)) {
-            teamStatsHtml += `<div class="stat-card"><div class="value">${count}/50</div><div class="label">${teamName}</div></div>`;
+        for (const teamName of Object.keys(teams)) {
+            teamStatsHtml += `<div class="stat-card"><div class="value">${teamSelectedCounts[teamName]}/${teams[teamName].length}</div><div class="label">${teamName}</div></div>`;
         }
 
         document.getElementById('statsRow').innerHTML = `
