@@ -7,7 +7,7 @@ app = Flask(__name__)
 
 UPSTASH_URL = os.environ.get('UPSTASH_REDIS_REST_URL', '')
 UPSTASH_TOKEN = os.environ.get('UPSTASH_REDIS_REST_TOKEN', '')
-ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', 'Qmz4!')
+ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', '')
 DB_KEY = 'serbestis_db'
 RATE_KEY = 'serbestis_rate'
 MAX_ATTEMPTS = 7
@@ -229,6 +229,23 @@ def generate_key(length=6):
     return ''.join(random.choice(chars) for _ in range(length))
 
 
+def admin_guard():
+    """Rate-limit + admin şifrə yoxlaması. Uğursuzsa (response, status), uğurlu olsa None qaytarır."""
+    if not ADMIN_PASSWORD:
+        return jsonify({"error": "Admin paneli konfiqurasiya olunmayıb (ADMIN_PASSWORD təyin edilməyib)."}), 503
+    ip = get_client_ip()
+    blocked, attempts = check_rate_limit(ip)
+    if blocked:
+        return jsonify({"error": f"Çox sayda yanlış cəhd! {BLOCK_MINUTES} dəqiqə gözləyin."}), 429
+    body = request.get_json(silent=True) or {}
+    if body.get('password') != ADMIN_PASSWORD:
+        record_failed_attempt(ip)
+        remaining = max(0, MAX_ATTEMPTS - attempts - 1)
+        return jsonify({"error": f"Admin şifrəsi yanlışdır! {remaining} cəhd qalıb."}), 403
+    clear_rate_limit(ip)
+    return None
+
+
 # ─── Routes ───────────────────────────────────────────────
 
 @app.route('/api/teams')
@@ -256,16 +273,9 @@ def get_works():
 
 @app.route('/api/status', methods=['POST'])
 def get_status():
-    ip = get_client_ip()
-    blocked, attempts = check_rate_limit(ip)
-    if blocked:
-        return jsonify({"error": f"Çox sayda yanlış cəhd! {BLOCK_MINUTES} dəqiqə gözləyin."}), 429
-    body = request.get_json()
-    if body.get('password') != ADMIN_PASSWORD:
-        record_failed_attempt(ip)
-        remaining = MAX_ATTEMPTS - attempts - 1
-        return jsonify({"error": f"Admin şifrəsi yanlışdır! {remaining} cəhd qalıb."}), 403
-    clear_rate_limit(ip)
+    guard = admin_guard()
+    if guard:
+        return guard
     db = load_db()
     return jsonify({
         "selections": db["selections"],
@@ -298,6 +308,11 @@ def student_status():
 
 @app.route('/api/select', methods=['POST'])
 def select_works():
+    ip = get_client_ip()
+    blocked, attempts = check_rate_limit(ip)
+    if blocked:
+        return jsonify({"error": f"Çox sayda yanlış cəhd! {BLOCK_MINUTES} dəqiqə gözləyin."}), 429
+
     body = request.get_json()
     name = body.get('name', '')
     key = body.get('key', '')
@@ -307,9 +322,12 @@ def select_works():
     db = load_db()
 
     if name not in db["keys"]:
+        record_failed_attempt(ip)
         return jsonify({"error": "Bu kursant üçün açar təyin edilməyib. Müəllimlə əlaqə saxlayın."}), 403
     if db["keys"][name] != key:
+        record_failed_attempt(ip)
         return jsonify({"error": "Açar yanlışdır!"}), 403
+    clear_rate_limit(ip)
     if name in db["selections"] and len(db["selections"][name]) >= 2:
         return jsonify({"error": "Siz artıq 2 sərbəst iş seçmisiniz!"}), 400
     if len(work_ids) != 2:
@@ -333,18 +351,19 @@ def select_works():
 
 @app.route('/api/admin/login', methods=['POST'])
 def admin_login():
-    body = request.get_json()
-    if body.get('password') != ADMIN_PASSWORD:
-        return jsonify({"error": "Admin şifrəsi yanlışdır!"}), 403
+    guard = admin_guard()
+    if guard:
+        return guard
     return jsonify({"success": True})
 
 
 @app.route('/api/admin/generate-keys', methods=['POST'])
 def admin_generate_keys():
-    body = request.get_json()
-    if body.get('password') != ADMIN_PASSWORD:
-        return jsonify({"error": "Admin şifrəsi yanlışdır!"}), 403
+    guard = admin_guard()
+    if guard:
+        return guard
 
+    body = request.get_json()
     db = load_db()
     team = body.get('team', '')
     if team and team in db["teams"]:
@@ -362,10 +381,11 @@ def admin_generate_keys():
 
 @app.route('/api/admin/set-key', methods=['POST'])
 def admin_set_key():
-    body = request.get_json()
-    if body.get('password') != ADMIN_PASSWORD:
-        return jsonify({"error": "Admin şifrəsi yanlışdır!"}), 403
+    guard = admin_guard()
+    if guard:
+        return guard
 
+    body = request.get_json()
     db = load_db()
     db["keys"][body.get('name', '')] = body.get('key', '')
     save_db(db)
@@ -374,10 +394,11 @@ def admin_set_key():
 
 @app.route('/api/admin/reset-selection', methods=['POST'])
 def admin_reset_selection():
-    body = request.get_json()
-    if body.get('password') != ADMIN_PASSWORD:
-        return jsonify({"error": "Admin şifrəsi yanlışdır!"}), 403
+    guard = admin_guard()
+    if guard:
+        return guard
 
+    body = request.get_json()
     name = body.get('name', '')
     db = load_db()
     if name in db["selections"]:
@@ -393,9 +414,9 @@ def admin_reset_selection():
 
 @app.route('/api/admin/reset-all', methods=['POST'])
 def admin_reset_all():
-    body = request.get_json()
-    if body.get('password') != ADMIN_PASSWORD:
-        return jsonify({"error": "Admin şifrəsi yanlışdır!"}), 403
+    guard = admin_guard()
+    if guard:
+        return guard
 
     # Delete Redis key completely and reinitialize
     redis_execute(['DEL', DB_KEY])

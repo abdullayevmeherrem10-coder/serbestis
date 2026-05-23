@@ -4,13 +4,25 @@ import json
 import os
 import string
 import random
+import secrets
 import urllib.parse
 import mimetypes
 
 PORT = 8080
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_FILE = os.path.join(BASE_DIR, "database.json")
-ADMIN_PASSWORD = "Qmz4!"
+
+# Admin şifrəsi koda yazılmır: əvvəlcə ENV dəyişəni, sonra gitignore-lanmış
+# admin_secret.txt faylı oxunur. Heç biri yoxdursa təsadüfi (bilinməyən)
+# dəyər təyin olunur ki, admin paneli effektiv bağlı olsun.
+ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "")
+if not ADMIN_PASSWORD:
+    _secret_file = os.path.join(BASE_DIR, "admin_secret.txt")
+    if os.path.exists(_secret_file):
+        with open(_secret_file, encoding="utf-8") as f:
+            ADMIN_PASSWORD = f.read().strip()
+if not ADMIN_PASSWORD:
+    ADMIN_PASSWORD = secrets.token_urlsafe(24)
 
 def load_db():
     with open(DB_FILE, "r", encoding="utf-8") as f:
@@ -65,14 +77,6 @@ class Handler(http.server.BaseHTTPRequestHandler):
                 })
             self.send_json({"works": works})
 
-        elif path == "/api/status":
-            db = load_db()
-            self.send_json({
-                "selections": db["selections"],
-                "work_taken_by": db["work_taken_by"],
-                "keys": db["keys"]
-            })
-
         elif path == "/api/student-status":
             params = urllib.parse.parse_qs(parsed.query)
             name = params.get("name", [""])[0]
@@ -125,7 +129,19 @@ class Handler(http.server.BaseHTTPRequestHandler):
         parsed = urllib.parse.urlparse(self.path)
         path = parsed.path
 
-        if path == "/api/select":
+        if path == "/api/status":
+            body = self.read_body()
+            if body.get("password", "") != ADMIN_PASSWORD:
+                self.send_json({"error": "Admin şifrəsi yanlışdır!"}, 403)
+                return
+            db = load_db()
+            self.send_json({
+                "selections": db["selections"],
+                "work_taken_by": db["work_taken_by"],
+                "keys": db["keys"]
+            })
+
+        elif path == "/api/select":
             body = self.read_body()
             name = body.get("name", "")
             key = body.get("key", "")
@@ -252,7 +268,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
 
 if __name__ == "__main__":
     os.chdir(BASE_DIR)
-    server = http.server.HTTPServer(("0.0.0.0", PORT), Handler)
+    server = http.server.HTTPServer(("127.0.0.1", PORT), Handler)
     print(f"Server running at http://localhost:{PORT}")
     print(f"Admin panel: http://localhost:{PORT}/admin")
     print(f"Admin password: {ADMIN_PASSWORD}")
