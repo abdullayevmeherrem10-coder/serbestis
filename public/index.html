@@ -8,18 +8,18 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #0f172a;
-            --primary-light: #1e293b;
+            --primary: #0b2147;
+            --primary-light: #16356b;
             --accent: #d4a853;
             --accent-glow: #f0c75e;
             --accent-dark: #b8922e;
-            --surface: rgba(15,23,42,0.75);
-            --surface-hover: rgba(15,23,42,0.85);
+            --surface: rgba(11,33,71,0.75);
+            --surface-hover: rgba(11,33,71,0.85);
             --border: rgba(212,168,83,0.15);
             --border-strong: rgba(212,168,83,0.3);
             --text: #f1f5f9;
-            --text-muted: #94a3b8;
-            --text-dim: #64748b;
+            --text-muted: #9fb4d6;
+            --text-dim: #6c84ad;
             --success: #22c55e;
             --danger: #ef4444;
             --danger-bg: rgba(239,68,68,0.1);
@@ -53,7 +53,7 @@
             content: '';
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(15, 23, 42, 0.82);
+            background: rgba(8, 26, 56, 0.84);
             z-index: 0;
             pointer-events: none;
         }
@@ -85,6 +85,8 @@
         body.loading .logo-wrapper { animation: scaleIn 0.6s cubic-bezier(0.4, 0, 0.2, 1), logoPulse 4s ease-in-out 0.6s infinite; }
         body.loading .header h1 { opacity: 0; animation: fadeUp 0.4s ease 0.15s forwards; }
         body.loading .header p { opacity: 0; animation: fadeUp 0.4s ease 0.25s forwards; }
+        body.loading .tab-nav { opacity: 0; animation: fadeUp 0.4s ease 0.3s forwards; }
+        body.loading .tab-subtitle { opacity: 0; animation: fadeUp 0.4s ease 0.32s forwards; }
         body.loading .steps { opacity: 0; animation: fadeUp 0.4s ease 0.35s forwards; }
         body.loading .section.active .card { opacity: 0; animation: fadeUp 0.4s ease 0.45s forwards; }
         body.loading .section.active .download-section { opacity: 0; animation: fadeUp 0.4s ease 0.55s forwards; }
@@ -104,7 +106,7 @@
         .logo-wrapper {
             width: 300px;
             height: 300px;
-            margin: 0 auto 0;
+            margin: -45px auto -45px;
             animation: logoPulse 4s ease-in-out infinite;
         }
 
@@ -127,13 +129,124 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            margin-bottom: 8px;
+            margin-top: 8px;
+            margin-bottom: 0;
         }
 
         .header p {
             color: var(--text-muted);
             font-size: 0.95rem;
             font-weight: 400;
+        }
+
+        /* Tab navigation */
+        .tab-nav {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin: 4px auto 22px;
+            max-width: 1000px;
+            flex-wrap: wrap;
+            padding: 0 10px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .tab-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 22px;
+            border-radius: 999px;
+            background: rgba(11,33,71,0.7);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            font-family: inherit;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            white-space: nowrap;
+        }
+
+        .tab-btn:hover {
+            border-color: var(--border-strong);
+            color: var(--text);
+            transform: translateY(-2px);
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+            border-color: var(--accent);
+            color: var(--primary);
+            box-shadow: 0 8px 24px rgba(212,168,83,0.3);
+        }
+
+        .tab-btn .tab-ico { font-size: 1.05rem; line-height: 1; }
+
+        /* Tab panels */
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; animation: fadeSlideIn 0.5s cubic-bezier(0.4,0,0.2,1); }
+
+        .tab-subtitle {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            margin-bottom: 4px;
+        }
+
+        /* Placeholder ("coming soon") */
+        .placeholder {
+            text-align: center;
+            padding: 70px 24px;
+            background: rgba(11,33,71,0.85);
+            border: 1px solid var(--border-strong);
+            border-radius: var(--radius);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+        }
+
+        .placeholder .ph-icon {
+            width: 90px;
+            height: 90px;
+            margin: 0 auto 22px;
+            border-radius: 50%;
+            background: rgba(212,168,83,0.1);
+            border: 2px solid var(--border-strong);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.4rem;
+        }
+
+        .placeholder h2 {
+            font-size: 1.4rem;
+            color: var(--accent);
+            margin-bottom: 10px;
+        }
+
+        .placeholder p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            max-width: 460px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        .placeholder .ph-badge {
+            display: inline-block;
+            margin-top: 18px;
+            padding: 6px 16px;
+            border-radius: 999px;
+            background: rgba(212,168,83,0.12);
+            border: 1px solid var(--border-strong);
+            color: var(--accent);
+            font-size: 0.8rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
         }
 
         /* Steps indicator */
@@ -188,7 +301,7 @@
             justify-content: center;
             font-weight: 800;
             font-size: 0.85rem;
-            background: rgba(15,23,42,0.9);
+            background: rgba(11,33,71,0.9);
             border: 2px solid var(--border);
             color: var(--text-dim);
             transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
@@ -243,7 +356,7 @@
 
         /* Card styles */
         .card {
-            background: rgba(15,23,42,0.85);
+            background: rgba(11,33,71,0.85);
             backdrop-filter: blur(24px);
             -webkit-backdrop-filter: blur(24px);
             border: 1px solid var(--border-strong);
@@ -283,7 +396,7 @@
         }
 
         .team-card {
-            background: rgba(15,23,42,0.8);
+            background: rgba(11,33,71,0.8);
             border: 1px solid var(--border-strong);
             border-radius: var(--radius);
             padding: 24px;
@@ -351,7 +464,7 @@
         .select-wrapper select, .input-wrapper input {
             width: 100%;
             padding: 14px 18px;
-            background: rgba(15,23,42,0.9);
+            background: rgba(11,33,71,0.9);
             border: 1px solid var(--border-strong);
             border-radius: var(--radius-sm);
             color: var(--text);
@@ -464,7 +577,7 @@
             align-items: flex-start;
             gap: 14px;
             padding: 16px 18px;
-            background: rgba(15,23,42,0.7);
+            background: rgba(11,33,71,0.7);
             border: 1px solid var(--border);
             border-radius: var(--radius-sm);
             cursor: pointer;
@@ -546,7 +659,7 @@
             position: sticky;
             top: 0;
             z-index: 10;
-            background: rgba(15,23,42,0.92);
+            background: rgba(11,33,71,0.92);
             backdrop-filter: blur(24px);
             border: 1px solid var(--border-strong);
             border-radius: var(--radius-sm);
@@ -586,7 +699,7 @@
         .modal-overlay.active { display: flex; }
 
         .modal {
-            background: rgba(15,23,42,0.95);
+            background: rgba(11,33,71,0.95);
             border: 1px solid var(--border-strong);
             border-radius: var(--radius);
             padding: 36px;
@@ -730,7 +843,7 @@
         .download-section {
             margin-top: 30px;
             padding: 24px;
-            background: rgba(15,23,42,0.85);
+            background: rgba(11,33,71,0.85);
             border: 1px solid var(--border-strong);
             border-radius: var(--radius);
             text-align: center;
@@ -791,7 +904,7 @@
         .rules-modal.active { display: flex; }
 
         .rules-content {
-            background: rgba(15,23,42,0.95);
+            background: rgba(11,33,71,0.95);
             border: 1px solid var(--border-strong);
             border-radius: var(--radius);
             padding: 36px;
@@ -881,27 +994,48 @@
         .rules-content::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 
         /* Responsive */
+        /* Tablet & mobile */
         @media (max-width: 768px) {
             .header { padding: 0 10px 0; }
             .header h1 { font-size: 1.5rem; }
-            .logo-wrapper { margin: 0 auto 0; }
+            .logo-wrapper { width: 220px; height: 220px; margin: -32px auto -32px; }
             .team-grid { grid-template-columns: 1fr; }
             .card { padding: 20px; }
             .modal { padding: 24px; }
             .steps { gap: 6px; margin: 10px auto; }
             .step { padding: 6px 12px; font-size: 0.75rem; }
+            .tab-nav {
+                flex-wrap: nowrap;
+                overflow-x: auto;
+                justify-content: flex-start;
+                -webkit-overflow-scrolling: touch;
+                scrollbar-width: none;
+            }
+            .tab-nav::-webkit-scrollbar { height: 0; display: none; }
+            .tab-btn { padding: 10px 16px; font-size: 0.82rem; }
+            .placeholder { padding: 48px 18px; }
         }
 
-        /* Loading spinner */
-        .spinner {
-            width: 20px; height: 20px;
-            border: 2px solid transparent;
-            border-top-color: currentColor;
-            border-radius: 50%;
-            animation: spin 0.6s linear infinite;
-            display: inline-block;
+        /* Small phones */
+        @media (max-width: 480px) {
+            .container { padding: 14px; }
+            .header h1 { font-size: 1.2rem; }
+            .logo-wrapper { width: 168px; height: 168px; margin: -24px auto -24px; }
+            .tab-btn { padding: 9px 13px; font-size: 0.78rem; gap: 5px; }
+            .tab-btn .tab-ico { font-size: 0.95rem; }
+            .card { padding: 16px; }
+            .card-title { font-size: 1rem; }
+            .work-item { padding: 13px 14px; gap: 10px; }
+            .work-title { font-size: 0.85rem; }
+            .selection-bar { padding: 12px 14px; }
+            .step-label { font-size: 0.62rem; }
+            .step-num { width: 30px; height: 30px; font-size: 0.78rem; }
+            .btn { padding: 12px 18px; font-size: 0.85rem; }
+            .modal { padding: 20px; }
+            .placeholder { padding: 40px 14px; }
+            .placeholder .ph-icon { width: 72px; height: 72px; font-size: 2rem; }
+            .placeholder h2 { font-size: 1.2rem; }
         }
-        @keyframes spin { to { transform: rotate(360deg); } }
 
         /* Deadline banner */
         .deadline-banner {
@@ -957,12 +1091,23 @@
             .deadline-banner .dl-icon { font-size: 1.3rem; }
         }
 
+        /* Loading spinner */
+        .spinner {
+            width: 20px; height: 20px;
+            border: 2px solid transparent;
+            border-top-color: currentColor;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+            display: inline-block;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
         /* Search */
         .search-box {
             width: 100%;
             padding: 12px 18px;
             padding-left: 44px;
-            background: rgba(15,23,42,0.9);
+            background: rgba(11,33,71,0.9);
             border: 1px solid var(--border-strong);
             border-radius: var(--radius-sm);
             color: var(--text);
@@ -1013,12 +1158,24 @@
 <div class="container">
     <!-- Header -->
     <div class="header">
+        <h1>Hərbi Mühəndis Texnikası</h1>
         <div class="logo-wrapper">
             <img src="loqo-esas.webp" alt="Logo">
         </div>
-        <h1>Hərbi Mühəndis Texnikası</h1>
-        <p>Sərbəst İşini Özün Seç</p>
     </div>
+
+    <!-- Tab navigation -->
+    <div class="tab-nav">
+        <button class="tab-btn" onclick="switchTab('muhazireler', this)"><span class="tab-ico">&#127891;</span> Mühazirələr</button>
+        <button class="tab-btn" onclick="switchTab('serbest', this)"><span class="tab-ico">&#128218;</span> Sərbəst işlər</button>
+        <button class="tab-btn" onclick="switchTab('kollokvium', this)"><span class="tab-ico">&#128221;</span> Kollokvium nəticələri</button>
+        <button class="tab-btn active" onclick="switchTab('menimseme', this)"><span class="tab-ico">&#128202;</span> Mənimsəmə göstəriciləri</button>
+        <button class="tab-btn" onclick="switchTab('imtahan', this)"><span class="tab-ico">&#127942;</span> İmtahan nəticələri</button>
+    </div>
+
+    <!-- ===================== TAB: Sərbəst işlər ===================== -->
+    <div class="tab-panel" id="tab-serbest">
+    <p class="tab-subtitle">Sərbəst İşini Özün Seç</p>
 
     <!-- Steps -->
     <div class="steps">
@@ -1151,6 +1308,47 @@
                 </a>
             </div>
             <button class="btn btn-secondary" style="margin-top:20px;" onclick="resetAll()">&#8592; Əsas səhifəyə qayıt</button>
+        </div>
+    </div>
+    </div><!-- /tab-serbest -->
+
+    <!-- ===================== TAB: Mühazirələr ===================== -->
+    <div class="tab-panel" id="tab-muhazireler">
+        <div class="placeholder">
+            <div class="ph-icon">&#127891;</div>
+            <h2>Mühazirələr</h2>
+            <p>Fənn üzrə mühazirə materialları burada yerləşdiriləcək.</p>
+            <span class="ph-badge">Tezliklə</span>
+        </div>
+    </div>
+
+    <!-- ===================== TAB: Kollokvium nəticələri ===================== -->
+    <div class="tab-panel" id="tab-kollokvium">
+        <div class="placeholder">
+            <div class="ph-icon">&#128221;</div>
+            <h2>Kollokvium nəticələri</h2>
+            <p>Kollokvium nəticələri burada dərc olunacaq.</p>
+            <span class="ph-badge">Tezliklə</span>
+        </div>
+    </div>
+
+    <!-- ===================== TAB: Mənimsəmə göstəriciləri ===================== -->
+    <div class="tab-panel active" id="tab-menimseme">
+        <div class="placeholder">
+            <div class="ph-icon">&#128202;</div>
+            <h2>Mənimsəmə göstəriciləri</h2>
+            <p>Kursantların mənimsəmə göstəriciləri burada əks olunacaq.</p>
+            <span class="ph-badge">Tezliklə</span>
+        </div>
+    </div>
+
+    <!-- ===================== TAB: İmtahan nəticələri ===================== -->
+    <div class="tab-panel" id="tab-imtahan">
+        <div class="placeholder">
+            <div class="ph-icon">&#127942;</div>
+            <h2>İmtahan nəticələri</h2>
+            <p>İmtahan nəticələri burada dərc olunacaq.</p>
+            <span class="ph-badge">Tezliklə</span>
         </div>
     </div>
 </div>
@@ -1499,6 +1697,16 @@
 
         btn.disabled = false;
         btn.innerHTML = '&#128274; Təsdiqlə';
+    }
+
+    // Tab navigation
+    function switchTab(name, btn) {
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        const panel = document.getElementById('tab-' + name);
+        if (panel) panel.classList.add('active');
+        if (btn) btn.classList.add('active');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     // Navigation
