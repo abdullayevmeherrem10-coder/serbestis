@@ -1284,19 +1284,20 @@
         .back-btn {
             display: inline-flex;
             align-items: center;
-            gap: 8px;
-            padding: 9px 18px;
-            border-radius: 999px;
-            background: rgba(255,255,255,0.1);
-            border: 1px solid var(--border-strong);
+            gap: 4px;
+            padding: 6px 8px;
+            background: transparent;
+            border: none;
             color: #fff;
             font-family: inherit;
-            font-size: 0.85rem;
+            font-size: 0.9rem;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.25s ease;
+            text-underline-offset: 4px;
+            transition: opacity 0.2s ease;
         }
-        .back-btn:hover { background: rgba(255,255,255,0.18); transform: translateY(-1px); }
+        .back-btn svg { opacity: 0.6; flex-shrink: 0; }
+        .back-btn:hover { text-decoration: underline; }
         .app-sem-label {
             color: var(--text-muted);
             font-size: 0.85rem;
@@ -1483,7 +1484,7 @@
     <!-- ===================== TEZLİKLƏ: boş semestr səhifəsi ===================== -->
     <div id="semPlaceholder" style="display:none">
         <div class="app-topbar">
-            <button class="back-btn" onclick="backToSemesters()">&#8592; Semestrlər</button>
+            <button class="back-btn" onclick="backToSemesters()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg> Əvvəlki Səhifə</button>
         </div>
         <div class="placeholder">
             <div class="ph-icon">&#128197;</div>
@@ -1497,7 +1498,7 @@
     <!-- ===================== AKTİV SEMESTR: mövcud sistem ===================== -->
     <div id="appView" style="display:none">
     <div class="app-topbar">
-        <button class="back-btn" onclick="backToSemesters()">&#8592; Semestrlər</button>
+        <button class="back-btn" onclick="backToSemesters()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg> Əvvəlki Səhifə</button>
         <span class="app-sem-label">2025/2026 yaz semestri &#8226; Hərbi Mühəndis Texnikası</span>
     </div>
 
