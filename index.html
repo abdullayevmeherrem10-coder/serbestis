@@ -1010,8 +1010,11 @@
                 justify-content: flex-start;
                 -webkit-overflow-scrolling: touch;
                 scrollbar-width: none;
+                scroll-padding-inline: 12px;
+                padding: 10px 12px;
             }
             .tab-nav::-webkit-scrollbar { height: 0; display: none; }
+            .tab-btn { flex: 0 0 auto; }
             .tab-btn { padding: 10px 16px; font-size: 0.82rem; }
             .placeholder { padding: 48px 18px; }
         }
@@ -2034,6 +2037,14 @@
                 el.style.display = title.includes(q) ? '' : 'none';
             });
         });
+        // Mobil/planşetdə yüklənərkən aktiv tabı naviqasiyada mərkəzə gətir
+        const activeTab = document.querySelector('.tab-nav .tab-btn.active');
+        if (activeTab) {
+            const nav = activeTab.closest('.tab-nav');
+            if (nav && nav.scrollWidth > nav.clientWidth) {
+                nav.scrollLeft = Math.max(0, activeTab.offsetLeft - (nav.clientWidth - activeTab.offsetWidth) / 2);
+            }
+        }
     });
 
     // Confirm modal
@@ -2168,6 +2179,14 @@
         const panel = document.getElementById('tab-' + name);
         if (panel) panel.classList.add('active');
         if (btn) btn.classList.add('active');
+        // Mobil/planşetdə üfüqi naviqasiyada aktiv düyməni tam görünməsi üçün mərkəzə sürüşdür
+        if (btn) {
+            const nav = btn.closest('.tab-nav');
+            if (nav && nav.scrollWidth > nav.clientWidth) {
+                const target = btn.offsetLeft - (nav.clientWidth - btn.offsetWidth) / 2;
+                nav.scrollTo({ left: Math.max(0, target), behavior: 'smooth' });
+            }
+        }
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
