@@ -1286,14 +1286,14 @@
 
     <!-- Tab navigation -->
     <div class="tab-nav">
-        <button class="tab-btn" onclick="switchTab('serbest', this)"><span class="tab-ico">&#128218;</span> Sərbəst işlər</button>
+        <button class="tab-btn active" onclick="switchTab('serbest', this)"><span class="tab-ico">&#128218;</span> Sərbəst işlər</button>
         <button class="tab-btn" onclick="switchTab('kollokvium', this)"><span class="tab-ico">&#128221;</span> Kollokvium nəticələri</button>
-        <button class="tab-btn active" onclick="switchTab('menimseme', this)"><span class="tab-ico">&#128202;</span> Mənimsəmə göstəriciləri</button>
+        <button class="tab-btn" onclick="switchTab('menimseme', this)"><span class="tab-ico">&#128202;</span> Mənimsəmə göstəriciləri</button>
         <button class="tab-btn" onclick="switchTab('imtahan', this)"><span class="tab-ico">&#127942;</span> İmtahan nəticələri</button>
     </div>
 
     <!-- ===================== TAB: Sərbəst işlər ===================== -->
-    <div class="tab-panel" id="tab-serbest">
+    <div class="tab-panel active" id="tab-serbest">
     <p class="tab-subtitle">Sərbəst İşini Özün Seç</p>
 
     <!-- Steps -->
@@ -1543,7 +1543,7 @@
     </div>
 
     <!-- ===================== TAB: Mənimsəmə göstəriciləri ===================== -->
-    <div class="tab-panel active" id="tab-menimseme">
+    <div class="tab-panel" id="tab-menimseme">
         <div class="subtab-nav">
             <button class="subtab-btn active" onclick="switchMenimseme('a1', this)">YT 24A1</button>
             <button class="subtab-btn" onclick="switchMenimseme('a2', this)">YT 24A2</button>
