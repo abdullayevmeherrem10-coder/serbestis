@@ -1246,11 +1246,15 @@
             box-shadow: 0 8px 26px rgba(239,68,68,0.2);
         }
         .sem-card.current {
-            border-color: #ffffff;
-            box-shadow: 0 10px 34px rgba(255,255,255,0.12);
+            border-color: var(--success);
+            box-shadow: 0 10px 34px rgba(34,197,94,0.18);
         }
         .sem-card.current:hover {
-            box-shadow: 0 12px 38px rgba(255,255,255,0.2);
+            box-shadow: 0 12px 38px rgba(34,197,94,0.3);
+        }
+        /* Aktiv olmayan semestrin "Tezliklə" səhifəsi */
+        #semPlaceholder .placeholder {
+            border: 2px solid var(--danger);
         }
         .sem-card .sem-year { font-size: 1.15rem; font-weight: 800; letter-spacing: 0.3px; }
         .sem-card .sem-name { color: var(--text-muted); font-size: 0.85rem; font-weight: 600; }
