@@ -1309,14 +1309,19 @@
             transform: translateX(-50%);
             white-space: nowrap;
         }
-        @media (max-width: 640px) {
+        /* Telefon və planşet: geri düyməsi kiçik və loqonun altında mərkəzdə */
+        @media (max-width: 768px) {
+            .app-topbar { justify-content: center; }
+            .back-btn { font-size: 0.78rem; padding: 4px 6px; }
+            .back-btn svg { width: 14px; height: 14px; }
             .app-sem-label {
                 position: static;
                 transform: none;
                 flex: 1 0 100%;
                 text-align: center;
-                margin-top: 4px;
+                margin-top: 2px;
                 white-space: normal;
+                font-size: 0.78rem;
             }
         }
 
