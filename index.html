@@ -8,18 +8,18 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #0b2147;
-            --primary-light: #16356b;
-            --accent: #d4a853;
-            --accent-glow: #f0c75e;
-            --accent-dark: #b8922e;
-            --surface: rgba(11,33,71,0.75);
-            --surface-hover: rgba(11,33,71,0.85);
-            --border: rgba(212,168,83,0.15);
-            --border-strong: rgba(212,168,83,0.3);
-            --text: #f1f5f9;
-            --text-muted: #9fb4d6;
-            --text-dim: #6c84ad;
+            --primary: #0f4e3c;
+            --primary-light: #1a6b54;
+            --accent: #ffffff;
+            --accent-glow: #ffffff;
+            --accent-dark: #d6e9e1;
+            --surface: rgba(10,56,44,0.78);
+            --surface-hover: rgba(13,66,52,0.88);
+            --border: rgba(255,255,255,0.16);
+            --border-strong: rgba(255,255,255,0.34);
+            --text: #ffffff;
+            --text-muted: #cfe2da;
+            --text-dim: #97b9ad;
             --success: #22c55e;
             --danger: #ef4444;
             --danger-bg: rgba(239,68,68,0.1);
@@ -53,7 +53,7 @@
             content: '';
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(8, 26, 56, 0.84);
+            background: rgba(9, 54, 42, 0.93);
             z-index: 0;
             pointer-events: none;
         }
@@ -111,8 +111,8 @@
         }
 
         @keyframes logoPulse {
-            0%, 100% { filter: drop-shadow(0 0 15px rgba(212,168,83,0.25)); }
-            50% { filter: drop-shadow(0 0 25px rgba(212,168,83,0.4)); }
+            0%, 100% { filter: drop-shadow(0 0 15px rgba(255,255,255,0.25)); }
+            50% { filter: drop-shadow(0 0 25px rgba(255,255,255,0.4)); }
         }
 
         .logo-wrapper img {
@@ -158,7 +158,7 @@
             gap: 8px;
             padding: 12px 22px;
             border-radius: 999px;
-            background: rgba(11,33,71,0.7);
+            background: rgba(10,56,44,0.7);
             border: 1px solid var(--border);
             color: var(--text-muted);
             font-family: inherit;
@@ -181,7 +181,7 @@
             background: linear-gradient(135deg, var(--accent), var(--accent-dark));
             border-color: var(--accent);
             color: var(--primary);
-            box-shadow: 0 8px 24px rgba(212,168,83,0.3);
+            box-shadow: 0 8px 24px rgba(255,255,255,0.3);
         }
 
         .tab-btn .tab-ico { font-size: 1.05rem; line-height: 1; }
@@ -201,7 +201,7 @@
         .placeholder {
             text-align: center;
             padding: 70px 24px;
-            background: rgba(11,33,71,0.85);
+            background: rgba(10,56,44,0.85);
             border: 1px solid var(--border-strong);
             border-radius: var(--radius);
             backdrop-filter: blur(24px);
@@ -214,7 +214,7 @@
             height: 90px;
             margin: 0 auto 22px;
             border-radius: 50%;
-            background: rgba(212,168,83,0.1);
+            background: rgba(255,255,255,0.1);
             border: 2px solid var(--border-strong);
             display: flex;
             align-items: center;
@@ -241,7 +241,7 @@
             margin-top: 18px;
             padding: 6px 16px;
             border-radius: 999px;
-            background: rgba(212,168,83,0.12);
+            background: rgba(255,255,255,0.12);
             border: 1px solid var(--border-strong);
             color: var(--accent);
             font-size: 0.8rem;
@@ -301,7 +301,7 @@
             justify-content: center;
             font-weight: 800;
             font-size: 0.85rem;
-            background: rgba(11,33,71,0.9);
+            background: rgba(10,56,44,0.9);
             border: 2px solid var(--border);
             color: var(--text-dim);
             transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
@@ -318,9 +318,9 @@
 
         .step.active .step-num {
             border-color: var(--accent);
-            background: rgba(212,168,83,0.15);
+            background: rgba(255,255,255,0.15);
             color: var(--accent);
-            box-shadow: 0 0 20px rgba(212,168,83,0.3), 0 0 40px rgba(212,168,83,0.1);
+            box-shadow: 0 0 20px rgba(255,255,255,0.3), 0 0 40px rgba(255,255,255,0.1);
             transform: scale(1.1);
         }
 
@@ -356,7 +356,7 @@
 
         /* Card styles */
         .card {
-            background: rgba(11,33,71,0.85);
+            background: rgba(10,56,44,0.85);
             backdrop-filter: blur(24px);
             -webkit-backdrop-filter: blur(24px);
             border: 1px solid var(--border-strong);
@@ -381,7 +381,7 @@
             width: 36px;
             height: 36px;
             border-radius: var(--radius-sm);
-            background: rgba(212,168,83,0.1);
+            background: rgba(255,255,255,0.1);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -396,7 +396,7 @@
         }
 
         .team-card {
-            background: rgba(11,33,71,0.8);
+            background: rgba(10,56,44,0.8);
             border: 1px solid var(--border-strong);
             border-radius: var(--radius);
             padding: 24px;
@@ -464,7 +464,7 @@
         .select-wrapper select, .input-wrapper input {
             width: 100%;
             padding: 14px 18px;
-            background: rgba(11,33,71,0.9);
+            background: rgba(10,56,44,0.9);
             border: 1px solid var(--border-strong);
             border-radius: var(--radius-sm);
             color: var(--text);
@@ -477,7 +477,7 @@
 
         .select-wrapper select:focus, .input-wrapper input:focus {
             border-color: var(--accent);
-            box-shadow: 0 0 0 3px rgba(212,168,83,0.1);
+            box-shadow: 0 0 0 3px rgba(255,255,255,0.1);
         }
 
         .select-wrapper select option {
@@ -525,7 +525,7 @@
 
         .btn-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 30px rgba(212,168,83,0.3);
+            box-shadow: 0 10px 30px rgba(255,255,255,0.3);
         }
 
         .btn-primary:disabled {
@@ -577,7 +577,7 @@
             align-items: flex-start;
             gap: 14px;
             padding: 16px 18px;
-            background: rgba(11,33,71,0.7);
+            background: rgba(10,56,44,0.7);
             border: 1px solid var(--border);
             border-radius: var(--radius-sm);
             cursor: pointer;
@@ -592,9 +592,9 @@
         }
 
         .work-item.selected {
-            background: rgba(212,168,83,0.08);
+            background: rgba(255,255,255,0.08);
             border-color: var(--accent);
-            box-shadow: 0 0 20px rgba(212,168,83,0.1);
+            box-shadow: 0 0 20px rgba(255,255,255,0.1);
         }
 
         .work-item.taken {
@@ -608,7 +608,7 @@
             min-width: 32px;
             height: 32px;
             border-radius: 8px;
-            background: rgba(212,168,83,0.1);
+            background: rgba(255,255,255,0.1);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -648,7 +648,7 @@
             font-size: 0.7rem;
             padding: 3px 8px;
             border-radius: 4px;
-            background: rgba(212,168,83,0.15);
+            background: rgba(255,255,255,0.15);
             color: var(--accent);
             white-space: nowrap;
             flex-shrink: 0;
@@ -659,7 +659,7 @@
             position: sticky;
             top: 0;
             z-index: 10;
-            background: rgba(11,33,71,0.92);
+            background: rgba(10,56,44,0.92);
             backdrop-filter: blur(24px);
             border: 1px solid var(--border-strong);
             border-radius: var(--radius-sm);
@@ -699,7 +699,7 @@
         .modal-overlay.active { display: flex; }
 
         .modal {
-            background: rgba(11,33,71,0.95);
+            background: rgba(10,56,44,0.95);
             border: 1px solid var(--border-strong);
             border-radius: var(--radius);
             padding: 36px;
@@ -843,7 +843,7 @@
         .download-section {
             margin-top: 30px;
             padding: 24px;
-            background: rgba(11,33,71,0.85);
+            background: rgba(10,56,44,0.85);
             border: 1px solid var(--border-strong);
             border-radius: var(--radius);
             text-align: center;
@@ -858,13 +858,15 @@
         }
 
         .btn-download {
-            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.4);
             color: #fff;
         }
 
         .btn-download:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 30px rgba(59,130,246,0.3);
+            background: rgba(255,255,255,0.18);
+            box-shadow: 0 10px 30px rgba(255,255,255,0.15);
         }
 
         .btn-rules {
@@ -874,7 +876,7 @@
 
         .btn-rules:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 30px rgba(212,168,83,0.3);
+            box-shadow: 0 10px 30px rgba(255,255,255,0.3);
         }
 
         .btn-book {
@@ -904,7 +906,7 @@
         .rules-modal.active { display: flex; }
 
         .rules-content {
-            background: rgba(11,33,71,0.95);
+            background: rgba(10,56,44,0.95);
             border: 1px solid var(--border-strong);
             border-radius: var(--radius);
             padding: 36px;
@@ -934,7 +936,7 @@
         }
 
         .rules-content .rule-section {
-            background: rgba(212,168,83,0.05);
+            background: rgba(255,255,255,0.05);
             border-left: 3px solid var(--accent);
             padding: 14px 18px;
             border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
@@ -979,12 +981,12 @@
         }
 
         .rules-content .note {
-            background: rgba(59,130,246,0.08);
-            border: 1px solid rgba(59,130,246,0.2);
+            background: rgba(255,255,255,0.07);
+            border: 1px solid rgba(255,255,255,0.22);
             border-radius: var(--radius-sm);
             padding: 12px 16px;
             margin-bottom: 10px;
-            color: #60a5fa;
+            color: #e6f2ed;
             font-size: 0.85rem;
             line-height: 1.7;
         }
@@ -1050,7 +1052,7 @@
             max-width: 720px;
             margin: 0 auto 20px;
             padding: 16px 24px;
-            background: linear-gradient(135deg, rgba(239,68,68,0.12), rgba(212,168,83,0.08));
+            background: linear-gradient(135deg, rgba(239,68,68,0.12), rgba(255,255,255,0.08));
             border: 1px solid rgba(239,68,68,0.35);
             border-radius: var(--radius);
             backdrop-filter: blur(16px);
@@ -1084,9 +1086,9 @@
             font-weight: 800;
             white-space: nowrap;
             padding: 2px 10px;
-            background: rgba(212,168,83,0.12);
+            background: rgba(255,255,255,0.12);
             border-radius: 6px;
-            border: 1px solid rgba(212,168,83,0.3);
+            border: 1px solid rgba(255,255,255,0.3);
         }
         @media (max-width: 768px) {
             .deadline-banner { padding: 12px 16px; gap: 10px; }
@@ -1109,7 +1111,7 @@
         .results-table th {
             text-align: left;
             padding: 12px 16px;
-            background: rgba(212,168,83,0.1);
+            background: rgba(255,255,255,0.1);
             color: var(--accent);
             font-weight: 700;
             font-size: 0.74rem;
@@ -1138,7 +1140,7 @@
             font-size: 0.85rem;
         }
         .bal-high { background: rgba(34,197,94,0.15); color: var(--success); border: 1px solid rgba(34,197,94,0.35); }
-        .bal-mid  { background: rgba(212,168,83,0.15); color: var(--accent); border: 1px solid var(--border-strong); }
+        .bal-mid  { background: rgba(255,255,255,0.15); color: var(--accent); border: 1px solid var(--border-strong); }
         .bal-low  { background: rgba(239,68,68,0.12); color: var(--danger); border: 1px solid rgba(239,68,68,0.35); }
         .results-summary {
             display: flex;
@@ -1149,7 +1151,7 @@
         .rs-item {
             flex: 1;
             min-width: 140px;
-            background: rgba(11,33,71,0.7);
+            background: rgba(10,56,44,0.7);
             border: 1px solid var(--border);
             border-radius: var(--radius-sm);
             padding: 14px 18px;
@@ -1169,7 +1171,7 @@
         .subtab-btn {
             padding: 8px 18px;
             border-radius: 999px;
-            background: rgba(11,33,71,0.7);
+            background: rgba(10,56,44,0.7);
             border: 1px solid var(--border);
             color: var(--text-muted);
             font-family: inherit;
@@ -1180,7 +1182,7 @@
         }
         .subtab-btn:hover { border-color: var(--border-strong); color: var(--text); }
         .subtab-btn.active {
-            background: rgba(212,168,83,0.15);
+            background: rgba(255,255,255,0.15);
             border-color: var(--accent);
             color: var(--accent);
         }
@@ -1225,7 +1227,7 @@
             width: 100%;
             padding: 12px 18px;
             padding-left: 44px;
-            background: rgba(11,33,71,0.9);
+            background: rgba(10,56,44,0.9);
             border: 1px solid var(--border-strong);
             border-radius: var(--radius-sm);
             color: var(--text);
@@ -1237,7 +1239,7 @@
         }
         .search-box:focus {
             border-color: var(--accent);
-            box-shadow: 0 0 0 3px rgba(212,168,83,0.1);
+            box-shadow: 0 0 0 3px rgba(255,255,255,0.1);
         }
         .search-wrapper {
             position: relative;
@@ -1357,7 +1359,7 @@
     <div class="section" id="sec-student">
         <div class="card">
             <div class="card-title">
-                <div class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+                <div class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
                 <span>Seçim məlumatları — <strong id="selectedTeamName"></strong></span>
             </div>
 
