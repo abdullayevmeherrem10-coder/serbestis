@@ -1290,7 +1290,26 @@
             transition: all 0.25s ease;
         }
         .back-btn:hover { background: rgba(255,255,255,0.18); transform: translateY(-1px); }
-        .app-sem-label { color: var(--text-muted); font-size: 0.85rem; font-weight: 600; letter-spacing: 0.3px; }
+        .app-sem-label {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            white-space: nowrap;
+        }
+        @media (max-width: 640px) {
+            .app-sem-label {
+                position: static;
+                transform: none;
+                flex: 1 0 100%;
+                text-align: center;
+                margin-top: 4px;
+                white-space: normal;
+            }
+        }
 
         /* Site footer */
         .site-footer {
