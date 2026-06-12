@@ -86,6 +86,7 @@
         body.loading .header h1 { opacity: 0; animation: fadeUp 0.4s ease 0.15s forwards; }
         body.loading .header p { opacity: 0; animation: fadeUp 0.4s ease 0.25s forwards; }
         body.loading .tab-nav { opacity: 0; animation: fadeUp 0.4s ease 0.3s forwards; }
+        body.loading #semView { opacity: 0; animation: fadeUp 0.4s ease 0.3s forwards; }
         body.loading .tab-subtitle { opacity: 0; animation: fadeUp 0.4s ease 0.32s forwards; }
         body.loading .steps { opacity: 0; animation: fadeUp 0.4s ease 0.35s forwards; }
         body.loading .section.active .card { opacity: 0; animation: fadeUp 0.4s ease 0.45s forwards; }
@@ -1201,6 +1202,96 @@
         }
         .bal-none { background: rgba(148,163,184,0.12); color: var(--text-muted); border: 1px solid var(--border); }
 
+        /* Semestr seçimi (ilk səhifə) */
+        .sem-title {
+            text-align: center;
+            color: var(--text);
+            font-size: 1.05rem;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+            margin: 18px 0 16px;
+            position: relative;
+            z-index: 2;
+        }
+        .sem-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 14px;
+            max-width: 1000px;
+            margin: 0 auto 30px;
+            padding: 0 10px;
+            position: relative;
+            z-index: 2;
+        }
+        .sem-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            padding: 22px 14px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            color: var(--text);
+            font-family: inherit;
+            cursor: pointer;
+            text-align: center;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+        }
+        .sem-card:hover {
+            transform: translateY(-3px);
+            border-color: var(--border-strong);
+            background: var(--surface-hover);
+        }
+        .sem-card.current {
+            border-color: rgba(255,255,255,0.5);
+            box-shadow: 0 10px 34px rgba(255,255,255,0.1);
+        }
+        .sem-card .sem-year { font-size: 1.15rem; font-weight: 800; letter-spacing: 0.3px; }
+        .sem-card .sem-name { color: var(--text-muted); font-size: 0.85rem; font-weight: 600; }
+        .sem-card .sem-subject { color: var(--text-dim); font-size: 0.72rem; font-weight: 600; line-height: 1.4; }
+        .sem-badge {
+            margin-top: 6px;
+            font-size: 0.68rem;
+            font-weight: 700;
+            padding: 3px 11px;
+            border-radius: 999px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .sem-badge.aktiv { background: rgba(34,197,94,0.15); color: var(--success); border: 1px solid rgba(34,197,94,0.35); }
+        .sem-badge.soon { background: rgba(255,255,255,0.08); color: var(--text-dim); border: 1px solid var(--border); }
+
+        /* Geri (semestrlər) düyməsi */
+        .app-topbar {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin: 6px 0 14px;
+            position: relative;
+            z-index: 2;
+        }
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 9px 18px;
+            border-radius: 999px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid var(--border-strong);
+            color: #fff;
+            font-family: inherit;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+        .back-btn:hover { background: rgba(255,255,255,0.18); transform: translateY(-1px); }
+        .app-sem-label { color: var(--text-muted); font-size: 0.85rem; font-weight: 600; letter-spacing: 0.3px; }
+
         /* Site footer */
         .site-footer {
             text-align: center;
@@ -1278,10 +1369,98 @@
 <div class="container">
     <!-- Header -->
     <div class="header">
-        <h1>Hərbi Mühəndis Texnikası</h1>
+        <h1 id="siteTitle">Hərbi Mühəndis Texnikası</h1>
         <div class="logo-wrapper">
             <img src="loqo-esas.webp" alt="Logo">
         </div>
+    </div>
+
+    <!-- ===================== İLK SƏHİFƏ: Semestr seçimi ===================== -->
+    <div id="semView">
+        <h2 class="sem-title">Tədris semestrini seçin</h2>
+        <div class="sem-grid">
+            <button class="sem-card current" onclick="openSemester('aktiv', '2025/2026 yaz semestri', 'Hərbi Mühəndis Texnikası')">
+                <span class="sem-year">2025/2026</span>
+                <span class="sem-name">Yaz semestri</span>
+                <span class="sem-subject">Hərbi Mühəndis Texnikası</span>
+                <span class="sem-badge aktiv">Aktiv</span>
+            </button>
+            <button class="sem-card" onclick="openSemester('soon', '2025/2026 payız semestri', 'Hərbi Mühəndis Hazırlığı')">
+                <span class="sem-year">2025/2026</span>
+                <span class="sem-name">Payız semestri</span>
+                <span class="sem-subject">Hərbi Mühəndis Hazırlığı</span>
+                <span class="sem-badge soon">Tezliklə</span>
+            </button>
+            <button class="sem-card" onclick="openSemester('soon', '2026/2027 yaz semestri', 'Hərbi Mühəndis Texnikası')">
+                <span class="sem-year">2026/2027</span>
+                <span class="sem-name">Yaz semestri</span>
+                <span class="sem-subject">Hərbi Mühəndis Texnikası</span>
+                <span class="sem-badge soon">Tezliklə</span>
+            </button>
+            <button class="sem-card" onclick="openSemester('soon', '2026/2027 payız semestri', 'Hərbi Mühəndis Hazırlığı')">
+                <span class="sem-year">2026/2027</span>
+                <span class="sem-name">Payız semestri</span>
+                <span class="sem-subject">Hərbi Mühəndis Hazırlığı</span>
+                <span class="sem-badge soon">Tezliklə</span>
+            </button>
+            <button class="sem-card" onclick="openSemester('soon', '2027/2028 yaz semestri', 'Hərbi Mühəndis Texnikası')">
+                <span class="sem-year">2027/2028</span>
+                <span class="sem-name">Yaz semestri</span>
+                <span class="sem-subject">Hərbi Mühəndis Texnikası</span>
+                <span class="sem-badge soon">Tezliklə</span>
+            </button>
+            <button class="sem-card" onclick="openSemester('soon', '2027/2028 payız semestri', 'Hərbi Mühəndis Hazırlığı')">
+                <span class="sem-year">2027/2028</span>
+                <span class="sem-name">Payız semestri</span>
+                <span class="sem-subject">Hərbi Mühəndis Hazırlığı</span>
+                <span class="sem-badge soon">Tezliklə</span>
+            </button>
+            <button class="sem-card" onclick="openSemester('soon', '2028/2029 yaz semestri', 'Hərbi Mühəndis Texnikası')">
+                <span class="sem-year">2028/2029</span>
+                <span class="sem-name">Yaz semestri</span>
+                <span class="sem-subject">Hərbi Mühəndis Texnikası</span>
+                <span class="sem-badge soon">Tezliklə</span>
+            </button>
+            <button class="sem-card" onclick="openSemester('soon', '2028/2029 payız semestri', 'Hərbi Mühəndis Hazırlığı')">
+                <span class="sem-year">2028/2029</span>
+                <span class="sem-name">Payız semestri</span>
+                <span class="sem-subject">Hərbi Mühəndis Hazırlığı</span>
+                <span class="sem-badge soon">Tezliklə</span>
+            </button>
+            <button class="sem-card" onclick="openSemester('soon', '2029/2030 yaz semestri', 'Hərbi Mühəndis Texnikası')">
+                <span class="sem-year">2029/2030</span>
+                <span class="sem-name">Yaz semestri</span>
+                <span class="sem-subject">Hərbi Mühəndis Texnikası</span>
+                <span class="sem-badge soon">Tezliklə</span>
+            </button>
+            <button class="sem-card" onclick="openSemester('soon', '2029/2030 payız semestri', 'Hərbi Mühəndis Hazırlığı')">
+                <span class="sem-year">2029/2030</span>
+                <span class="sem-name">Payız semestri</span>
+                <span class="sem-subject">Hərbi Mühəndis Hazırlığı</span>
+                <span class="sem-badge soon">Tezliklə</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- ===================== TEZLİKLƏ: boş semestr səhifəsi ===================== -->
+    <div id="semPlaceholder" style="display:none">
+        <div class="app-topbar">
+            <button class="back-btn" onclick="backToSemesters()">&#8592; Semestrlər</button>
+        </div>
+        <div class="placeholder">
+            <div class="ph-icon">&#128197;</div>
+            <h2 id="phSemName"></h2>
+            <p id="phSemSubject" style="font-weight:600;"></p>
+            <p>Bu semestr üçün məlumatlar hələ yerləşdirilməyib.</p>
+            <span class="ph-badge">Tezliklə</span>
+        </div>
+    </div>
+
+    <!-- ===================== AKTİV SEMESTR: mövcud sistem ===================== -->
+    <div id="appView" style="display:none">
+    <div class="app-topbar">
+        <button class="back-btn" onclick="backToSemesters()">&#8592; Semestrlər</button>
+        <span class="app-sem-label">2025/2026 yaz semestri &#8226; Hərbi Mühəndis Texnikası</span>
     </div>
 
     <!-- Tab navigation -->
@@ -1763,6 +1942,7 @@
         </div>
         </div><!-- /imtahan-a2 -->
     </div>
+    </div><!-- /appView -->
 
     <footer class="site-footer">&copy; 2026 - M&#252;&#601;llif h&#252;quqlar&#305; qorunur.</footer>
 </div>
@@ -2172,6 +2352,36 @@
         } else if (nr) {
             nr.style.display = 'none';
         }
+    }
+
+    // Semestr seçimi (ilk səhifə)
+    function openSemester(key, label, subject) {
+        document.getElementById('semView').style.display = 'none';
+        if (key === 'aktiv') {
+            document.getElementById('appView').style.display = '';
+            // Mobil/planşetdə aktiv tabı naviqasiyada mərkəzə gətir
+            const activeTab = document.querySelector('.tab-nav .tab-btn.active');
+            if (activeTab) {
+                const nav = activeTab.closest('.tab-nav');
+                if (nav && nav.scrollWidth > nav.clientWidth) {
+                    nav.scrollLeft = Math.max(0, activeTab.offsetLeft - (nav.clientWidth - activeTab.offsetWidth) / 2);
+                }
+            }
+        } else {
+            document.getElementById('phSemName').textContent = label;
+            document.getElementById('phSemSubject').textContent = subject || '';
+            document.getElementById('semPlaceholder').style.display = '';
+        }
+        if (subject) document.getElementById('siteTitle').textContent = subject;
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function backToSemesters() {
+        document.getElementById('appView').style.display = 'none';
+        document.getElementById('semPlaceholder').style.display = 'none';
+        document.getElementById('semView').style.display = '';
+        document.getElementById('siteTitle').textContent = 'Hərbi Mühəndis Texnikası';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     // Tab navigation
