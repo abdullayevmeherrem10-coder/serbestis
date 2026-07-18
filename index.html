@@ -87,7 +87,6 @@
         body.loading .header h1 { opacity: 0; animation: fadeUp 0.4s ease 0.15s forwards; }
         body.loading .header p { opacity: 0; animation: fadeUp 0.4s ease 0.25s forwards; }
         body.loading .tab-nav { opacity: 0; animation: fadeUp 0.4s ease 0.3s forwards; }
-        body.loading #semView { opacity: 0; animation: fadeUp 0.4s ease 0.3s forwards; }
         body.loading .tab-subtitle { opacity: 0; animation: fadeUp 0.4s ease 0.32s forwards; }
         body.loading .steps { opacity: 0; animation: fadeUp 0.4s ease 0.35s forwards; }
         body.loading .section.active .card { opacity: 0; animation: fadeUp 0.4s ease 0.45s forwards; }
@@ -1762,105 +1761,8 @@
         </div>
     </div>
 
-    <!-- ===================== İLK SƏHİFƏ: Semestr seçimi ===================== -->
-    <div id="semView">
-        <h2 class="sem-title">Tədris semestrini seçin</h2>
-        <div class="sem-grid">
-            <button class="sem-card current" onclick="openSemester('aktiv', '2025/2026 yaz semestri', 'Hərbi Mühəndis Texnikası')">
-                <span class="sem-year">2025/2026</span>
-                <span class="sem-name">Yaz semestri</span>
-                <span class="sem-subject">Hərbi Mühəndis Texnikası</span>
-                <span class="sem-badge aktiv">Aktiv</span>
-            </button>
-            <button class="sem-card" onclick="openSemester('soon', '2026/2027 payız semestri', 'Hərbi Mühəndis Hazırlığı')">
-                <span class="sem-year">2026/2027</span>
-                <span class="sem-name">Payız semestri</span>
-                <span class="sem-subject">Hərbi Mühəndis Hazırlığı</span>
-                <span class="sem-badge soon">Tezliklə</span>
-            </button>
-            <button class="sem-card" onclick="openSemester('soon', '2026/2027 yaz semestri', 'Hərbi Mühəndis Texnikası')">
-                <span class="sem-year">2026/2027</span>
-                <span class="sem-name">Yaz semestri</span>
-                <span class="sem-subject">Hərbi Mühəndis Texnikası</span>
-                <span class="sem-badge soon">Tezliklə</span>
-            </button>
-            <button class="sem-card" onclick="openSemester('soon', '2027/2028 payız semestri', 'Hərbi Mühəndis Hazırlığı')">
-                <span class="sem-year">2027/2028</span>
-                <span class="sem-name">Payız semestri</span>
-                <span class="sem-subject">Hərbi Mühəndis Hazırlığı</span>
-                <span class="sem-badge soon">Tezliklə</span>
-            </button>
-            <button class="sem-card" onclick="openSemester('soon', '2027/2028 yaz semestri', 'Hərbi Mühəndis Texnikası')">
-                <span class="sem-year">2027/2028</span>
-                <span class="sem-name">Yaz semestri</span>
-                <span class="sem-subject">Hərbi Mühəndis Texnikası</span>
-                <span class="sem-badge soon">Tezliklə</span>
-            </button>
-            <button class="sem-card" onclick="openSemester('soon', '2028/2029 payız semestri', 'Hərbi Mühəndis Hazırlığı')">
-                <span class="sem-year">2028/2029</span>
-                <span class="sem-name">Payız semestri</span>
-                <span class="sem-subject">Hərbi Mühəndis Hazırlığı</span>
-                <span class="sem-badge soon">Tezliklə</span>
-            </button>
-            <button class="sem-card" onclick="openSemester('soon', '2028/2029 yaz semestri', 'Hərbi Mühəndis Texnikası')">
-                <span class="sem-year">2028/2029</span>
-                <span class="sem-name">Yaz semestri</span>
-                <span class="sem-subject">Hərbi Mühəndis Texnikası</span>
-                <span class="sem-badge soon">Tezliklə</span>
-            </button>
-            <button class="sem-card" onclick="openSemester('soon', '2029/2030 payız semestri', 'Hərbi Mühəndis Hazırlığı')">
-                <span class="sem-year">2029/2030</span>
-                <span class="sem-name">Payız semestri</span>
-                <span class="sem-subject">Hərbi Mühəndis Hazırlığı</span>
-                <span class="sem-badge soon">Tezliklə</span>
-            </button>
-            <button class="sem-card" onclick="openSemester('soon', '2029/2030 yaz semestri', 'Hərbi Mühəndis Texnikası')">
-                <span class="sem-year">2029/2030</span>
-                <span class="sem-name">Yaz semestri</span>
-                <span class="sem-subject">Hərbi Mühəndis Texnikası</span>
-                <span class="sem-badge soon">Tezliklə</span>
-            </button>
-            <button class="sem-card" onclick="openSemester('soon', '2030/2031 payız semestri', 'Hərbi Mühəndis Hazırlığı')">
-                <span class="sem-year">2030/2031</span>
-                <span class="sem-name">Payız semestri</span>
-                <span class="sem-subject">Hərbi Mühəndis Hazırlığı</span>
-                <span class="sem-badge soon">Tezliklə</span>
-            </button>
-            <button class="sem-card" onclick="openSemester('soon', '2030/2031 yaz semestri', 'Hərbi Mühəndis Texnikası')">
-                <span class="sem-year">2030/2031</span>
-                <span class="sem-name">Yaz semestri</span>
-                <span class="sem-subject">Hərbi Mühəndis Texnikası</span>
-                <span class="sem-badge soon">Tezliklə</span>
-            </button>
-            <button class="sem-card" onclick="openSemester('soon', '2031/2032 payız semestri', 'Hərbi Mühəndis Hazırlığı')">
-                <span class="sem-year">2031/2032</span>
-                <span class="sem-name">Payız semestri</span>
-                <span class="sem-subject">Hərbi Mühəndis Hazırlığı</span>
-                <span class="sem-badge soon">Tezliklə</span>
-            </button>
-        </div>
-    </div>
-
-    <!-- ===================== TEZLİKLƏ: boş semestr səhifəsi ===================== -->
-    <div id="semPlaceholder" style="display:none">
-        <div class="app-topbar">
-            <button class="back-btn" onclick="backToSemesters()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg> Əvvəlki Səhifə</button>
-        </div>
-        <div class="placeholder">
-            <div class="ph-icon">&#128197;</div>
-            <h2 id="phSemName"></h2>
-            <p id="phSemSubject" style="font-weight:600;"></p>
-            <p>Bu semestr üçün məlumatlar hələ yerləşdirilməyib.</p>
-            <span class="ph-badge">Tezliklə</span>
-        </div>
-    </div>
-
-
     <!-- ===================== ŞƏXSİ KABİNET: giriş ===================== -->
     <div id="cabinetLogin" style="display:none">
-        <div class="app-topbar">
-            <button class="back-btn" onclick="backToSemesters()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg> Əvvəlki Səhifə</button>
-        </div>
         <div class="cab-login-wrap">
             <div class="cab-login-box">
                 <div class="cab-login-back"></div>
@@ -1886,7 +1788,6 @@
     <!-- ===================== ŞƏXSİ KABİNET: kursant paneli ===================== -->
     <div id="cabinetView" style="display:none">
         <div class="app-topbar">
-            <button class="back-btn" onclick="backToSemesters()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg> Əvvəlki Səhifə</button>
             <span class="app-sem-label">2025/2026 yaz semestri &#8226; Hərbi Mühəndis Texnikası</span>
             <button class="logout-btn" onclick="cabinetLogout()">Çıxış</button>
         </div>
@@ -2721,27 +2622,12 @@
         }
     }
 
-    // Semestr seçimi (ilk səhifə)
-    function openSemester(key, label, subject) {
-        document.getElementById('semView').style.display = 'none';
-        if (key === 'aktiv') {
-            routeCabinet();
-        } else {
-            document.getElementById('phSemName').textContent = label;
-            document.getElementById('phSemSubject').textContent = subject || '';
-            document.getElementById('semPlaceholder').style.display = '';
-        }
-        if (subject) document.getElementById('siteTitle').textContent = subject;
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
+    // Giriş ekranına qayıdış (çıxışdan sonra)
     function backToSemesters() {
         document.getElementById('appView').style.display = 'none';
-        document.getElementById('semPlaceholder').style.display = 'none';
-        document.getElementById('cabinetLogin').style.display = 'none';
         document.getElementById('cabinetView').style.display = 'none';
-        document.getElementById('semView').style.display = '';
-        document.getElementById('siteTitle').textContent = 'Hərbi Mühəndis Texnikası';
+        document.getElementById('cabinetLogin').style.display = '';
+        setTimeout(() => { const el = document.getElementById('cabId'); if (el) el.focus(); }, 60);
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
@@ -2865,10 +2751,7 @@
     async function fetchCabData() {
         const res = await fetch('/api/cabinet-data', { headers: { 'Authorization': 'Bearer ' + session.token } });
         if (res.status === 401) {
-            const s = session;
             cabinetLogout();
-            document.getElementById('semView').style.display = 'none';
-            document.getElementById('cabinetLogin').style.display = '';
             showToast('Sessiya bitib — yenidən daxil olun.', 'error');
             throw new Error('expired');
         }
@@ -3072,8 +2955,9 @@
     // Səhifə yenilənəndə aktiv sessiya varsa avtomatik yönləndirmə etmirik —
     // istifadəçi semestri seçəndə routeCabinet() işə düşür.
 
-    // Start
+    // Start — sayt birbaşa kabinet girişi ilə açılır
     init();
+    routeCabinet();
 </script>
 
 </body>
