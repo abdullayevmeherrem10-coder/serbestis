@@ -1,16 +1,25 @@
 # -*- coding: utf-8 -*-
 import http.server
+import base64
+import hashlib
+import hmac
 import json
 import os
 import string
 import random
 import secrets
+import sys
+import time
 import urllib.parse
 import mimetypes
 
 PORT = 8080
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_FILE = os.path.join(BASE_DIR, "database.json")
+
+sys.path.insert(0, os.path.join(BASE_DIR, "api"))
+from _credentials import CREDENTIALS
+from _results import RESULTS
 
 # Admin şifrəsi koda yazılmır: əvvəlcə ENV dəyişəni, sonra gitignore-lanmış
 # admin_secret.txt faylı oxunur. Heç biri yoxdursa təsadüfi (bilinməyən)
@@ -31,6 +40,46 @@ def load_db():
 def save_db(data):
     with open(DB_FILE, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
+
+def cred_hash(cid, password):
+    return hashlib.sha256(f"{cid.upper()}:{password}".encode("utf-8")).hexdigest()
+
+# Kabinet token sistemi (HMAC imzalı, 12 saat etibarlı)
+TOKEN_TTL = 12 * 3600
+CABINET_SECRET = os.environ.get('CABINET_SECRET') or hashlib.sha256(
+    ("cab|" + ADMIN_PASSWORD + "|" + "|".join(sorted(c["hash"] for c in CREDENTIALS.values()))).encode("utf-8")
+).hexdigest()
+
+def make_token(cid):
+    payload = json.dumps({"id": cid, "exp": int(time.time()) + TOKEN_TTL})
+    b = base64.urlsafe_b64encode(payload.encode("utf-8")).decode("ascii").rstrip("=")
+    sig = hmac.new(CABINET_SECRET.encode("utf-8"), b.encode("ascii"), hashlib.sha256).hexdigest()[:32]
+    return f"{b}.{sig}"
+
+def verify_token(token):
+    try:
+        b, sig = token.split(".")
+        good = hmac.new(CABINET_SECRET.encode("utf-8"), b.encode("ascii"), hashlib.sha256).hexdigest()[:32]
+        if not hmac.compare_digest(sig, good):
+            return None
+        payload = json.loads(base64.urlsafe_b64decode(b + "=" * (-len(b) % 4)))
+        if payload.get("exp", 0) < time.time():
+            return None
+        cid = payload.get("id", "")
+        return cid if cid in CREDENTIALS else None
+    except Exception:
+        return None
+
+def student_results(name, team):
+    for group, data in RESULTS.items():
+        if data["team"] == team:
+            return {
+                "group": group,
+                "kollok": data["kollok"].get(name),
+                "menimseme": data["menimseme"].get(name),
+                "imtahan": data["imtahan"].get(name),
+            }
+    return {"group": None, "kollok": None, "menimseme": None, "imtahan": None}
 
 def generate_key(length=6):
     chars = string.ascii_uppercase + string.digits
@@ -76,6 +125,33 @@ class Handler(http.server.BaseHTTPRequestHandler):
                     "taken_by": taken_by
                 })
             self.send_json({"works": works})
+
+        elif path == "/api/cabinet-data":
+            auth = self.headers.get("Authorization", "")
+            cid = verify_token(auth[7:].strip()) if auth.startswith("Bearer ") else None
+            if not cid:
+                self.send_json({"error": "Sessiya bitib. Yenidən daxil olun."}, 401)
+                return
+            cred = CREDENTIALS[cid]
+            db = load_db()
+            if cred.get("role") == "teacher":
+                self.send_json({
+                    "role": "teacher",
+                    "name": cred.get("name", "Müəllim"),
+                    "results": RESULTS,
+                    "selections": db.get("selections", {}),
+                })
+                return
+            name = cred["name"]
+            self.send_json({
+                "role": "student",
+                "id": cid,
+                "name": name,
+                "team": cred["team"],
+                "key": db.get("keys", {}).get(name, ""),
+                "selections": db.get("selections", {}).get(name, []),
+                "results": student_results(name, cred["team"]),
+            })
 
         elif path == "/api/student-status":
             params = urllib.parse.parse_qs(parsed.query)
@@ -133,7 +209,23 @@ class Handler(http.server.BaseHTTPRequestHandler):
         parsed = urllib.parse.urlparse(self.path)
         path = parsed.path
 
-        if path == "/api/status":
+        if path == "/api/cabinet-login":
+            body = self.read_body()
+            cid = (body.get("id") or "").strip().upper()
+            password = body.get("password") or ""
+            cred = CREDENTIALS.get(cid)
+            if not cred or cred_hash(cid, password) != cred.get("hash"):
+                self.send_json({"error": "ID və ya şifrə yanlışdır!"}, 403)
+                return
+            resp = {"token": make_token(cid), "id": cid, "name": cred.get("name", "")}
+            if cred.get("role") == "teacher":
+                resp["role"] = "teacher"
+            else:
+                resp["role"] = "student"
+                resp["team"] = cred["team"]
+            self.send_json(resp)
+
+        elif path == "/api/status":
             body = self.read_body()
             if body.get("password", "") != ADMIN_PASSWORD:
                 self.send_json({"error": "Admin şifrəsi yanlışdır!"}, 403)

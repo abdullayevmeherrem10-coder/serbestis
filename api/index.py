@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 from flask import Flask, request, jsonify
-import json, os, string, random
+import json, os, string, random, hashlib, hmac, base64, time
 import urllib.request as urlreq
+from _credentials import CREDENTIALS
+from _results import RESULTS
 
 app = Flask(__name__)
 
@@ -229,6 +231,60 @@ def generate_key(length=6):
     return ''.join(random.choice(chars) for _ in range(length))
 
 
+def cred_hash(cid, password):
+    return hashlib.sha256(f"{cid.upper()}:{password}".encode("utf-8")).hexdigest()
+
+
+# Kabinet token sistemi (HMAC imzalı, 12 saat etibarlı)
+TOKEN_TTL = 12 * 3600
+CABINET_SECRET = os.environ.get('CABINET_SECRET') or hashlib.sha256(
+    ("cab|" + ADMIN_PASSWORD + "|" + "|".join(sorted(c["hash"] for c in CREDENTIALS.values()))).encode("utf-8")
+).hexdigest()
+
+
+def make_token(cid):
+    payload = json.dumps({"id": cid, "exp": int(time.time()) + TOKEN_TTL})
+    b = base64.urlsafe_b64encode(payload.encode("utf-8")).decode("ascii").rstrip("=")
+    sig = hmac.new(CABINET_SECRET.encode("utf-8"), b.encode("ascii"), hashlib.sha256).hexdigest()[:32]
+    return f"{b}.{sig}"
+
+
+def verify_token(token):
+    """Etibarlıdırsa credential id-ni, əks halda None qaytarır."""
+    try:
+        b, sig = token.split(".")
+        good = hmac.new(CABINET_SECRET.encode("utf-8"), b.encode("ascii"), hashlib.sha256).hexdigest()[:32]
+        if not hmac.compare_digest(sig, good):
+            return None
+        payload = json.loads(base64.urlsafe_b64decode(b + "=" * (-len(b) % 4)))
+        if payload.get("exp", 0) < time.time():
+            return None
+        cid = payload.get("id", "")
+        return cid if cid in CREDENTIALS else None
+    except Exception:
+        return None
+
+
+def token_from_request():
+    auth = request.headers.get("Authorization", "")
+    if auth.startswith("Bearer "):
+        return verify_token(auth[7:].strip())
+    return None
+
+
+def student_results(name, team):
+    """Kursantın öz nəticələri (yoxdursa None sahələr)."""
+    for group, data in RESULTS.items():
+        if data["team"] == team:
+            return {
+                "group": group,
+                "kollok": data["kollok"].get(name),
+                "menimseme": data["menimseme"].get(name),
+                "imtahan": data["imtahan"].get(name),
+            }
+    return {"group": None, "kollok": None, "menimseme": None, "imtahan": None}
+
+
 def admin_guard():
     """Rate-limit + admin şifrə yoxlaması. Uğursuzsa (response, status), uğurlu olsa None qaytarır."""
     if not ADMIN_PASSWORD:
@@ -252,6 +308,57 @@ def admin_guard():
 def get_teams():
     db = load_db()
     return jsonify({"teams": db["teams"]})
+
+
+@app.route('/api/cabinet-login', methods=['POST'])
+def cabinet_login():
+    ip = get_client_ip()
+    blocked, attempts = check_rate_limit(ip)
+    if blocked:
+        return jsonify({"error": f"Çox sayda yanlış cəhd! {BLOCK_MINUTES} dəqiqə gözləyin."}), 429
+    body = request.get_json(silent=True) or {}
+    cid = (body.get('id') or '').strip().upper()
+    password = body.get('password') or ''
+    cred = CREDENTIALS.get(cid)
+    if not cred or cred_hash(cid, password) != cred.get('hash'):
+        record_failed_attempt(ip)
+        remaining = max(0, MAX_ATTEMPTS - attempts - 1)
+        return jsonify({"error": f"ID və ya şifrə yanlışdır! {remaining} cəhd qalıb."}), 403
+    clear_rate_limit(ip)
+    resp = {"token": make_token(cid), "id": cid, "name": cred.get('name', '')}
+    if cred.get('role') == 'teacher':
+        resp["role"] = "teacher"
+    else:
+        resp["role"] = "student"
+        resp["team"] = cred['team']
+    return jsonify(resp)
+
+
+@app.route('/api/cabinet-data')
+def cabinet_data():
+    cid = token_from_request()
+    if not cid:
+        return jsonify({"error": "Sessiya bitib. Yenidən daxil olun."}), 401
+    cred = CREDENTIALS[cid]
+    if cred.get('role') == 'teacher':
+        db = load_db()
+        return jsonify({
+            "role": "teacher",
+            "name": cred.get('name', 'Müəllim'),
+            "results": RESULTS,
+            "selections": db.get('selections', {}),
+        })
+    db = load_db()
+    name = cred['name']
+    return jsonify({
+        "role": "student",
+        "id": cid,
+        "name": name,
+        "team": cred['team'],
+        "key": db.get('keys', {}).get(name, ''),
+        "selections": db.get('selections', {}).get(name, []),
+        "results": student_results(name, cred['team']),
+    })
 
 
 @app.route('/api/works')

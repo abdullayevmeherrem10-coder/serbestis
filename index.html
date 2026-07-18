@@ -1421,6 +1421,131 @@
             }
         }
 
+
+        /* ===== Şəxsi Kabinet ===== */
+        .cab-login-wrap { display: flex; justify-content: center; padding: 30px 10px 60px; }
+        .cab-login-box { position: relative; width: 100%; max-width: 420px; }
+        .cab-login-back { position: absolute; top: 10px; left: 10px; width: 100%; height: 100%; background: #8fa69b; border-radius: 18px; }
+        .cab-login-card {
+            position: relative;
+            background: rgba(255,255,255,0.97);
+            border: 1.5px solid rgba(200,230,201,0.5);
+            border-radius: 18px;
+            padding: 34px 30px;
+            text-align: center;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+        }
+        .cab-login-chip {
+            display: inline-block;
+            background: linear-gradient(135deg, #455f51, #6b8f7b);
+            color: #fff;
+            padding: 10px 26px;
+            border-radius: 10px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+        .cab-login-chip::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.18), transparent);
+            background-size: 200% 100%;
+            animation: shimmerBtn 3s ease infinite;
+            pointer-events: none;
+        }
+        .cab-login-sub { color: var(--text-muted); font-size: 0.82rem; margin-bottom: 22px; }
+        .cab-login-err { color: var(--danger); font-size: 0.8rem; font-weight: 600; min-height: 18px; margin-bottom: 8px; }
+        .cab-login-note { color: var(--text-dim); font-size: 0.75rem; margin-top: 14px; }
+        .logout-btn {
+            margin-left: auto;
+            padding: 7px 16px;
+            border-radius: 10px;
+            border: 1.5px solid rgba(198,40,40,0.35);
+            background: rgba(255,255,255,0.85);
+            color: var(--danger);
+            font-family: inherit;
+            font-size: 0.8rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+        .logout-btn:hover { background: rgba(198,40,40,0.06); border-color: var(--danger); }
+        .cab-welcome { display: flex; align-items: center; gap: 18px; }
+        .cab-avatar {
+            width: 64px; height: 64px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #455f51, #6b8f7b);
+            color: #fff;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 800; font-size: 1.35rem; letter-spacing: 1px;
+            flex-shrink: 0;
+            box-shadow: 0 6px 16px rgba(69,95,81,0.3);
+        }
+        .cab-hello { color: var(--text-muted); font-size: 0.8rem; margin-bottom: 2px; }
+        .cab-who h2 { font-size: 1.25rem; color: var(--accent-dark); margin-bottom: 8px; }
+        .cab-badges { display: flex; gap: 8px; flex-wrap: wrap; }
+        .cab-badge {
+            padding: 4px 12px;
+            border-radius: 999px;
+            background: rgba(69,95,81,0.1);
+            border: 1px solid rgba(69,95,81,0.3);
+            color: #455f51;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+        .cab-badge-alt { background: rgba(46,66,114,0.08); border-color: rgba(46,66,114,0.3); color: #2e4272; }
+        .cab-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
+        .cab-grid .card { margin-bottom: 20px; }
+        .cab-bal-row { display: flex; gap: 12px; flex-wrap: wrap; }
+        .cab-bal-item {
+            flex: 1;
+            min-width: 88px;
+            text-align: center;
+            background: rgba(69,95,81,0.05);
+            border: 1px solid rgba(69,95,81,0.12);
+            border-radius: 12px;
+            padding: 14px 8px;
+        }
+        .cab-bal-label {
+            display: block;
+            font-size: 0.66rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+        .cab-empty { color: var(--text-dim); font-size: 0.88rem; }
+        .cab-sel-list { list-style: none; margin: 0 0 12px; padding: 0; }
+        .cab-sel-list li {
+            display: flex; gap: 10px; align-items: flex-start;
+            padding: 9px 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        .cab-sel-list li:last-child { border-bottom: none; }
+        .cab-sel-num {
+            min-width: 24px; height: 24px;
+            border-radius: 8px;
+            background: rgba(69,95,81,0.1);
+            color: #455f51;
+            font-weight: 800; font-size: 0.75rem;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+        .cab-note-ok { color: var(--success); font-weight: 700; font-size: 0.85rem; }
+        @media (max-width: 600px) {
+            .cab-welcome { flex-direction: column; text-align: center; }
+            .cab-badges { justify-content: center; }
+            .cab-login-card { padding: 26px 20px; }
+        }
+
         /* Site footer */
         .site-footer {
             text-align: center;
@@ -1597,15 +1722,115 @@
         </div>
     </div>
 
+
+    <!-- ===================== ŞƏXSİ KABİNET: giriş ===================== -->
+    <div id="cabinetLogin" style="display:none">
+        <div class="app-topbar">
+            <button class="back-btn" onclick="backToSemesters()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg> Əvvəlki Səhifə</button>
+        </div>
+        <div class="cab-login-wrap">
+            <div class="cab-login-box">
+                <div class="cab-login-back"></div>
+                <div class="cab-login-card">
+                    <div class="cab-login-chip">&#128274; Şəxsi Kabinet</div>
+                    <p class="cab-login-sub">2025/2026 yaz semestri &#8226; Hərbi Mühəndis Texnikası</p>
+                    <div class="input-wrapper" style="text-align:left;">
+                        <label>ID</label>
+                        <input type="text" id="cabId" placeholder="Məs: Y1-07" autocomplete="off" style="text-transform:uppercase;" onkeydown="if(event.key==='Enter')cabinetLoginSubmit()">
+                    </div>
+                    <div class="input-wrapper" style="text-align:left;">
+                        <label>Şifrə</label>
+                        <input type="password" id="cabPass" placeholder="Şifrənizi daxil edin" autocomplete="off" onkeydown="if(event.key==='Enter')cabinetLoginSubmit()">
+                    </div>
+                    <div id="cabErr" class="cab-login-err"></div>
+                    <button class="btn btn-primary btn-block" id="cabBtn" onclick="cabinetLoginSubmit()">Daxil ol &#8594;</button>
+                    <p class="cab-login-note">ID və şifrəni müəllimdən əldə edin</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===================== ŞƏXSİ KABİNET: kursant paneli ===================== -->
+    <div id="cabinetView" style="display:none">
+        <div class="app-topbar">
+            <button class="back-btn" onclick="backToSemesters()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg> Əvvəlki Səhifə</button>
+            <span class="app-sem-label">2025/2026 yaz semestri &#8226; Hərbi Mühəndis Texnikası</span>
+            <button class="logout-btn" onclick="cabinetLogout()">Çıxış</button>
+        </div>
+
+        <div class="card cab-welcome">
+            <div class="cab-avatar" id="cabAvatar"></div>
+            <div class="cab-who">
+                <p class="cab-hello">Xoş gəlmisiniz!</p>
+                <h2 id="cabName"></h2>
+                <div class="cab-badges">
+                    <span class="cab-badge" id="cabTeamBadge"></span>
+                    <span class="cab-badge cab-badge-alt" id="cabIdBadge"></span>
+                </div>
+            </div>
+        </div>
+
+        <a href="kollokvium/" class="ekollok-banner">
+            <span class="ek-ico">&#128421;&#65039;</span>
+            <span class="ek-text">
+                <strong>Elektron Kollokvium Sistemi</strong>
+                <small>Kollokviumu onlayn verin &#8212; suallar, vaxt n&#601;zar&#601;ti v&#601; n&#601;tic&#601;l&#601;r</small>
+            </span>
+            <span class="ek-arrow">&#8594;</span>
+        </a>
+
+        <div class="cab-grid">
+            <div class="card">
+                <div class="card-title"><div class="icon">&#128221;</div> Kollokvium nəticələri</div>
+                <div id="cabKollok"></div>
+            </div>
+            <div class="card">
+                <div class="card-title"><div class="icon">&#128202;</div> Mənimsəmə</div>
+                <div id="cabMenimseme"></div>
+            </div>
+            <div class="card">
+                <div class="card-title"><div class="icon">&#127942;</div> İmtahan nəticəsi</div>
+                <div id="cabImtahan"></div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title"><div class="icon">&#128218;</div> Sərbəst işlərim</div>
+            <div id="cabSerbest"><span class="spinner"></span></div>
+        </div>
+
+        <div class="download-section" style="display:flex;gap:14px;flex-wrap:wrap;justify-content:center;">
+            <div style="flex:1;min-width:250px;">
+                <p>Sərbəst iş üzlüyü sənədini yükləyin</p>
+                <a href="%C3%9CZL%C3%9CK.docx" download class="btn btn-download" style="width:100%;margin-top:8px;">
+                    &#11015; Sərbəst iş titul vərəqini yüklə
+                </a>
+            </div>
+            <div style="flex:1;min-width:250px;">
+                <p>Sərbəst işin hazırlanma qaydası</p>
+                <button class="btn btn-rules" onclick="document.getElementById('rulesModal').classList.add('active')" style="width:100%;margin-top:8px;">
+                    &#128220; Hazırlanma qaydasını oxu
+                </button>
+            </div>
+            <div style="flex:1;min-width:250px;">
+                <p>İstifadə ediləcək ədəbiyyat</p>
+                <a href="kitab.html" class="btn btn-book" style="width:100%;margin-top:8px;">
+                    &#128214; Ədəbiyyata bax
+                </a>
+            </div>
+        </div>
+    </div>
+
     <!-- ===================== AKTİV SEMESTR: mövcud sistem ===================== -->
     <div id="appView" style="display:none">
     <div class="app-topbar">
-        <button class="back-btn" onclick="backToSemesters()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg> Əvvəlki Səhifə</button>
+        <button class="back-btn" onclick="appBack()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg> Əvvəlki Səhifə</button>
         <span class="app-sem-label">2025/2026 yaz semestri &#8226; Hərbi Mühəndis Texnikası</span>
+        <button class="logout-btn" onclick="cabinetLogout()">Çıxış</button>
     </div>
 
     <!-- Tab navigation -->
-    <div class="tab-nav">
+    <div class="tab-nav" id="tabNav">
         <button class="tab-btn active" onclick="switchTab('serbest', this)"><span class="tab-ico">&#128218;</span> Sərbəst işlər</button>
         <button class="tab-btn" onclick="switchTab('kollokvium', this)"><span class="tab-ico">&#128221;</span> Kollokvium nəticələri</button>
         <button class="tab-btn" onclick="switchTab('menimseme', this)"><span class="tab-ico">&#128202;</span> Mənimsəmə göstəriciləri</button>
@@ -1780,39 +2005,14 @@
                     <thead>
                         <tr><th class="col-num">&#8470;</th><th>Kursant&#305;n ad&#305;</th><th class="col-bal">Kollokvium 1</th><th class="col-bal">Kollokvium 2</th><th class="col-bal">Kollokvium 3</th></tr>
                     </thead>
-                    <tbody id="kollokBody">
-                        <tr data-name="Abbasov Ramal Ramil oğlu"><td class="col-num">1</td><td>Abbasov Ramal Ramil oğlu</td><td class="col-bal"><span class="bal bal-mid">5</span></td><td class="col-bal"><span class="bal bal-mid">6</span></td><td class="col-bal"><span class="bal bal-mid">5</span></td></tr>
-                        <tr data-name="Ağabalayev Oktay Mahmud oğlu"><td class="col-num">2</td><td>Ağabalayev Oktay Mahmud oğlu</td><td class="col-bal"><span class="bal bal-mid">5</span></td><td class="col-bal"><span class="bal bal-mid">5</span></td><td class="col-bal"><span class="bal bal-high">9</span></td></tr>
-                        <tr data-name="Axundzadə Onur Zəki oğlu"><td class="col-num">3</td><td>Axundzadə Onur Zəki oğlu</td><td class="col-bal"><span class="bal bal-mid">6</span></td><td class="col-bal"><span class="bal bal-high">8</span></td><td class="col-bal"><span class="bal bal-high">9</span></td></tr>
-                        <tr data-name="Allahverdiyev Ümid Elmir oğlu"><td class="col-num">4</td><td>Allahverdiyev Ümid Elmir oğlu</td><td class="col-bal"><span class="bal bal-high">8</span></td><td class="col-bal"><span class="bal bal-high">8</span></td><td class="col-bal"><span class="bal bal-high">8</span></td></tr>
-                        <tr data-name="Eldarlı Hüseyn Baba oğlu"><td class="col-num">5</td><td>Eldarlı Hüseyn Baba oğlu</td><td class="col-bal"><span class="bal bal-high">8</span></td><td class="col-bal"><span class="bal bal-high">7</span></td><td class="col-bal"><span class="bal bal-high">9</span></td></tr>
-                        <tr data-name="Ələkbərli Məhəmməd Elmar oğlu"><td class="col-num">6</td><td>Ələkbərli Məhəmməd Elmar oğlu</td><td class="col-bal"><span class="bal bal-high">8</span></td><td class="col-bal"><span class="bal bal-high">9</span></td><td class="col-bal"><span class="bal bal-high">8</span></td></tr>
-                        <tr data-name="Əliyev Anar Alim oğlu"><td class="col-num">7</td><td>Əliyev Anar Alim oğlu</td><td class="col-bal"><span class="bal bal-mid">5</span></td><td class="col-bal"><span class="bal bal-mid">6</span></td><td class="col-bal"><span class="bal bal-mid">5</span></td></tr>
-                        <tr data-name="Əliyev Vahid Surxay oğlu"><td class="col-num">8</td><td>Əliyev Vahid Surxay oğlu</td><td class="col-bal"><span class="bal bal-low">3</span></td><td class="col-bal"><span class="bal bal-mid">5</span></td><td class="col-bal"><span class="bal bal-high">9</span></td></tr>
-                        <tr data-name="İsmayılov Nihad Habil oğlu"><td class="col-num">9</td><td>İsmayılov Nihad Habil oğlu</td><td class="col-bal"><span class="bal bal-low">4</span></td><td class="col-bal"><span class="bal bal-mid">5</span></td><td class="col-bal"><span class="bal bal-mid">5</span></td></tr>
-                        <tr data-name="Kərimli Eşqin Niyaməddin oğlu"><td class="col-num">10</td><td>Kərimli Eşqin Niyaməddin oğlu</td><td class="col-bal"><span class="bal bal-mid">5</span></td><td class="col-bal"><span class="bal bal-high">7</span></td><td class="col-bal"><span class="bal bal-high">8</span></td></tr>
-                        <tr data-name="Qardiyev Nicat Elməddin oğlu"><td class="col-num">11</td><td>Qardiyev Nicat Elməddin oğlu</td><td class="col-bal"><span class="bal bal-mid">5</span></td><td class="col-bal"><span class="bal bal-mid">6</span></td><td class="col-bal"><span class="bal bal-mid">5</span></td></tr>
-                        <tr data-name="Qasımov Fateh Taleh oğlu"><td class="col-num">12</td><td>Qasımov Fateh Taleh oğlu</td><td class="col-bal"><span class="bal bal-mid">5</span></td><td class="col-bal"><span class="bal bal-mid">6</span></td><td class="col-bal"><span class="bal bal-mid">6</span></td></tr>
-                        <tr data-name="Quliyev Rəvan Soltan oğlu"><td class="col-num">13</td><td>Quliyev Rəvan Soltan oğlu</td><td class="col-bal"><span class="bal bal-mid">5</span></td><td class="col-bal"><span class="bal bal-mid">6</span></td><td class="col-bal"><span class="bal bal-mid">5</span></td></tr>
-                        <tr data-name="Qurbanov Nicat Amil oğlu"><td class="col-num">14</td><td>Qurbanov Nicat Amil oğlu</td><td class="col-bal"><span class="bal bal-mid">5</span></td><td class="col-bal"><span class="bal bal-mid">6</span></td><td class="col-bal"><span class="bal bal-high">7</span></td></tr>
-                        <tr data-name="Məmmədli Polad Faiq oğlu"><td class="col-num">15</td><td>Məmmədli Polad Faiq oğlu</td><td class="col-bal"><span class="bal bal-low">4</span></td><td class="col-bal"><span class="bal bal-mid">5</span></td><td class="col-bal"><span class="bal bal-mid">5</span></td></tr>
-                        <tr data-name="Məmmədov Bəhman Mehman oğlu"><td class="col-num">16</td><td>Məmmədov Bəhman Mehman oğlu</td><td class="col-bal"><span class="bal bal-mid">6</span></td><td class="col-bal"><span class="bal bal-high">8</span></td><td class="col-bal"><span class="bal bal-mid">6</span></td></tr>
-                        <tr data-name="Məmmədov Rəşid Rəşad oğlu"><td class="col-num">17</td><td>Məmmədov Rəşid Rəşad oğlu</td><td class="col-bal"><span class="bal bal-low">3</span></td><td class="col-bal"><span class="bal bal-mid">5</span></td><td class="col-bal"><span class="bal bal-high">7</span></td></tr>
-                        <tr data-name="Rəhimzadə Ramin Səbuhi oğlu"><td class="col-num">18</td><td>Rəhimzadə Ramin Səbuhi oğlu</td><td class="col-bal"><span class="bal bal-mid">5</span></td><td class="col-bal"><span class="bal bal-mid">5</span></td><td class="col-bal"><span class="bal bal-mid">6</span></td></tr>
-                        <tr data-name="Sadıqov Kəmaləddin Seyfəddin oğlu"><td class="col-num">19</td><td>Sadıqov Kəmaləddin Seyfəddin oğlu</td><td class="col-bal"><span class="bal bal-high">8</span></td><td class="col-bal"><span class="bal bal-high">8</span></td><td class="col-bal"><span class="bal bal-high">8</span></td></tr>
-                        <tr data-name="Tağıyev Ziya Zaur oğlu"><td class="col-num">20</td><td>Tağıyev Ziya Zaur oğlu</td><td class="col-bal"><span class="bal bal-mid">5</span></td><td class="col-bal"><span class="bal bal-mid">5</span></td><td class="col-bal"><span class="bal bal-mid">5</span></td></tr>
-                        <tr data-name="Vəliyev Qalib Cəlil oğlu"><td class="col-num">21</td><td>Vəliyev Qalib Cəlil oğlu</td><td class="col-bal"><span class="bal bal-low">4</span></td><td class="col-bal"><span class="bal bal-mid">5</span></td><td class="col-bal"><span class="bal bal-mid">5</span></td></tr>
-                        <tr data-name="Yaqubzadə Yaqub Səbuhi oğlu"><td class="col-num">22</td><td>Yaqubzadə Yaqub Səbuhi oğlu</td><td class="col-bal"><span class="bal bal-mid">5</span></td><td class="col-bal"><span class="bal bal-mid">5</span></td><td class="col-bal"><span class="bal bal-mid">6</span></td></tr>
-                        <tr data-name="Yusifzadə Mahmud Natiq oğlu"><td class="col-num">23</td><td>Yusifzadə Mahmud Natiq oğlu</td><td class="col-bal"><span class="bal bal-mid">6</span></td><td class="col-bal"><span class="bal bal-mid">5</span></td><td class="col-bal"><span class="bal bal-mid">6</span></td></tr>
-                        <tr data-name="Zəkiyev Sadıq Mehman oğlu"><td class="col-num">24</td><td>Zəkiyev Sadıq Mehman oğlu</td><td class="col-bal"><span class="bal bal-mid">5</span></td><td class="col-bal"><span class="bal bal-mid">6</span></td><td class="col-bal"><span class="bal bal-mid">5</span></td></tr>
-                    </tbody>
+                    <tbody id="kollokBody"></tbody>
                 </table>
             </div>
             <div class="results-summary">
-                <div class="rs-item"><span class="rs-label">Kursant say&#305;</span><span class="rs-val">24</span></div>
-                <div class="rs-item"><span class="rs-label">Orta &#8211; Koll. 1</span><span class="rs-val">5.3</span></div>
-                <div class="rs-item"><span class="rs-label">Orta &#8211; Koll. 2</span><span class="rs-val">6.1</span></div>
-                <div class="rs-item"><span class="rs-label">Orta &#8211; Koll. 3</span><span class="rs-val">6.5</span></div>
+                <div class="rs-item"><span class="rs-label">Kursant say&#305;</span><span class="rs-val">&#8212;</span></div>
+                <div class="rs-item"><span class="rs-label">Orta &#8211; Koll. 1</span><span class="rs-val">&#8212;</span></div>
+                <div class="rs-item"><span class="rs-label">Orta &#8211; Koll. 2</span><span class="rs-val">&#8212;</span></div>
+                <div class="rs-item"><span class="rs-label">Orta &#8211; Koll. 3</span><span class="rs-val">&#8212;</span></div>
             </div>
         </div>
         </div><!-- /kollok-a1 -->
@@ -1831,40 +2031,14 @@
                     <thead>
                         <tr><th class="col-num">&#8470;</th><th>Kursant&#305;n ad&#305;</th><th class="col-bal">Kollokvium 1</th><th class="col-bal">Kollokvium 2</th><th class="col-bal">Kollokvium 3</th></tr>
                     </thead>
-                    <tbody id="kollok2Body">
-                        <tr data-name="Abdurahmanov Ziya Valeh oğlu"><td class="col-num">1</td><td>Abdurahmanov Ziya Valeh oğlu</td><td class="col-bal"><span class="bal bal-mid">5</span></td><td class="col-bal"><span class="bal bal-mid">6</span></td><td class="col-bal"><span class="bal bal-mid">5</span></td></tr>
-                        <tr data-name="Ağazadə Abdullah İntizam oğlu"><td class="col-num">2</td><td>Ağazadə Abdullah İntizam oğlu</td><td class="col-bal"><span class="bal bal-mid">5</span></td><td class="col-bal"><span class="bal bal-mid">5</span></td><td class="col-bal"><span class="bal bal-mid">5</span></td></tr>
-                        <tr data-name="Alıyev Azin Yolçu oğlu"><td class="col-num">3</td><td>Alıyev Azin Yolçu oğlu</td><td class="col-bal"><span class="bal bal-mid">5</span></td><td class="col-bal"><span class="bal bal-mid">5</span></td><td class="col-bal"><span class="bal bal-mid">5</span></td></tr>
-                        <tr data-name="Baxşıyev Raul Şamo oğlu"><td class="col-num">4</td><td>Baxşıyev Raul Şamo oğlu</td><td class="col-bal"><span class="bal bal-mid">5</span></td><td class="col-bal"><span class="bal bal-mid">5</span></td><td class="col-bal"><span class="bal bal-mid">5</span></td></tr>
-                        <tr data-name="Bəyişov Arif Neymət oğlu"><td class="col-num">5</td><td>Bəyişov Arif Neymət oğlu</td><td class="col-bal"><span class="bal bal-high">8</span></td><td class="col-bal"><span class="bal bal-high">8</span></td><td class="col-bal"><span class="bal bal-high">8</span></td></tr>
-                        <tr data-name="Çingizli İlçin İlham oğlu"><td class="col-num">6</td><td>Çingizli İlçin İlham oğlu</td><td class="col-bal"><span class="bal bal-mid">5</span></td><td class="col-bal"><span class="bal bal-mid">5</span></td><td class="col-bal"><span class="bal bal-low">4</span></td></tr>
-                        <tr data-name="Davudov Qail Qabil oğlu"><td class="col-num">7</td><td>Davudov Qail Qabil oğlu</td><td class="col-bal"><span class="bal bal-mid">5</span></td><td class="col-bal"><span class="bal bal-mid">5</span></td><td class="col-bal"><span class="bal bal-low">4</span></td></tr>
-                        <tr data-name="Əyyubov Fərhad İlqar oğlu"><td class="col-num">8</td><td>Əyyubov Fərhad İlqar oğlu</td><td class="col-bal"><span class="bal bal-mid">5</span></td><td class="col-bal"><span class="bal bal-mid">6</span></td><td class="col-bal"><span class="bal bal-mid">5</span></td></tr>
-                        <tr data-name="Həmidov İsmail Ramiz oğlu"><td class="col-num">9</td><td>Həmidov İsmail Ramiz oğlu</td><td class="col-bal"><span class="bal bal-mid">5</span></td><td class="col-bal"><span class="bal bal-mid">5</span></td><td class="col-bal"><span class="bal bal-mid">5</span></td></tr>
-                        <tr data-name="Hüseynli Fərid Şaiq oğlu"><td class="col-num">10</td><td>Hüseynli Fərid Şaiq oğlu</td><td class="col-bal"><span class="bal bal-high">7</span></td><td class="col-bal"><span class="bal bal-mid">5</span></td><td class="col-bal"><span class="bal bal-mid">5</span></td></tr>
-                        <tr data-name="Hüseynov Əbutalib Bəhram oğlu"><td class="col-num">11</td><td>Hüseynov Əbutalib Bəhram oğlu</td><td class="col-bal"><span class="bal bal-mid">6</span></td><td class="col-bal"><span class="bal bal-none">&#8212;</span></td><td class="col-bal"><span class="bal bal-none">&#8212;</span></td></tr>
-                        <tr data-name="Hüseynov Əli Çingiz oğlu"><td class="col-num">12</td><td>Hüseynov Əli Çingiz oğlu</td><td class="col-bal"><span class="bal bal-high">8</span></td><td class="col-bal"><span class="bal bal-high">8</span></td><td class="col-bal"><span class="bal bal-high">9</span></td></tr>
-                        <tr data-name="Hüseynov Zaur Bəhruz oğlu"><td class="col-num">13</td><td>Hüseynov Zaur Bəhruz oğlu</td><td class="col-bal"><span class="bal bal-mid">5</span></td><td class="col-bal"><span class="bal bal-mid">6</span></td><td class="col-bal"><span class="bal bal-mid">6</span></td></tr>
-                        <tr data-name="Qasımov Əli Taleh oğlu"><td class="col-num">14</td><td>Qasımov Əli Taleh oğlu</td><td class="col-bal"><span class="bal bal-high">8</span></td><td class="col-bal"><span class="bal bal-high">7</span></td><td class="col-bal"><span class="bal bal-mid">6</span></td></tr>
-                        <tr data-name="Qənbərov Hüseyn İsaq oğlu"><td class="col-num">15</td><td>Qənbərov Hüseyn İsaq oğlu</td><td class="col-bal"><span class="bal bal-high">7</span></td><td class="col-bal"><span class="bal bal-high">8</span></td><td class="col-bal"><span class="bal bal-high">8</span></td></tr>
-                        <tr data-name="Qurbanov Tuncay Turan oğlu"><td class="col-num">16</td><td>Qurbanov Tuncay Turan oğlu</td><td class="col-bal"><span class="bal bal-high">7</span></td><td class="col-bal"><span class="bal bal-high">7</span></td><td class="col-bal"><span class="bal bal-high">8</span></td></tr>
-                        <tr data-name="Qurbanov Vasif Xeyrəddin oğlu"><td class="col-num">17</td><td>Qurbanov Vasif Xeyrəddin oğlu</td><td class="col-bal"><span class="bal bal-high">7</span></td><td class="col-bal"><span class="bal bal-high">7</span></td><td class="col-bal"><span class="bal bal-high">7</span></td></tr>
-                        <tr data-name="Məmmədli Ənnağı Qalib oğlu"><td class="col-num">18</td><td>Məmmədli Ənnağı Qalib oğlu</td><td class="col-bal"><span class="bal bal-high">9</span></td><td class="col-bal"><span class="bal bal-high">9</span></td><td class="col-bal"><span class="bal bal-high">9</span></td></tr>
-                        <tr data-name="Məmmədov Bəyiş Ülkər oğlu"><td class="col-num">19</td><td>Məmmədov Bəyiş Ülkər oğlu</td><td class="col-bal"><span class="bal bal-high">7</span></td><td class="col-bal"><span class="bal bal-high">7</span></td><td class="col-bal"><span class="bal bal-high">7</span></td></tr>
-                        <tr data-name="Mustafayev Adəm Səyyad oğlu"><td class="col-num">20</td><td>Mustafayev Adəm Səyyad oğlu</td><td class="col-bal"><span class="bal bal-mid">5</span></td><td class="col-bal"><span class="bal bal-mid">5</span></td><td class="col-bal"><span class="bal bal-mid">5</span></td></tr>
-                        <tr data-name="Novruzov Nihat Eyvaz oğlu"><td class="col-num">21</td><td>Novruzov Nihat Eyvaz oğlu</td><td class="col-bal"><span class="bal bal-mid">5</span></td><td class="col-bal"><span class="bal bal-mid">5</span></td><td class="col-bal"><span class="bal bal-mid">5</span></td></tr>
-                        <tr data-name="Səfxanlı İslam Elşən oğlu"><td class="col-num">22</td><td>Səfxanlı İslam Elşən oğlu</td><td class="col-bal"><span class="bal bal-mid">5</span></td><td class="col-bal"><span class="bal bal-mid">5</span></td><td class="col-bal"><span class="bal bal-mid">5</span></td></tr>
-                        <tr data-name="Şıxıyev Farid Ravid oğlu"><td class="col-num">23</td><td>Şıxıyev Farid Ravid oğlu</td><td class="col-bal"><span class="bal bal-mid">5</span></td><td class="col-bal"><span class="bal bal-mid">5</span></td><td class="col-bal"><span class="bal bal-high">7</span></td></tr>
-                        <tr data-name="Vəliyev Cəlal Arzu oğlu"><td class="col-num">24</td><td>Vəliyev Cəlal Arzu oğlu</td><td class="col-bal"><span class="bal bal-mid">5</span></td><td class="col-bal"><span class="bal bal-high">7</span></td><td class="col-bal"><span class="bal bal-mid">5</span></td></tr>
-                        <tr data-name="Vəliyev Elsevər Eldəniz oğlu"><td class="col-num">25</td><td>Vəliyev Elsevər Eldəniz oğlu</td><td class="col-bal"><span class="bal bal-mid">6</span></td><td class="col-bal"><span class="bal bal-mid">5</span></td><td class="col-bal"><span class="bal bal-low">4</span></td></tr>
-                    </tbody>
+                    <tbody id="kollok2Body"></tbody>
                 </table>
             </div>
             <div class="results-summary">
-                <div class="rs-item"><span class="rs-label">Kursant say&#305;</span><span class="rs-val">25</span></div>
-                <div class="rs-item"><span class="rs-label">Orta &#8211; Koll. 1</span><span class="rs-val">6.0</span></div>
-                <div class="rs-item"><span class="rs-label">Orta &#8211; Koll. 2</span><span class="rs-val">6.1</span></div>
-                <div class="rs-item"><span class="rs-label">Orta &#8211; Koll. 3</span><span class="rs-val">5.9</span></div>
+                <div class="rs-item"><span class="rs-label">Kursant say&#305;</span><span class="rs-val">&#8212;</span></div>
+                <div class="rs-item"><span class="rs-label">Orta &#8211; Koll. 1</span><span class="rs-val">&#8212;</span></div>
+                <div class="rs-item"><span class="rs-label">Orta &#8211; Koll. 2</span><span class="rs-val">&#8212;</span></div>
+                <div class="rs-item"><span class="rs-label">Orta &#8211; Koll. 3</span><span class="rs-val">&#8212;</span></div>
             </div>
         </div>
         </div><!-- /kollok-a2 -->
@@ -1892,38 +2066,13 @@
                     <thead>
                         <tr><th class="col-num">&#8470;</th><th>Kursant&#305;n ad&#305;</th><th class="col-bal">Yekun</th></tr>
                     </thead>
-                    <tbody id="menimseme1Body">
-                        <tr data-name="Abbasov Ramal Ramil oğlu"><td class="col-num">1</td><td>Abbasov Ramal Ramil oğlu</td><td class="col-bal"><span class="bal bal-mid">31</span></td></tr>
-                        <tr data-name="Ağabalayev Oktay Mahmud oğlu"><td class="col-num">2</td><td>Ağabalayev Oktay Mahmud oğlu</td><td class="col-bal"><span class="bal bal-mid">39</span></td></tr>
-                        <tr data-name="Axundzadə Onur Zəki oğlu"><td class="col-num">3</td><td>Axundzadə Onur Zəki oğlu</td><td class="col-bal"><span class="bal bal-high">43</span></td></tr>
-                        <tr data-name="Allahverdiyev Ümid Elmir oğlu"><td class="col-num">4</td><td>Allahverdiyev Ümid Elmir oğlu</td><td class="col-bal"><span class="bal bal-high">44</span></td></tr>
-                        <tr data-name="Eldarlı Hüseyn Baba oğlu"><td class="col-num">5</td><td>Eldarlı Hüseyn Baba oğlu</td><td class="col-bal"><span class="bal bal-high">44</span></td></tr>
-                        <tr data-name="Ələkbərli Məhəmməd Elmar oğlu"><td class="col-num">6</td><td>Ələkbərli Məhəmməd Elmar oğlu</td><td class="col-bal"><span class="bal bal-high">45</span></td></tr>
-                        <tr data-name="Əliyev Anar Alim oğlu"><td class="col-num">7</td><td>Əliyev Anar Alim oğlu</td><td class="col-bal"><span class="bal bal-low">29</span></td></tr>
-                        <tr data-name="Əliyev Vahid Surxay oğlu"><td class="col-num">8</td><td>Əliyev Vahid Surxay oğlu</td><td class="col-bal"><span class="bal bal-low">29</span></td></tr>
-                        <tr data-name="İsmayılov Nihad Habil oğlu"><td class="col-num">9</td><td>İsmayılov Nihad Habil oğlu</td><td class="col-bal"><span class="bal bal-low">28</span></td></tr>
-                        <tr data-name="Kərimli Eşqin Niyaməddin oğlu"><td class="col-num">10</td><td>Kərimli Eşqin Niyaməddin oğlu</td><td class="col-bal"><span class="bal bal-mid">39</span></td></tr>
-                        <tr data-name="Qardiyev Nicat Elməddin oğlu"><td class="col-num">11</td><td>Qardiyev Nicat Elməddin oğlu</td><td class="col-bal"><span class="bal bal-mid">32</span></td></tr>
-                        <tr data-name="Qasımov Fateh Taleh oğlu"><td class="col-num">12</td><td>Qasımov Fateh Taleh oğlu</td><td class="col-bal"><span class="bal bal-mid">31</span></td></tr>
-                        <tr data-name="Quliyev Rəvan Soltan oğlu"><td class="col-num">13</td><td>Quliyev Rəvan Soltan oğlu</td><td class="col-bal"><span class="bal bal-mid">31</span></td></tr>
-                        <tr data-name="Qurbanov Nicat Amil oğlu"><td class="col-num">14</td><td>Qurbanov Nicat Amil oğlu</td><td class="col-bal"><span class="bal bal-mid">37</span></td></tr>
-                        <tr data-name="Məmmədli Polad Faiq oğlu"><td class="col-num">15</td><td>Məmmədli Polad Faiq oğlu</td><td class="col-bal"><span class="bal bal-low">29</span></td></tr>
-                        <tr data-name="Məmmədov Bəhman Mehman oğlu"><td class="col-num">16</td><td>Məmmədov Bəhman Mehman oğlu</td><td class="col-bal"><span class="bal bal-mid">37</span></td></tr>
-                        <tr data-name="Məmmədov Rəşid Rəşad oğlu"><td class="col-num">17</td><td>Məmmədov Rəşid Rəşad oğlu</td><td class="col-bal"><span class="bal bal-mid">33</span></td></tr>
-                        <tr data-name="Rəhimzadə Ramin Səbuhi oğlu"><td class="col-num">18</td><td>Rəhimzadə Ramin Səbuhi oğlu</td><td class="col-bal"><span class="bal bal-mid">31</span></td></tr>
-                        <tr data-name="Sadıqov Kəmaləddin Seyfəddin oğlu"><td class="col-num">19</td><td>Sadıqov Kəmaləddin Seyfəddin oğlu</td><td class="col-bal"><span class="bal bal-high">44</span></td></tr>
-                        <tr data-name="Tağıyev Ziya Zaur oğlu"><td class="col-num">20</td><td>Tağıyev Ziya Zaur oğlu</td><td class="col-bal"><span class="bal bal-low">28</span></td></tr>
-                        <tr data-name="Vəliyev Qalib Cəlil oğlu"><td class="col-num">21</td><td>Vəliyev Qalib Cəlil oğlu</td><td class="col-bal"><span class="bal bal-low">27</span></td></tr>
-                        <tr data-name="Yaqubzadə Yaqub Səbuhi oğlu"><td class="col-num">22</td><td>Yaqubzadə Yaqub Səbuhi oğlu</td><td class="col-bal"><span class="bal bal-mid">34</span></td></tr>
-                        <tr data-name="Yusifzadə Mahmud Natiq oğlu"><td class="col-num">23</td><td>Yusifzadə Mahmud Natiq oğlu</td><td class="col-bal"><span class="bal bal-mid">31</span></td></tr>
-                        <tr data-name="Zəkiyev Sadıq Mehman oğlu"><td class="col-num">24</td><td>Zəkiyev Sadıq Mehman oğlu</td><td class="col-bal"><span class="bal bal-low">29</span></td></tr>
-                    </tbody>
+                    <tbody id="menimseme1Body"></tbody>
                 </table>
             </div>
             <div class="results-summary">
-                <div class="rs-item"><span class="rs-label">Kursant say&#305;</span><span class="rs-val">24</span></div>
-                <div class="rs-item"><span class="rs-label">Orta g&#246;st&#601;rici</span><span class="rs-val">34.4</span></div>
-                <div class="rs-item"><span class="rs-label">Maksimum</span><span class="rs-val">45</span></div>
+                <div class="rs-item"><span class="rs-label">Kursant say&#305;</span><span class="rs-val">&#8212;</span></div>
+                <div class="rs-item"><span class="rs-label">Orta g&#246;st&#601;rici</span><span class="rs-val">&#8212;</span></div>
+                <div class="rs-item"><span class="rs-label">Maksimum</span><span class="rs-val">&#8212;</span></div>
             </div>
         </div>
         </div><!-- /menimseme-a1 -->
@@ -1943,39 +2092,13 @@
                     <thead>
                         <tr><th class="col-num">&#8470;</th><th>Kursant&#305;n ad&#305;</th><th class="col-bal">Yekun</th></tr>
                     </thead>
-                    <tbody id="menimseme2Body">
-                        <tr data-name="Abdurahmanov Ziya Valeh oğlu"><td class="col-num">1</td><td>Abdurahmanov Ziya Valeh oğlu</td><td class="col-bal"><span class="bal bal-mid">30</span></td></tr>
-                        <tr data-name="Ağazadə Abdullah İntizam oğlu"><td class="col-num">2</td><td>Ağazadə Abdullah İntizam oğlu</td><td class="col-bal"><span class="bal bal-low">28</span></td></tr>
-                        <tr data-name="Alıyev Azin Yolçu oğlu"><td class="col-num">3</td><td>Alıyev Azin Yolçu oğlu</td><td class="col-bal"><span class="bal bal-mid">32</span></td></tr>
-                        <tr data-name="Baxşıyev Raul Şamo oğlu"><td class="col-num">4</td><td>Baxşıyev Raul Şamo oğlu</td><td class="col-bal"><span class="bal bal-mid">31</span></td></tr>
-                        <tr data-name="Bəyişov Arif Neymət oğlu"><td class="col-num">5</td><td>Bəyişov Arif Neymət oğlu</td><td class="col-bal"><span class="bal bal-high">44</span></td></tr>
-                        <tr data-name="Çingizli İlçin İlham oğlu"><td class="col-num">6</td><td>Çingizli İlçin İlham oğlu</td><td class="col-bal"><span class="bal bal-mid">30</span></td></tr>
-                        <tr data-name="Davudov Qail Qabil oğlu"><td class="col-num">7</td><td>Davudov Qail Qabil oğlu</td><td class="col-bal"><span class="bal bal-low">27</span></td></tr>
-                        <tr data-name="Əyyubov Fərhad İlqar oğlu"><td class="col-num">8</td><td>Əyyubov Fərhad İlqar oğlu</td><td class="col-bal"><span class="bal bal-mid">30</span></td></tr>
-                        <tr data-name="Həmidov İsmail Ramiz oğlu"><td class="col-num">9</td><td>Həmidov İsmail Ramiz oğlu</td><td class="col-bal"><span class="bal bal-low">29</span></td></tr>
-                        <tr data-name="Hüseynli Fərid Şaiq oğlu"><td class="col-num">10</td><td>Hüseynli Fərid Şaiq oğlu</td><td class="col-bal"><span class="bal bal-mid">31</span></td></tr>
-                        <tr data-name="Hüseynov Əbutalib Bəhram oğlu"><td class="col-num">11</td><td>Hüseynov Əbutalib Bəhram oğlu</td><td class="col-bal"><span class="bal bal-low">6</span></td></tr>
-                        <tr data-name="Hüseynov Əli Çingiz oğlu"><td class="col-num">12</td><td>Hüseynov Əli Çingiz oğlu</td><td class="col-bal"><span class="bal bal-high">45</span></td></tr>
-                        <tr data-name="Hüseynov Zaur Bəhruz oğlu"><td class="col-num">13</td><td>Hüseynov Zaur Bəhruz oğlu</td><td class="col-bal"><span class="bal bal-mid">32</span></td></tr>
-                        <tr data-name="Qasımov Əli Taleh oğlu"><td class="col-num">14</td><td>Qasımov Əli Taleh oğlu</td><td class="col-bal"><span class="bal bal-mid">38</span></td></tr>
-                        <tr data-name="Qənbərov Hüseyn İsaq oğlu"><td class="col-num">15</td><td>Qənbərov Hüseyn İsaq oğlu</td><td class="col-bal"><span class="bal bal-high">42</span></td></tr>
-                        <tr data-name="Qurbanov Tuncay Turan oğlu"><td class="col-num">16</td><td>Qurbanov Tuncay Turan oğlu</td><td class="col-bal"><span class="bal bal-high">42</span></td></tr>
-                        <tr data-name="Qurbanov Vasif Xeyrəddin oğlu"><td class="col-num">17</td><td>Qurbanov Vasif Xeyrəddin oğlu</td><td class="col-bal"><span class="bal bal-high">40</span></td></tr>
-                        <tr data-name="Məmmədli Ənnağı Qalib oğlu"><td class="col-num">18</td><td>Məmmədli Ənnağı Qalib oğlu</td><td class="col-bal"><span class="bal bal-high">47</span></td></tr>
-                        <tr data-name="Məmmədov Bəyiş Ülkər oğlu"><td class="col-num">19</td><td>Məmmədov Bəyiş Ülkər oğlu</td><td class="col-bal"><span class="bal bal-high">41</span></td></tr>
-                        <tr data-name="Mustafayev Adəm Səyyad oğlu"><td class="col-num">20</td><td>Mustafayev Adəm Səyyad oğlu</td><td class="col-bal"><span class="bal bal-low">29</span></td></tr>
-                        <tr data-name="Novruzov Nihat Eyvaz oğlu"><td class="col-num">21</td><td>Novruzov Nihat Eyvaz oğlu</td><td class="col-bal"><span class="bal bal-mid">30</span></td></tr>
-                        <tr data-name="Səfxanlı İslam Elşən oğlu"><td class="col-num">22</td><td>Səfxanlı İslam Elşən oğlu</td><td class="col-bal"><span class="bal bal-low">29</span></td></tr>
-                        <tr data-name="Şıxıyev Farid Ravid oğlu"><td class="col-num">23</td><td>Şıxıyev Farid Ravid oğlu</td><td class="col-bal"><span class="bal bal-mid">32</span></td></tr>
-                        <tr data-name="Vəliyev Cəlal Arzu oğlu"><td class="col-num">24</td><td>Vəliyev Cəlal Arzu oğlu</td><td class="col-bal"><span class="bal bal-mid">35</span></td></tr>
-                        <tr data-name="Vəliyev Elsevər Eldəniz oğlu"><td class="col-num">25</td><td>Vəliyev Elsevər Eldəniz oğlu</td><td class="col-bal"><span class="bal bal-low">29</span></td></tr>
-                    </tbody>
+                    <tbody id="menimseme2Body"></tbody>
                 </table>
             </div>
             <div class="results-summary">
-                <div class="rs-item"><span class="rs-label">Kursant say&#305;</span><span class="rs-val">25</span></div>
-                <div class="rs-item"><span class="rs-label">Orta g&#246;st&#601;rici</span><span class="rs-val">33.2</span></div>
-                <div class="rs-item"><span class="rs-label">Maksimum</span><span class="rs-val">47</span></div>
+                <div class="rs-item"><span class="rs-label">Kursant say&#305;</span><span class="rs-val">&#8212;</span></div>
+                <div class="rs-item"><span class="rs-label">Orta g&#246;st&#601;rici</span><span class="rs-val">&#8212;</span></div>
+                <div class="rs-item"><span class="rs-label">Maksimum</span><span class="rs-val">&#8212;</span></div>
             </div>
         </div>
         </div><!-- /menimseme-a2 -->
@@ -2003,38 +2126,13 @@
                     <thead>
                         <tr><th class="col-num">&#8470;</th><th>Kursant&#305;n ad&#305;</th><th class="col-bal">Bal</th><th class="col-grade">Qiym&#601;t</th></tr>
                     </thead>
-                    <tbody id="imtahan1Body">
-                        <tr data-name="Abbasov Ramal Ramil oğlu"><td class="col-num">1</td><td>Abbasov Ramal Ramil oğlu</td><td class="col-bal"><span class="bal bal-mid">74</span></td><td class="col-grade"><span class="grade bal-mid">C “Yaxşı”</span></td></tr>
-                        <tr data-name="Ağabalayev Oktay Mahmud oğlu"><td class="col-num">2</td><td>Ağabalayev Oktay Mahmud oğlu</td><td class="col-bal"><span class="bal bal-high">84</span></td><td class="col-grade"><span class="grade bal-high">B “Çox yaxşı”</span></td></tr>
-                        <tr data-name="Axundzadə Onur Zəki oğlu"><td class="col-num">3</td><td>Axundzadə Onur Zəki oğlu</td><td class="col-bal"><span class="bal bal-high">91</span></td><td class="col-grade"><span class="grade bal-high">A “Əla”</span></td></tr>
-                        <tr data-name="Allahverdiyev Ümid Elmir oğlu"><td class="col-num">4</td><td>Allahverdiyev Ümid Elmir oğlu</td><td class="col-bal"><span class="bal bal-high">91</span></td><td class="col-grade"><span class="grade bal-high">A “Əla”</span></td></tr>
-                        <tr data-name="Eldarlı Hüseyn Baba oğlu"><td class="col-num">5</td><td>Eldarlı Hüseyn Baba oğlu</td><td class="col-bal"><span class="bal bal-high">92</span></td><td class="col-grade"><span class="grade bal-high">A “Əla”</span></td></tr>
-                        <tr data-name="Ələkbərli Məhəmməd Elmar oğlu"><td class="col-num">6</td><td>Ələkbərli Məhəmməd Elmar oğlu</td><td class="col-bal"><span class="bal bal-high">92</span></td><td class="col-grade"><span class="grade bal-high">A “Əla”</span></td></tr>
-                        <tr data-name="Əliyev Anar Alim oğlu"><td class="col-num">7</td><td>Əliyev Anar Alim oğlu</td><td class="col-bal"><span class="bal bal-low">61</span></td><td class="col-grade"><span class="grade bal-low">D “Kafi”</span></td></tr>
-                        <tr data-name="Əliyev Vahid Surxay oğlu"><td class="col-num">8</td><td>Əliyev Vahid Surxay oğlu</td><td class="col-bal"><span class="bal bal-low">52</span></td><td class="col-grade"><span class="grade bal-low">E “Qənaətbəxş”</span></td></tr>
-                        <tr data-name="İsmayılov Nihad Habil oğlu"><td class="col-num">9</td><td>İsmayılov Nihad Habil oğlu</td><td class="col-bal"><span class="bal bal-low">53</span></td><td class="col-grade"><span class="grade bal-low">E “Qənaətbəxş”</span></td></tr>
-                        <tr data-name="Kərimli Eşqin Niyaməddin oğlu"><td class="col-num">10</td><td>Kərimli Eşqin Niyaməddin oğlu</td><td class="col-bal"><span class="bal bal-high">82</span></td><td class="col-grade"><span class="grade bal-high">B “Çox yaxşı”</span></td></tr>
-                        <tr data-name="Qardiyev Nicat Elməddin oğlu"><td class="col-num">11</td><td>Qardiyev Nicat Elməddin oğlu</td><td class="col-bal"><span class="bal bal-mid">72</span></td><td class="col-grade"><span class="grade bal-mid">C “Yaxşı”</span></td></tr>
-                        <tr data-name="Qasımov Fateh Taleh oğlu"><td class="col-num">12</td><td>Qasımov Fateh Taleh oğlu</td><td class="col-bal"><span class="bal bal-mid">73</span></td><td class="col-grade"><span class="grade bal-mid">C “Yaxşı”</span></td></tr>
-                        <tr data-name="Quliyev Rəvan Soltan oğlu"><td class="col-num">13</td><td>Quliyev Rəvan Soltan oğlu</td><td class="col-bal"><span class="bal bal-low">65</span></td><td class="col-grade"><span class="grade bal-low">D “Kafi”</span></td></tr>
-                        <tr data-name="Qurbanov Nicat Amil oğlu"><td class="col-num">14</td><td>Qurbanov Nicat Amil oğlu</td><td class="col-bal"><span class="bal bal-mid">72</span></td><td class="col-grade"><span class="grade bal-mid">C “Yaxşı”</span></td></tr>
-                        <tr data-name="Məmmədli Polad Faiq oğlu"><td class="col-num">15</td><td>Məmmədli Polad Faiq oğlu</td><td class="col-bal"><span class="bal bal-low">59</span></td><td class="col-grade"><span class="grade bal-low">E “Qənaətbəxş”</span></td></tr>
-                        <tr data-name="Məmmədov Bəhman Mehman oğlu"><td class="col-num">16</td><td>Məmmədov Bəhman Mehman oğlu</td><td class="col-bal"><span class="bal bal-high">81</span></td><td class="col-grade"><span class="grade bal-high">B “Çox yaxşı”</span></td></tr>
-                        <tr data-name="Məmmədov Rəşid Rəşad oğlu"><td class="col-num">17</td><td>Məmmədov Rəşid Rəşad oğlu</td><td class="col-bal"><span class="bal bal-low">69</span></td><td class="col-grade"><span class="grade bal-low">D “Kafi”</span></td></tr>
-                        <tr data-name="Rəhimzadə Ramin Səbuhi oğlu"><td class="col-num">18</td><td>Rəhimzadə Ramin Səbuhi oğlu</td><td class="col-bal"><span class="bal bal-low">64</span></td><td class="col-grade"><span class="grade bal-low">D “Kafi”</span></td></tr>
-                        <tr data-name="Sadıqov Kəmaləddin Seyfəddin oğlu"><td class="col-num">19</td><td>Sadıqov Kəmaləddin Seyfəddin oğlu</td><td class="col-bal"><span class="bal bal-high">93</span></td><td class="col-grade"><span class="grade bal-high">A “Əla”</span></td></tr>
-                        <tr data-name="Tağıyev Ziya Zaur oğlu"><td class="col-num">20</td><td>Tağıyev Ziya Zaur oğlu</td><td class="col-bal"><span class="bal bal-low">57</span></td><td class="col-grade"><span class="grade bal-low">E “Qənaətbəxş”</span></td></tr>
-                        <tr data-name="Vəliyev Qalib Cəlil oğlu"><td class="col-num">21</td><td>Vəliyev Qalib Cəlil oğlu</td><td class="col-bal"><span class="bal bal-low">52</span></td><td class="col-grade"><span class="grade bal-low">E “Qənaətbəxş”</span></td></tr>
-                        <tr data-name="Yaqubzadə Yaqub Səbuhi oğlu"><td class="col-num">22</td><td>Yaqubzadə Yaqub Səbuhi oğlu</td><td class="col-bal"><span class="bal bal-mid">76</span></td><td class="col-grade"><span class="grade bal-mid">C “Yaxşı”</span></td></tr>
-                        <tr data-name="Yusifzadə Mahmud Natiq oğlu"><td class="col-num">23</td><td>Yusifzadə Mahmud Natiq oğlu</td><td class="col-bal"><span class="bal bal-low">69</span></td><td class="col-grade"><span class="grade bal-low">D “Kafi”</span></td></tr>
-                        <tr data-name="Zəkiyev Sadıq Mehman oğlu"><td class="col-num">24</td><td>Zəkiyev Sadıq Mehman oğlu</td><td class="col-bal"><span class="bal bal-mid">71</span></td><td class="col-grade"><span class="grade bal-mid">C “Yaxşı”</span></td></tr>
-                    </tbody>
+                    <tbody id="imtahan1Body"></tbody>
                 </table>
             </div>
             <div class="results-summary">
-                <div class="rs-item"><span class="rs-label">Kursant say&#305;</span><span class="rs-val">24</span></div>
-                <div class="rs-item"><span class="rs-label">Orta bal</span><span class="rs-val">72.7</span></div>
-                <div class="rs-item"><span class="rs-label">Maksimum</span><span class="rs-val">93</span></div>
+                <div class="rs-item"><span class="rs-label">Kursant say&#305;</span><span class="rs-val">&#8212;</span></div>
+                <div class="rs-item"><span class="rs-label">Orta bal</span><span class="rs-val">&#8212;</span></div>
+                <div class="rs-item"><span class="rs-label">Maksimum</span><span class="rs-val">&#8212;</span></div>
             </div>
         </div>
         </div><!-- /imtahan-a1 -->
@@ -2054,39 +2152,13 @@
                     <thead>
                         <tr><th class="col-num">&#8470;</th><th>Kursant&#305;n ad&#305;</th><th class="col-bal">Bal</th><th class="col-grade">Qiym&#601;t</th></tr>
                     </thead>
-                    <tbody id="imtahan2Body">
-                        <tr data-name="Abdurahmanov Ziya Valeh oğlu"><td class="col-num">1</td><td>Abdurahmanov Ziya Valeh oğlu</td><td class="col-bal"><span class="bal bal-mid">72</span></td><td class="col-grade"><span class="grade bal-mid">C “Yaxşı”</span></td></tr>
-                        <tr data-name="Ağazadə Abdullah İntizam oğlu"><td class="col-num">2</td><td>Ağazadə Abdullah İntizam oğlu</td><td class="col-bal"><span class="bal bal-low">58</span></td><td class="col-grade"><span class="grade bal-low">E “Qənaətbəxş”</span></td></tr>
-                        <tr data-name="Alıyev Azin Yolçu oğlu"><td class="col-num">3</td><td>Alıyev Azin Yolçu oğlu</td><td class="col-bal"><span class="bal bal-mid">71</span></td><td class="col-grade"><span class="grade bal-mid">C “Yaxşı”</span></td></tr>
-                        <tr data-name="Baxşıyev Raul Şamo oğlu"><td class="col-num">4</td><td>Baxşıyev Raul Şamo oğlu</td><td class="col-bal"><span class="bal bal-low">56</span></td><td class="col-grade"><span class="grade bal-low">E “Qənaətbəxş”</span></td></tr>
-                        <tr data-name="Bəyişov Arif Neymət oğlu"><td class="col-num">5</td><td>Bəyişov Arif Neymət oğlu</td><td class="col-bal"><span class="bal bal-high">92</span></td><td class="col-grade"><span class="grade bal-high">A “Əla”</span></td></tr>
-                        <tr data-name="Çingizli İlçin İlham oğlu"><td class="col-num">6</td><td>Çingizli İlçin İlham oğlu</td><td class="col-bal"><span class="bal bal-mid">71</span></td><td class="col-grade"><span class="grade bal-mid">C “Yaxşı”</span></td></tr>
-                        <tr data-name="Davudov Qail Qabil oğlu"><td class="col-num">7</td><td>Davudov Qail Qabil oğlu</td><td class="col-bal"><span class="bal bal-low">61</span></td><td class="col-grade"><span class="grade bal-low">D “Kafi”</span></td></tr>
-                        <tr data-name="Əyyubov Fərhad İlqar oğlu"><td class="col-num">8</td><td>Əyyubov Fərhad İlqar oğlu</td><td class="col-bal"><span class="bal bal-mid">71</span></td><td class="col-grade"><span class="grade bal-mid">C “Yaxşı”</span></td></tr>
-                        <tr data-name="Həmidov İsmail Ramiz oğlu"><td class="col-num">9</td><td>Həmidov İsmail Ramiz oğlu</td><td class="col-bal"><span class="bal bal-low">53</span></td><td class="col-grade"><span class="grade bal-low">E “Qənaətbəxş”</span></td></tr>
-                        <tr data-name="Hüseynli Fərid Şaiq oğlu"><td class="col-num">10</td><td>Hüseynli Fərid Şaiq oğlu</td><td class="col-bal"><span class="bal bal-low">70</span></td><td class="col-grade"><span class="grade bal-low">D “Kafi”</span></td></tr>
-                        <tr data-name="Hüseynov Əbutalib Bəhram oğlu"><td class="col-num">11</td><td>Hüseynov Əbutalib Bəhram oğlu</td><td class="col-bal"><span class="bal bal-none">&#8212;</span></td><td class="col-grade"><span class="grade bal-none">İştirak etmədi</span></td></tr>
-                        <tr data-name="Hüseynov Əli Çingiz oğlu"><td class="col-num">12</td><td>Hüseynov Əli Çingiz oğlu</td><td class="col-bal"><span class="bal bal-high">92</span></td><td class="col-grade"><span class="grade bal-high">A “Əla”</span></td></tr>
-                        <tr data-name="Hüseynov Zaur Bəhruz oğlu"><td class="col-num">13</td><td>Hüseynov Zaur Bəhruz oğlu</td><td class="col-bal"><span class="bal bal-low">70</span></td><td class="col-grade"><span class="grade bal-low">D “Kafi”</span></td></tr>
-                        <tr data-name="Qasımov Əli Taleh oğlu"><td class="col-num">14</td><td>Qasımov Əli Taleh oğlu</td><td class="col-bal"><span class="bal bal-high">82</span></td><td class="col-grade"><span class="grade bal-high">B “Çox yaxşı”</span></td></tr>
-                        <tr data-name="Qənbərov Hüseyn İsaq oğlu"><td class="col-num">15</td><td>Qənbərov Hüseyn İsaq oğlu</td><td class="col-bal"><span class="bal bal-high">91</span></td><td class="col-grade"><span class="grade bal-high">A “Əla”</span></td></tr>
-                        <tr data-name="Qurbanov Tuncay Turan oğlu"><td class="col-num">16</td><td>Qurbanov Tuncay Turan oğlu</td><td class="col-bal"><span class="bal bal-high">91</span></td><td class="col-grade"><span class="grade bal-high">A “Əla”</span></td></tr>
-                        <tr data-name="Qurbanov Vasif Xeyrəddin oğlu"><td class="col-num">17</td><td>Qurbanov Vasif Xeyrəddin oğlu</td><td class="col-bal"><span class="bal bal-high">87</span></td><td class="col-grade"><span class="grade bal-high">B “Çox yaxşı”</span></td></tr>
-                        <tr data-name="Məmmədli Ənnağı Qalib oğlu"><td class="col-num">18</td><td>Məmmədli Ənnağı Qalib oğlu</td><td class="col-bal"><span class="bal bal-high">93</span></td><td class="col-grade"><span class="grade bal-high">A “Əla”</span></td></tr>
-                        <tr data-name="Məmmədov Bəyiş Ülkər oğlu"><td class="col-num">19</td><td>Məmmədov Bəyiş Ülkər oğlu</td><td class="col-bal"><span class="bal bal-high">84</span></td><td class="col-grade"><span class="grade bal-high">B “Çox yaxşı”</span></td></tr>
-                        <tr data-name="Mustafayev Adəm Səyyad oğlu"><td class="col-num">20</td><td>Mustafayev Adəm Səyyad oğlu</td><td class="col-bal"><span class="bal bal-mid">72</span></td><td class="col-grade"><span class="grade bal-mid">C “Yaxşı”</span></td></tr>
-                        <tr data-name="Novruzov Nihat Eyvaz oğlu"><td class="col-num">21</td><td>Novruzov Nihat Eyvaz oğlu</td><td class="col-bal"><span class="bal bal-low">55</span></td><td class="col-grade"><span class="grade bal-low">E “Qənaətbəxş”</span></td></tr>
-                        <tr data-name="Səfxanlı İslam Elşən oğlu"><td class="col-num">22</td><td>Səfxanlı İslam Elşən oğlu</td><td class="col-bal"><span class="bal bal-low">54</span></td><td class="col-grade"><span class="grade bal-low">E “Qənaətbəxş”</span></td></tr>
-                        <tr data-name="Şıxıyev Farid Ravid oğlu"><td class="col-num">23</td><td>Şıxıyev Farid Ravid oğlu</td><td class="col-bal"><span class="bal bal-mid">72</span></td><td class="col-grade"><span class="grade bal-mid">C “Yaxşı”</span></td></tr>
-                        <tr data-name="Vəliyev Cəlal Arzu oğlu"><td class="col-num">24</td><td>Vəliyev Cəlal Arzu oğlu</td><td class="col-bal"><span class="bal bal-mid">75</span></td><td class="col-grade"><span class="grade bal-mid">C “Yaxşı”</span></td></tr>
-                        <tr data-name="Vəliyev Elsevər Eldəniz oğlu"><td class="col-num">25</td><td>Vəliyev Elsevər Eldəniz oğlu</td><td class="col-bal"><span class="bal bal-mid">72</span></td><td class="col-grade"><span class="grade bal-mid">C “Yaxşı”</span></td></tr>
-                    </tbody>
+                    <tbody id="imtahan2Body"></tbody>
                 </table>
             </div>
             <div class="results-summary">
-                <div class="rs-item"><span class="rs-label">Kursant say&#305;</span><span class="rs-val">25</span></div>
-                <div class="rs-item"><span class="rs-label">Orta bal</span><span class="rs-val">73.5</span></div>
-                <div class="rs-item"><span class="rs-label">Maksimum</span><span class="rs-val">93</span></div>
+                <div class="rs-item"><span class="rs-label">Kursant say&#305;</span><span class="rs-val">&#8212;</span></div>
+                <div class="rs-item"><span class="rs-label">Orta bal</span><span class="rs-val">&#8212;</span></div>
+                <div class="rs-item"><span class="rs-label">Maksimum</span><span class="rs-val">&#8212;</span></div>
             </div>
         </div>
         </div><!-- /imtahan-a2 -->
@@ -2170,6 +2242,10 @@
     let studentKey = '';
     let selectedWorks = new Set();
     let currentStep = 1;
+
+    // Kabinet sessiyası
+    let session = null, cabData = null;
+    try { session = JSON.parse(sessionStorage.getItem('cab_session') || 'null'); } catch(e) {}
 
     // Init
     setTimeout(() => document.body.classList.remove('loading'), 1000);
@@ -2507,15 +2583,7 @@
     function openSemester(key, label, subject) {
         document.getElementById('semView').style.display = 'none';
         if (key === 'aktiv') {
-            document.getElementById('appView').style.display = '';
-            // Mobil/planşetdə aktiv tabı naviqasiyada mərkəzə gətir
-            const activeTab = document.querySelector('.tab-nav .tab-btn.active');
-            if (activeTab) {
-                const nav = activeTab.closest('.tab-nav');
-                if (nav && nav.scrollWidth > nav.clientWidth) {
-                    nav.scrollLeft = Math.max(0, activeTab.offsetLeft - (nav.clientWidth - activeTab.offsetWidth) / 2);
-                }
-            }
+            routeCabinet();
         } else {
             document.getElementById('phSemName').textContent = label;
             document.getElementById('phSemSubject').textContent = subject || '';
@@ -2528,6 +2596,8 @@
     function backToSemesters() {
         document.getElementById('appView').style.display = 'none';
         document.getElementById('semPlaceholder').style.display = 'none';
+        document.getElementById('cabinetLogin').style.display = 'none';
+        document.getElementById('cabinetView').style.display = 'none';
         document.getElementById('semView').style.display = '';
         document.getElementById('siteTitle').textContent = 'Hərbi Mühəndis Texnikası';
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -2570,12 +2640,13 @@
     }
 
     function resetAll() {
-        selectedTeam = '';
-        selectedStudent = '';
-        studentKey = '';
         selectedWorks.clear();
         document.getElementById('keyInput').value = '';
         document.getElementById('studentSelect').value = '';
+        if (session && session.role === 'student') { appBack(); return; }
+        selectedTeam = '';
+        selectedStudent = '';
+        studentKey = '';
         goToStep(1);
         init();
     }
@@ -2591,6 +2662,231 @@
         document.body.appendChild(toast);
         setTimeout(() => toast.remove(), 3500);
     }
+
+
+    // ===== Şəxsi Kabinet =====
+    function routeCabinet() {
+        if (!session || !session.token) {
+            document.getElementById('cabinetLogin').style.display = '';
+            setTimeout(() => { const el = document.getElementById('cabId'); if (el) el.focus(); }, 60);
+        } else if (session.role === 'teacher') {
+            showTeacherApp();
+        } else {
+            showCabinet();
+        }
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    async function cabinetLoginSubmit() {
+        const idEl = document.getElementById('cabId');
+        const passEl = document.getElementById('cabPass');
+        const err = document.getElementById('cabErr');
+        const id = idEl.value.trim().toUpperCase();
+        const pw = passEl.value;
+        err.textContent = '';
+        if (!id || !pw) { err.textContent = 'ID və şifrəni daxil edin!'; return; }
+        const btn = document.getElementById('cabBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner"></span> Yoxlanılır...';
+        try {
+            const res = await fetch('/api/cabinet-login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: id, password: pw })
+            });
+            const data = await res.json();
+            if (!res.ok) {
+                err.textContent = data.error || 'Giriş alınmadı!';
+            } else {
+                session = data;
+                sessionStorage.setItem('cab_session', JSON.stringify(session));
+                idEl.value = ''; passEl.value = '';
+                cabData = null;
+                document.getElementById('cabinetLogin').style.display = 'none';
+                if (session.role === 'teacher') showTeacherApp(); else showCabinet();
+            }
+        } catch(e) {
+            err.textContent = 'Server ilə əlaqə qurula bilmədi!';
+        }
+        btn.disabled = false;
+        btn.innerHTML = 'Daxil ol &#8594;';
+    }
+
+    function cabinetLogout() {
+        session = null;
+        cabData = null;
+        sessionStorage.removeItem('cab_session');
+        backToSemesters();
+    }
+
+    async function fetchCabData() {
+        const res = await fetch('/api/cabinet-data', { headers: { 'Authorization': 'Bearer ' + session.token } });
+        if (res.status === 401) {
+            const s = session;
+            cabinetLogout();
+            document.getElementById('semView').style.display = 'none';
+            document.getElementById('cabinetLogin').style.display = '';
+            showToast('Sessiya bitib — yenidən daxil olun.', 'error');
+            throw new Error('expired');
+        }
+        if (!res.ok) { showToast('Məlumat yüklənə bilmədi!', 'error'); throw new Error('fail'); }
+        cabData = await res.json();
+    }
+
+    // Bal rəng qaydaları
+    function balCls(v) { v = parseInt(v); if (isNaN(v)) return 'bal-none'; return v >= 7 ? 'bal-high' : v >= 5 ? 'bal-mid' : 'bal-low'; }
+    function menCls(v) { v = parseInt(v); if (isNaN(v)) return 'bal-none'; return v >= 40 ? 'bal-high' : v >= 30 ? 'bal-mid' : 'bal-low'; }
+    function imtCls(v) { v = parseInt(v); if (isNaN(v)) return 'bal-none'; return v >= 81 ? 'bal-high' : v >= 71 ? 'bal-mid' : 'bal-low'; }
+    function balSpanHtml(v, cls) { return v == null ? '<span class="bal bal-none">&#8212;</span>' : `<span class="bal ${cls}">${v}</span>`; }
+
+    async function showCabinet() {
+        document.getElementById('cabinetLogin').style.display = 'none';
+        document.getElementById('appView').style.display = 'none';
+        try { if (!cabData) await fetchCabData(); } catch(e) { return; }
+        const name = cabData.name || session.name || '';
+        document.getElementById('cabName').textContent = name;
+        document.getElementById('cabAvatar').textContent = name.split(' ').slice(0, 2).map(w => w[0] || '').join('');
+        document.getElementById('cabTeamBadge').textContent = cabData.team || '';
+        document.getElementById('cabIdBadge').textContent = 'ID: ' + (session.id || '');
+        buildPersonalCards(cabData.results || {});
+        renderCabSerbest();
+        document.getElementById('cabinetView').style.display = '';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function buildPersonalCards(r) {
+        const empty = '<p class="cab-empty">Nəticələr hələ yerləşdirilməyib</p>';
+        const k = document.getElementById('cabKollok');
+        if (r.kollok) {
+            k.innerHTML = '<div class="cab-bal-row">' + r.kollok.map((v, i) =>
+                `<div class="cab-bal-item"><span class="cab-bal-label">Kollokvium ${i + 1}</span>${balSpanHtml(v, balCls(v))}</div>`).join('') + '</div>';
+        } else k.innerHTML = empty;
+        const m = document.getElementById('cabMenimseme');
+        if (r.menimseme != null) {
+            m.innerHTML = `<div class="cab-bal-row"><div class="cab-bal-item"><span class="cab-bal-label">Yekun göstərici</span>${balSpanHtml(r.menimseme, menCls(r.menimseme))}</div></div>`;
+        } else m.innerHTML = empty;
+        const im = document.getElementById('cabImtahan');
+        if (r.imtahan) {
+            im.innerHTML = `<div class="cab-bal-row">
+                <div class="cab-bal-item"><span class="cab-bal-label">Bal</span>${balSpanHtml(r.imtahan[0], imtCls(r.imtahan[0]))}</div>
+                <div class="cab-bal-item"><span class="cab-bal-label">Qiymət</span>${r.imtahan[1] ? `<span class="grade ${imtCls(r.imtahan[0])}">${r.imtahan[1]}</span>` : '<span class="bal bal-none">&#8212;</span>'}</div>
+            </div>`;
+        } else im.innerHTML = empty;
+    }
+
+    async function renderCabSerbest() {
+        const el = document.getElementById('cabSerbest');
+        const sel = cabData.selections || [];
+        if (sel.length >= 2) {
+            el.innerHTML = '<span class="spinner"></span>';
+            let titles = sel.map(i => `Sərbəst iş #${i + 1}`);
+            try {
+                const wres = await fetch(`/api/works?team=${encodeURIComponent(cabData.team)}`).then(r => r.json());
+                titles = sel.map(i => wres.works[i] ? wres.works[i].title : `Sərbəst iş #${i + 1}`);
+            } catch(e) {}
+            el.innerHTML = '<ul class="cab-sel-list">' + titles.map((t, i) =>
+                `<li><span class="cab-sel-num">${i + 1}</span><span>${t}</span></li>`).join('') +
+                '</ul><p class="cab-note-ok">&#10003; Seçiminiz qeydə alınıb</p>';
+        } else if (!cabData.key) {
+            el.innerHTML = '<p class="cab-empty">Sərbəst iş seçimi üçün təsdiq açarı hələ təyin edilməyib — müəllimlə əlaqə saxlayın.</p>';
+        } else {
+            el.innerHTML = `<p class="cab-empty" style="margin-bottom:14px;">Hələ sərbəst iş seçməmisiniz. Son təhvil tarixi: <strong style="color:var(--danger);">20 may 2026</strong></p>
+                <button class="btn btn-primary" onclick="startSerbestFlow()">Sərbəst iş seç &#8594;</button>`;
+        }
+    }
+
+    function startSerbestFlow() {
+        selectedTeam = cabData.team;
+        selectedStudent = cabData.name;
+        studentKey = cabData.key;
+        document.getElementById('cabinetView').style.display = 'none';
+        document.getElementById('tabNav').style.display = 'none';
+        document.getElementById('appView').style.display = '';
+        switchTab('serbest');
+        document.getElementById('currentStudentName').textContent = selectedStudent;
+        document.getElementById('currentTeamBadge').textContent = selectedTeam;
+        renderWorks();
+        goToStep(3);
+    }
+
+    async function showTeacherApp() {
+        document.getElementById('cabinetLogin').style.display = 'none';
+        document.getElementById('cabinetView').style.display = 'none';
+        try { if (!cabData) await fetchCabData(); } catch(e) { return; }
+        renderTeacherTables(cabData.results || {});
+        document.getElementById('tabNav').style.display = '';
+        document.getElementById('appView').style.display = '';
+        const activeTab = document.querySelector('.tab-nav .tab-btn.active');
+        if (activeTab) {
+            const nav = activeTab.closest('.tab-nav');
+            if (nav && nav.scrollWidth > nav.clientWidth) {
+                nav.scrollLeft = Math.max(0, activeTab.offsetLeft - (nav.clientWidth - activeTab.offsetWidth) / 2);
+            }
+        }
+    }
+
+    function appBack() {
+        if (session && session.role === 'student') {
+            document.getElementById('appView').style.display = 'none';
+            cabData = null; // seçim yenilənmiş ola bilər
+            showCabinet();
+        } else {
+            backToSemesters();
+        }
+    }
+
+    function renderTeacherTables(results) {
+        const groups = [
+            ['YT 24A1', 'kollokBody', 'menimseme1Body', 'imtahan1Body'],
+            ['YT 24A2', 'kollok2Body', 'menimseme2Body', 'imtahan2Body']
+        ];
+        for (const [group, kolId, menId, imtId] of groups) {
+            const g = results[group];
+            if (!g) continue;
+            const kb = document.getElementById(kolId);
+            if (kb) {
+                kb.innerHTML = '';
+                let i = 1, sums = [0, 0, 0], cnts = [0, 0, 0];
+                for (const [name, vals] of Object.entries(g.kollok)) {
+                    kb.insertAdjacentHTML('beforeend', `<tr data-name="${name}"><td class="col-num">${i++}</td><td>${name}</td>` +
+                        vals.map(v => `<td class="col-bal">${balSpanHtml(v, balCls(v))}</td>`).join('') + '</tr>');
+                    vals.forEach((v, j) => { const n = parseInt(v); if (!isNaN(n)) { sums[j] += n; cnts[j]++; } });
+                }
+                updateSummary(kb, [i - 1, ...sums.map((s, j) => cnts[j] ? (s / cnts[j]).toFixed(1) : '—')]);
+            }
+            const mb = document.getElementById(menId);
+            if (mb) {
+                mb.innerHTML = '';
+                let i = 1, sum = 0, cnt = 0, mx = 0;
+                for (const [name, v] of Object.entries(g.menimseme)) {
+                    mb.insertAdjacentHTML('beforeend', `<tr data-name="${name}"><td class="col-num">${i++}</td><td>${name}</td><td class="col-bal">${balSpanHtml(v, menCls(v))}</td></tr>`);
+                    const n = parseInt(v); if (!isNaN(n)) { sum += n; cnt++; if (n > mx) mx = n; }
+                }
+                updateSummary(mb, [i - 1, cnt ? (sum / cnt).toFixed(1) : '—', mx || '—']);
+            }
+            const ib = document.getElementById(imtId);
+            if (ib) {
+                ib.innerHTML = '';
+                let i = 1, sum = 0, cnt = 0;
+                for (const [name, v] of Object.entries(g.imtahan)) {
+                    const bal = v ? v[0] : null, gr = v ? v[1] : null;
+                    ib.insertAdjacentHTML('beforeend', `<tr data-name="${name}"><td class="col-num">${i++}</td><td>${name}</td><td class="col-bal">${balSpanHtml(bal, imtCls(bal))}</td><td class="col-grade">${gr ? `<span class="grade ${imtCls(bal)}">${gr}</span>` : '<span class="bal bal-none">&#8212;</span>'}</td></tr>`);
+                    const n = parseInt(bal); if (!isNaN(n)) { sum += n; cnt++; }
+                }
+                updateSummary(ib, [i - 1, cnt ? (sum / cnt).toFixed(1) : '—']);
+            }
+        }
+    }
+
+    function updateSummary(tbody, vals) {
+        const card = tbody.closest('.card');
+        if (!card) return;
+        const items = card.querySelectorAll('.results-summary .rs-val');
+        vals.forEach((v, i) => { if (items[i]) items[i].textContent = v; });
+    }
+
+    // Səhifə yenilənəndə aktiv sessiya varsa avtomatik yönləndirmə etmirik —
+    // istifadəçi semestri seçəndə routeCabinet() işə düşür.
 
     // Start
     init();
