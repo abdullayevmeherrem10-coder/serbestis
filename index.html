@@ -2384,9 +2384,10 @@
     let selectedWorks = new Set();
     let currentStep = 1;
 
-    // Kabinet sessiyası
+    // Kabinet sessiyası — yalnız yaddaşda saxlanır: səhifə yenilənəndə (refresh)
+    // avtomatik çıxış edilir, yenidən giriş tələb olunur
     let session = null, cabData = null;
-    try { session = JSON.parse(sessionStorage.getItem('cab_session') || 'null'); } catch(e) {}
+    try { sessionStorage.removeItem('cab_session'); } catch(e) {}
 
     // Init
     setTimeout(() => document.body.classList.remove('loading'), 1000);
@@ -2843,7 +2844,6 @@
                 err.textContent = data.error || 'Giriş alınmadı!';
             } else {
                 session = data;
-                sessionStorage.setItem('cab_session', JSON.stringify(session));
                 idEl.value = ''; passEl.value = '';
                 cabData = null;
                 document.getElementById('cabinetLogin').style.display = 'none';
@@ -2859,7 +2859,6 @@
     function cabinetLogout() {
         session = null;
         cabData = null;
-        sessionStorage.removeItem('cab_session');
         backToSemesters();
     }
 
