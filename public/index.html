@@ -1605,6 +1605,51 @@
         .cab-row-bar { flex: 1; }
         .cab-row .bal, .cab-row .grade { flex-shrink: 0; }
         .cab-scale { margin-top: 10px; font-size: 0.72rem; color: var(--text-dim); }
+        /* Premium təsdiq modalı */
+        .confirm-modal { max-width: 480px; }
+        .cm-head { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+        .cm-ico {
+            width: 46px; height: 46px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, #455f51, #6b8f7b);
+            color: #fff;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.2rem;
+            box-shadow: 0 6px 16px rgba(69,95,81,0.3);
+            flex-shrink: 0;
+        }
+        .cm-head h2 { margin: 0 0 3px; font-size: 1.15rem; color: var(--accent-dark); }
+        .cm-head .cm-sub { color: var(--text-muted); font-size: 0.8rem; margin: 0; line-height: 1.4; }
+        .cm-list {
+            list-style: none;
+            margin: 0 0 14px;
+            padding: 14px 16px;
+            background: rgba(69,95,81,0.05);
+            border: 1px solid rgba(69,95,81,0.12);
+            border-radius: 12px;
+        }
+        .cm-list li {
+            display: flex; gap: 10px; align-items: flex-start;
+            padding: 8px 0;
+            font-size: 0.88rem;
+            line-height: 1.5;
+            border-bottom: 1px dashed var(--border);
+        }
+        .cm-list li:last-child { border-bottom: none; padding-bottom: 2px; }
+        .cm-list li:first-child { padding-top: 2px; }
+        .cm-warn {
+            display: flex; align-items: center; gap: 9px;
+            background: rgba(198,40,40,0.07);
+            border: 1px solid rgba(198,40,40,0.25);
+            color: var(--danger);
+            border-radius: 10px;
+            padding: 10px 14px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+            line-height: 1.4;
+        }
+
         /* Kursant rejimi: taqım/kursant addımları görünmür */
         .student-mode .steps { display: none; }
         .student-mode .tab-subtitle { display: none; }
@@ -2258,15 +2303,19 @@
 
 <!-- Confirm Modal -->
 <div class="modal-overlay" id="confirmModal">
-    <div class="modal">
-        <h2>&#128274; Seçimi təsdiqlə</h2>
-        <p>Bu sərbəst işləri seçmək istədiyinizə əminsiniz? Təsdiq etdikdən sonra dəyişiklik etmək mümkün olmayacaq.</p>
-        <div class="selected-list">
-            <ul id="confirmList"></ul>
+    <div class="modal confirm-modal">
+        <div class="cm-head">
+            <div class="cm-ico">&#128274;</div>
+            <div>
+                <h2>Seçimi təsdiqlə</h2>
+                <p class="cm-sub">Seçdiyiniz sərbəst işləri yoxlayın və təsdiq edin</p>
+            </div>
         </div>
+        <ul class="cm-list" id="confirmList"></ul>
+        <div class="cm-warn"><span>&#9888;</span> Təsdiqdən sonra seçimi dəyişmək mümkün olmayacaq</div>
         <div class="input-wrapper">
-            <label>Təsdiq üçün açarı yenidən daxil edin</label>
-            <input type="text" id="confirmKeyInput" placeholder="Açarınız" autocomplete="off" maxlength="10" style="text-transform: uppercase;">
+            <label id="confirmPassLabel">Kabinet şifrənizi daxil edin</label>
+            <input type="password" id="confirmKeyInput" placeholder="Şifrəniz" autocomplete="off" maxlength="16" style="text-transform: uppercase;" onkeydown="if(event.key==='Enter')submitSelection()">
         </div>
         <div class="btn-group" style="justify-content:flex-end;">
             <button class="btn btn-secondary" onclick="closeModal()">Ləğv et</button>
@@ -2501,12 +2550,24 @@
     function showConfirmModal() {
         const list = document.getElementById('confirmList');
         list.innerHTML = '';
+        let i = 1;
         selectedWorks.forEach(id => {
             const li = document.createElement('li');
-            li.textContent = works[id].title;
+            li.innerHTML = `<span class="cab-sel-num">${i++}</span><span>${works[id].title}</span>`;
             list.appendChild(li);
         });
-        document.getElementById('confirmKeyInput').value = '';
+        const inp = document.getElementById('confirmKeyInput');
+        const lbl = document.getElementById('confirmPassLabel');
+        if (session && session.role === 'student') {
+            lbl.textContent = 'Kabinet şifrənizi daxil edin';
+            inp.placeholder = 'Şifrəniz';
+            inp.type = 'password';
+        } else {
+            lbl.textContent = 'Təsdiq üçün açarı yenidən daxil edin';
+            inp.placeholder = 'Açarınız';
+            inp.type = 'text';
+        }
+        inp.value = '';
         document.getElementById('confirmModal').classList.add('active');
     }
 
@@ -2516,13 +2577,38 @@
 
     // Submit
     async function submitSelection() {
-        const confirmKey = document.getElementById('confirmKeyInput').value.trim().toUpperCase();
-        if (confirmKey !== studentKey) {
+        const confirmVal = document.getElementById('confirmKeyInput').value.trim().toUpperCase();
+        const btn = document.getElementById('btnFinalConfirm');
+
+        if (session && session.role === 'student') {
+            // Kabinet şifrəsi serverdə yoxlanılır
+            if (!confirmVal) { showToast('Kabinet şifrənizi daxil edin!', 'error'); return; }
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner"></span> Yoxlanılır...';
+            try {
+                const vres = await fetch('/api/cabinet-login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: session.id, password: confirmVal })
+                });
+                if (!vres.ok) {
+                    const vd = await vres.json();
+                    showToast(vd.error || 'Şifrə yanlışdır!', 'error');
+                    btn.disabled = false;
+                    btn.innerHTML = '&#128274; Təsdiqlə';
+                    return;
+                }
+            } catch(e) {
+                showToast('Xəta baş verdi!', 'error');
+                btn.disabled = false;
+                btn.innerHTML = '&#128274; Təsdiqlə';
+                return;
+            }
+        } else if (confirmVal !== studentKey) {
             showToast('Açar uyğun gəlmir!', 'error');
             return;
         }
 
-        const btn = document.getElementById('btnFinalConfirm');
         btn.disabled = true;
         btn.innerHTML = '<span class="spinner"></span> Göndərilir...';
 
