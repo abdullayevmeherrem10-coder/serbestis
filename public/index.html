@@ -1473,19 +1473,150 @@
             transition: all 0.25s ease;
         }
         .logout-btn:hover { background: rgba(198,40,40,0.06); border-color: var(--danger); }
-        .cab-welcome { display: flex; align-items: center; gap: 18px; }
-        .cab-avatar {
-            width: 64px; height: 64px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #455f51, #6b8f7b);
+        .cab-hero {
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            background: linear-gradient(135deg, #455f51 0%, #55735f 55%, #6b8f7b 100%);
+            border-radius: var(--radius);
+            padding: 30px 34px;
+            margin-bottom: 24px;
             color: #fff;
-            display: flex; align-items: center; justify-content: center;
-            font-weight: 800; font-size: 1.35rem; letter-spacing: 1px;
-            flex-shrink: 0;
-            box-shadow: 0 6px 16px rgba(69,95,81,0.3);
+            box-shadow: 8px 8px 0 rgba(143,166,155,0.38), 0 12px 34px rgba(69,95,81,0.3);
         }
-        .cab-hello { color: var(--text-muted); font-size: 0.8rem; margin-bottom: 2px; }
-        .cab-who h2 { font-size: 1.25rem; color: var(--accent-dark); margin-bottom: 8px; }
+        .cab-hero::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.07), transparent);
+            background-size: 200% 100%;
+            animation: shimmerBtn 4s ease infinite;
+            pointer-events: none;
+        }
+        .cab-hero-deco { position: absolute; border-radius: 50%; pointer-events: none; }
+        .cab-hero-deco.d1 { width: 230px; height: 230px; top: -100px; right: -60px; background: rgba(255,255,255,0.08); }
+        .cab-hero-deco.d2 { width: 150px; height: 150px; bottom: -80px; right: 130px; background: rgba(255,255,255,0.05); }
+        .cab-avatar {
+            width: 70px; height: 70px;
+            border-radius: 50%;
+            background: #fff;
+            color: #455f51;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 800; font-size: 1.45rem; letter-spacing: 1px;
+            flex-shrink: 0;
+            border: 3px solid rgba(255,255,255,0.55);
+            box-shadow: 0 8px 22px rgba(0,0,0,0.18);
+            position: relative; z-index: 1;
+        }
+        .cab-who { position: relative; z-index: 1; }
+        .cab-hello { color: rgba(255,255,255,0.75); font-size: 0.8rem; margin-bottom: 2px; }
+        .cab-who h2 { font-size: 1.3rem; color: #fff; margin-bottom: 9px; text-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+        .cab-hero .cab-badge { background: rgba(255,255,255,0.16); border-color: rgba(255,255,255,0.35); color: #fff; backdrop-filter: blur(6px); }
+        .cab-hero-chip {
+            margin-left: auto;
+            display: inline-flex;
+            align-items: center;
+            gap: 9px;
+            background: rgba(255,255,255,0.13);
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 999px;
+            padding: 9px 18px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            position: relative; z-index: 1;
+            backdrop-filter: blur(6px);
+        }
+        .cab-hero-chip-dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: #a5e8b0;
+            box-shadow: 0 0 10px rgba(165,232,176,0.8);
+            animation: pulse 2s ease infinite;
+        }
+        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.25); } }
+        /* KPI statistika kartları */
+        .cab-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 14px;
+            margin-bottom: 24px;
+        }
+        .cab-stat {
+            background: rgba(255,255,255,0.97);
+            border: 1.5px solid rgba(200,230,201,0.55);
+            border-radius: 16px;
+            padding: 18px 16px 16px;
+            box-shadow: 0 3px 14px rgba(69,95,81,0.07);
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
+        .cab-stat:hover {
+            transform: translateY(-4px);
+            box-shadow: 6px 6px 0 rgba(143,166,155,0.32), 0 10px 24px rgba(69,95,81,0.1);
+        }
+        .cab-stat-ico {
+            width: 38px; height: 38px;
+            border-radius: 11px;
+            background: rgba(69,95,81,0.09);
+            border: 1.5px solid rgba(69,95,81,0.18);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.05rem;
+            margin-bottom: 12px;
+        }
+        .cab-stat-val { font-size: 1.65rem; font-weight: 800; color: #2e4a3e; line-height: 1; }
+        .cab-stat-max { font-size: 0.82rem; color: var(--text-dim); font-weight: 700; margin-left: 3px; }
+        .cab-stat-label {
+            font-size: 0.68rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 700;
+            margin: 7px 0 11px;
+        }
+        .cab-stat-bar, .cab-row-bar {
+            height: 7px;
+            border-radius: 999px;
+            background: rgba(69,95,81,0.1);
+            overflow: hidden;
+        }
+        .cab-stat-bar i, .cab-row-bar i {
+            display: block;
+            height: 100%;
+            border-radius: 999px;
+            width: 0;
+            transition: width 1.1s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .bar-high { background: linear-gradient(90deg, #2e7d32, #56b262); }
+        .bar-mid  { background: linear-gradient(90deg, #455f51, #8fa69b); }
+        .bar-low  { background: linear-gradient(90deg, #c62828, #e57373); }
+        /* Nəticə sətirləri (progress barlı) */
+        .cab-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 11px 0;
+            border-bottom: 1px solid var(--border);
+        }
+        .cab-row:last-child { border-bottom: none; padding-bottom: 2px; }
+        .cab-row:first-child { padding-top: 2px; }
+        .cab-row-name { font-size: 0.8rem; font-weight: 700; color: var(--text-muted); min-width: 92px; }
+        .cab-row-bar { flex: 1; }
+        .cab-row .bal, .cab-row .grade { flex-shrink: 0; }
+        .cab-scale { margin-top: 10px; font-size: 0.72rem; color: var(--text-dim); }
+        /* Kursant rejimi: taqım/kursant addımları görünmür */
+        .student-mode .steps { display: none; }
+        .student-mode .tab-subtitle { display: none; }
+        /* Giriş ardıcıl animasiyası */
+        #cabinetView > * { animation: fadeSlideIn 0.45s cubic-bezier(0.4,0,0.2,1) both; }
+        #cabinetView > *:nth-child(2) { animation-delay: 0.06s; }
+        #cabinetView > *:nth-child(3) { animation-delay: 0.12s; }
+        #cabinetView > *:nth-child(4) { animation-delay: 0.18s; }
+        #cabinetView > *:nth-child(5) { animation-delay: 0.24s; }
+        #cabinetView > *:nth-child(6) { animation-delay: 0.30s; }
+        #cabinetView > *:nth-child(7) { animation-delay: 0.36s; }
         .cab-badges { display: flex; gap: 8px; flex-wrap: wrap; }
         .cab-badge {
             padding: 4px 12px;
@@ -1541,9 +1672,11 @@
         }
         .cab-note-ok { color: var(--success); font-weight: 700; font-size: 0.85rem; }
         @media (max-width: 600px) {
-            .cab-welcome { flex-direction: column; text-align: center; }
+            .cab-hero { flex-direction: column; text-align: center; padding: 26px 20px; }
             .cab-badges { justify-content: center; }
+            .cab-hero-chip { margin-left: 0; }
             .cab-login-card { padding: 26px 20px; }
+            .cab-row-name { min-width: 78px; font-size: 0.74rem; }
         }
 
         /* Site footer */
@@ -1758,7 +1891,9 @@
             <button class="logout-btn" onclick="cabinetLogout()">Çıxış</button>
         </div>
 
-        <div class="card cab-welcome">
+        <div class="cab-hero">
+            <div class="cab-hero-deco d1"></div>
+            <div class="cab-hero-deco d2"></div>
             <div class="cab-avatar" id="cabAvatar"></div>
             <div class="cab-who">
                 <p class="cab-hello">Xoş gəlmisiniz!</p>
@@ -1768,7 +1903,13 @@
                     <span class="cab-badge cab-badge-alt" id="cabIdBadge"></span>
                 </div>
             </div>
+            <div class="cab-hero-chip">
+                <span class="cab-hero-chip-dot"></span>
+                2025/2026 yaz semestri
+            </div>
         </div>
+
+        <div class="cab-stats" id="cabStats"></div>
 
         <a href="kollokvium/" class="ekollok-banner">
             <span class="ek-ico">&#128421;&#65039;</span>
@@ -2623,6 +2764,9 @@
 
     // Navigation
     function goToStep(n) {
+        // Kursant rejimində 1-2-ci addımlar (taqım/kursant seçimi) qadağandır —
+        // "Geri" həmişə şəxsi kabinetə qaytarır
+        if (session && session.role === 'student' && n < 3) { appBack(); return; }
         currentStep = n;
         const sections = ['sec-team', 'sec-student', 'sec-works', 'sec-success'];
         sections.forEach((s, i) => {
@@ -2754,24 +2898,61 @@
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
+    function barCls(cls) { return cls === 'bal-none' ? 'bar-mid' : cls.replace('bal-', 'bar-'); }
+
     function buildPersonalCards(r) {
         const empty = '<p class="cab-empty">Nəticələr hələ yerləşdirilməyib</p>';
+
+        // KPI statistika kartları
+        const kvals = (r.kollok || []).map(v => parseInt(v)).filter(n => !isNaN(n));
+        const kavg = kvals.length ? kvals.reduce((a, b) => a + b, 0) / kvals.length : null;
+        const men = r.menimseme != null ? parseInt(r.menimseme) : null;
+        const imt = r.imtahan ? parseInt(r.imtahan[0]) : null;
+        const selCnt = Math.min(2, (cabData.selections || []).length);
+        const tiles = [
+            { ico: '&#128221;', val: kavg != null ? (Math.round(kavg * 10) / 10) : '&#8212;', max: '/10', label: 'Orta kollokvium',
+              pct: kavg != null ? kavg * 10 : 0, cls: kavg == null ? 'bar-mid' : (kavg >= 7 ? 'bar-high' : kavg >= 5 ? 'bar-mid' : 'bar-low') },
+            { ico: '&#128202;', val: men != null ? men : '&#8212;', max: '/50', label: 'Mənimsəmə',
+              pct: men != null ? men * 2 : 0, cls: men == null ? 'bar-mid' : barCls(menCls(men)) },
+            { ico: '&#127942;', val: imt != null ? imt : '&#8212;', max: '/100', label: 'İmtahan balı',
+              pct: imt != null ? imt : 0, cls: imt == null ? 'bar-mid' : barCls(imtCls(imt)) },
+            { ico: '&#128218;', val: selCnt + '/2', max: '', label: 'Sərbəst iş seçimi',
+              pct: selCnt * 50, cls: selCnt >= 2 ? 'bar-high' : 'bar-low' }
+        ];
+        document.getElementById('cabStats').innerHTML = tiles.map(t => `
+            <div class="cab-stat">
+                <div class="cab-stat-ico">${t.ico}</div>
+                <div class="cab-stat-val">${t.val}<span class="cab-stat-max">${t.max}</span></div>
+                <div class="cab-stat-label">${t.label}</div>
+                <div class="cab-stat-bar"><i class="${t.cls}" data-w="${Math.min(100, Math.max(0, t.pct))}"></i></div>
+            </div>`).join('');
+
+        // Kollokvium — progress barlı sətirlər
         const k = document.getElementById('cabKollok');
         if (r.kollok) {
-            k.innerHTML = '<div class="cab-bal-row">' + r.kollok.map((v, i) =>
-                `<div class="cab-bal-item"><span class="cab-bal-label">Kollokvium ${i + 1}</span>${balSpanHtml(v, balCls(v))}</div>`).join('') + '</div>';
+            k.innerHTML = r.kollok.map((v, i) => {
+                const n = parseInt(v);
+                return `<div class="cab-row"><span class="cab-row-name">Kollokvium ${i + 1}</span><div class="cab-row-bar"><i class="${barCls(balCls(v))}" data-w="${isNaN(n) ? 0 : n * 10}"></i></div>${balSpanHtml(v, balCls(v))}</div>`;
+            }).join('') + '<p class="cab-scale">Maksimum bal: 10</p>';
         } else k.innerHTML = empty;
+
+        // Mənimsəmə
         const m = document.getElementById('cabMenimseme');
-        if (r.menimseme != null) {
-            m.innerHTML = `<div class="cab-bal-row"><div class="cab-bal-item"><span class="cab-bal-label">Yekun göstərici</span>${balSpanHtml(r.menimseme, menCls(r.menimseme))}</div></div>`;
+        if (men != null) {
+            m.innerHTML = `<div class="cab-row"><span class="cab-row-name">Yekun</span><div class="cab-row-bar"><i class="${barCls(menCls(men))}" data-w="${Math.min(100, men * 2)}"></i></div>${balSpanHtml(r.menimseme, menCls(men))}</div><p class="cab-scale">Maksimum göstərici: 50</p>`;
         } else m.innerHTML = empty;
+
+        // İmtahan
         const im = document.getElementById('cabImtahan');
         if (r.imtahan) {
-            im.innerHTML = `<div class="cab-bal-row">
-                <div class="cab-bal-item"><span class="cab-bal-label">Bal</span>${balSpanHtml(r.imtahan[0], imtCls(r.imtahan[0]))}</div>
-                <div class="cab-bal-item"><span class="cab-bal-label">Qiymət</span>${r.imtahan[1] ? `<span class="grade ${imtCls(r.imtahan[0])}">${r.imtahan[1]}</span>` : '<span class="bal bal-none">&#8212;</span>'}</div>
-            </div>`;
+            im.innerHTML = `<div class="cab-row"><span class="cab-row-name">Bal</span><div class="cab-row-bar"><i class="${barCls(imtCls(imt))}" data-w="${Math.min(100, imt || 0)}"></i></div>${balSpanHtml(r.imtahan[0], imtCls(imt))}</div>
+                <div class="cab-row"><span class="cab-row-name">Qiymət</span><span style="flex:1;"></span>${r.imtahan[1] ? `<span class="grade ${imtCls(imt)}">${r.imtahan[1]}</span>` : '<span class="bal bal-none">&#8212;</span>'}</div>`;
         } else im.innerHTML = empty;
+
+        // Barları animasiya ilə doldur
+        requestAnimationFrame(() => setTimeout(() => {
+            document.querySelectorAll('#cabinetView [data-w]').forEach(el => { el.style.width = el.dataset.w + '%'; });
+        }, 80));
     }
 
     async function renderCabSerbest() {
@@ -2801,7 +2982,9 @@
         studentKey = cabData.key;
         document.getElementById('cabinetView').style.display = 'none';
         document.getElementById('tabNav').style.display = 'none';
-        document.getElementById('appView').style.display = '';
+        const av = document.getElementById('appView');
+        av.classList.add('student-mode');
+        av.style.display = '';
         switchTab('serbest');
         document.getElementById('currentStudentName').textContent = selectedStudent;
         document.getElementById('currentTeamBadge').textContent = selectedTeam;
@@ -2815,7 +2998,9 @@
         try { if (!cabData) await fetchCabData(); } catch(e) { return; }
         renderTeacherTables(cabData.results || {});
         document.getElementById('tabNav').style.display = '';
-        document.getElementById('appView').style.display = '';
+        const av = document.getElementById('appView');
+        av.classList.remove('student-mode');
+        av.style.display = '';
         const activeTab = document.querySelector('.tab-nav .tab-btn.active');
         if (activeTab) {
             const nav = activeTab.closest('.tab-nav');

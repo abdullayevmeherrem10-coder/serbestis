@@ -44,6 +44,14 @@ def save_db(data):
 def cred_hash(cid, password):
     return hashlib.sha256(f"{cid.upper()}:{password}".encode("utf-8")).hexdigest()
 
+# Statik fayl icazə siyahısı (allowlist)
+STATIC_ALLOWED_EXT = {
+    ".html", ".css", ".js",
+    ".png", ".jpg", ".jpeg", ".webp", ".gif", ".svg", ".ico",
+    ".woff", ".woff2", ".ttf",
+}
+STATIC_ALLOWED_FILES = {"ÜZLÜK.docx"}
+
 # Kabinet token sistemi (HMAC imzalı, 12 saat etibarlı)
 TOKEN_TTL = 12 * 3600
 CABINET_SECRET = os.environ.get('CABINET_SECRET') or hashlib.sha256(
@@ -185,6 +193,21 @@ class Handler(http.server.BaseHTTPRequestHandler):
             # Qovluq üçün index.html ver (məs. /kollokvium/)
             if os.path.isdir(file_path):
                 file_path = os.path.join(file_path, "index.html")
+
+            # Təhlükəsizlik: yalnız icazəli statik fayl tipləri verilir.
+            # database.json, *.py, *.txt, .git/, api/, docx sənədləri (ÜZLÜK istisna) bağlıdır.
+            rel = os.path.relpath(file_path, os.path.normpath(BASE_DIR)).replace(os.sep, "/")
+            segs = rel.split("/")
+            ext = os.path.splitext(rel)[1].lower()
+            allowed = (
+                not any(s.startswith(".") or s == "__pycache__" for s in segs)
+                and segs[0].lower() != "api"
+                and (ext in STATIC_ALLOWED_EXT or os.path.basename(rel) in STATIC_ALLOWED_FILES)
+            )
+            if not allowed:
+                self.send_response(404)
+                self.end_headers()
+                return
 
             if os.path.isfile(file_path):
                 mime, _ = mimetypes.guess_type(file_path)
