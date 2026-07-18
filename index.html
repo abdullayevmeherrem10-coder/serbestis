@@ -1605,6 +1605,27 @@
         .cab-row-bar { flex: 1; }
         .cab-row .bal, .cab-row .grade { flex-shrink: 0; }
         .cab-scale { margin-top: 10px; font-size: 0.72rem; color: var(--text-dim); }
+        /* E-Kollokvium canlı bal göstəricisi */
+        .live-dot {
+            display: inline-block;
+            width: 7px; height: 7px;
+            border-radius: 50%;
+            background: #2e7d32;
+            box-shadow: 0 0 8px rgba(46,125,50,0.6);
+            margin-left: 6px;
+            animation: pulse 2s ease infinite;
+            vertical-align: middle;
+        }
+        .cab-subrow {
+            font-size: 0.73rem;
+            color: var(--text-dim);
+            line-height: 1.5;
+            padding: 0 0 9px 2px;
+            margin-top: -5px;
+            border-bottom: 1px solid var(--border);
+        }
+        .cab-row:has(+ .cab-subrow) { border-bottom: none; }
+        .cab-subrow:last-of-type { border-bottom: none; }
         /* Premium təsdiq modalı */
         .confirm-modal { max-width: 480px; }
         .cm-head { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
@@ -1856,15 +1877,6 @@
         </div>
 
         <div class="cab-stats" id="cabStats"></div>
-
-        <a href="kollokvium/" class="ekollok-banner">
-            <span class="ek-ico">&#128421;&#65039;</span>
-            <span class="ek-text">
-                <strong>Elektron Kollokvium Sistemi</strong>
-                <small>Kollokviumu onlayn verin &#8212; suallar, vaxt n&#601;zar&#601;ti v&#601; n&#601;tic&#601;l&#601;r</small>
-            </span>
-            <span class="ek-arrow">&#8594;</span>
-        </a>
 
         <div class="cab-grid">
             <div class="card">
@@ -2860,7 +2872,9 @@
         document.getElementById('cabAvatar').textContent = name.split(' ').slice(0, 2).map(w => w[0] || '').join('');
         document.getElementById('cabTeamBadge').textContent = cabData.team || '';
         document.getElementById('cabIdBadge').textContent = 'ID: ' + (session.id || '');
-        buildPersonalCards(cabData.results || {});
+        let liveK = [null, null, null];
+        try { liveK = await fetchLiveKollok(cabData.team, name); } catch(e) {}
+        buildPersonalCards(cabData.results || {}, liveK);
         renderCabSerbest();
         document.getElementById('cabinetView').style.display = '';
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -2868,11 +2882,52 @@
 
     function barCls(cls) { return cls === 'bal-none' ? 'bar-mid' : cls.replace('bal-', 'bar-'); }
 
-    function buildPersonalCards(r) {
+    // Elektron Kollokvium Sistemindən (Firebase) canlı ballar
+    async function fetchLiveKollok(team, name) {
+        const group = { 'YTF24A1': 'YT_24A1', 'YTF24A2': 'YT_24A2', 'HFT24A1': 'HFT_24A1', 'HFT24A2': 'HFT_24A2' }[team];
+        const out = [null, null, null];
+        if (!group || !name) return out;
+        await Promise.all([1, 2, 3].map(async k => {
+            try {
+                const ctl = new AbortController();
+                const tm = setTimeout(() => ctl.abort(), 5000);
+                const res = await fetch('https://kollokvium1-default-rtdb.firebaseio.com/sessions/K' + k + '_' + group + '/results.json', { signal: ctl.signal });
+                clearTimeout(tm);
+                if (!res.ok) return;
+                const data = await res.json();
+                if (!data) return;
+                const arr = Array.isArray(data) ? data : Object.values(data);
+                const r = arr.find(x => x && x.name === name && x.done);
+                if (!r) return;
+                const qsum = (r.questionScores || []).reduce((a, b) => a + (b === 1 ? 1 : 0), 0);
+                out[k - 1] = {
+                    total: typeof r.total === 'number' ? r.total : (parseInt(r.total) || 0),
+                    absent: !!r.absent,
+                    absentReason: r.absentReason || '',
+                    note: r.note || '',
+                    qsum: qsum,
+                    notebook: r.notebookScore || 0
+                };
+            } catch(e) {}
+        }));
+        return out;
+    }
+
+    function buildPersonalCards(r, liveK) {
+        liveK = liveK || [null, null, null];
         const empty = '<p class="cab-empty">Nəticələr hələ yerləşdirilməyib</p>';
 
+        // Statik ballarla E-Kollokvium canlı ballarının birləşməsi — canlı bal üstündür
+        const kmerged = [0, 1, 2].map(i => {
+            const lv = liveK[i];
+            if (lv) return { val: lv.absent ? null : String(lv.total), n: lv.absent ? NaN : lv.total, live: lv, absent: lv.absent };
+            const sv = r.kollok ? r.kollok[i] : null;
+            return { val: sv, n: parseInt(sv), live: null, absent: false };
+        });
+        const hasKollok = !!r.kollok || liveK.some(v => v);
+
         // KPI statistika kartları
-        const kvals = (r.kollok || []).map(v => parseInt(v)).filter(n => !isNaN(n));
+        const kvals = kmerged.map(x => x.n).filter(n => !isNaN(n));
         const kavg = kvals.length ? kvals.reduce((a, b) => a + b, 0) / kvals.length : null;
         const men = r.menimseme != null ? parseInt(r.menimseme) : null;
         const imt = r.imtahan ? parseInt(r.imtahan[0]) : null;
@@ -2895,13 +2950,24 @@
                 <div class="cab-stat-bar"><i class="${t.cls}" data-w="${Math.min(100, Math.max(0, t.pct))}"></i></div>
             </div>`).join('');
 
-        // Kollokvium — progress barlı sətirlər
+        // Kollokvium — statik + E-Kollokvium canlı balları
         const k = document.getElementById('cabKollok');
-        if (r.kollok) {
-            k.innerHTML = r.kollok.map((v, i) => {
-                const n = parseInt(v);
-                return `<div class="cab-row"><span class="cab-row-name">Kollokvium ${i + 1}</span><div class="cab-row-bar"><i class="${barCls(balCls(v))}" data-w="${isNaN(n) ? 0 : n * 10}"></i></div>${balSpanHtml(v, balCls(v))}</div>`;
-            }).join('') + '<p class="cab-scale">Maksimum bal: 10</p>';
+        if (hasKollok) {
+            k.innerHTML = kmerged.map((x, i) => {
+                const chip = x.absent
+                    ? '<span class="grade bal-low">Qayıb</span>'
+                    : balSpanHtml(x.val, balCls(x.val));
+                const dot = x.live ? '<span class="live-dot" title="Elektron Kollokvium Sistemindən canlı bal"></span>' : '';
+                let row = `<div class="cab-row"><span class="cab-row-name">Kollokvium ${i + 1}${dot}</span><div class="cab-row-bar"><i class="${barCls(balCls(x.absent ? null : x.val))}" data-w="${isNaN(x.n) ? 0 : x.n * 10}"></i></div>${chip}</div>`;
+                if (x.live && !x.absent) {
+                    row += `<div class="cab-subrow">Suallar: ${x.live.qsum}/5 &#8226; Dəftər: ${x.live.notebook}${x.live.note ? ' &#8226; ' + x.live.note : ''}</div>`;
+                } else if (x.live && x.absent && x.live.absentReason) {
+                    row += `<div class="cab-subrow">Səbəb: ${x.live.absentReason}</div>`;
+                }
+                return row;
+            }).join('') + (kmerged.some(x => x.live)
+                ? '<p class="cab-scale"><span class="live-dot" style="margin-left:0;margin-right:5px;"></span>Elektron Kollokvium Sistemindən avtomatik yenilənir</p>'
+                : '<p class="cab-scale">Maksimum bal: 10</p>');
         } else k.innerHTML = empty;
 
         // Mənimsəmə
