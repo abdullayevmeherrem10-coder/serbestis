@@ -148,6 +148,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
                     "name": cred.get("name", "Müəllim"),
                     "results": RESULTS,
                     "selections": db.get("selections", {}),
+                    "scores": db.get("scores", {}),
                 })
                 return
             name = cred["name"]
@@ -159,6 +160,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
                 "key": db.get("keys", {}).get(name, ""),
                 "selections": db.get("selections", {}).get(name, []),
                 "results": student_results(name, cred["team"]),
+                "scores": db.get("scores", {}).get(name),
             })
 
         elif path == "/api/student-status":
@@ -232,7 +234,39 @@ class Handler(http.server.BaseHTTPRequestHandler):
         parsed = urllib.parse.urlparse(self.path)
         path = parsed.path
 
-        if path == "/api/cabinet-login":
+        if path == "/api/cabinet-scores":
+            auth = self.headers.get("Authorization", "")
+            cid = verify_token(auth[7:].strip()) if auth.startswith("Bearer ") else None
+            if not cid or CREDENTIALS[cid].get("role") != "teacher":
+                self.send_json({"error": "İcazə yoxdur."}, 401)
+                return
+            body = self.read_body()
+            name = (body.get("name") or "").strip()
+            if not name:
+                self.send_json({"error": "Kursant adı göstərilməyib."}, 400)
+                return
+
+            def norm(v):
+                if v is None or v == "":
+                    return None
+                try:
+                    n = int(v)
+                except (TypeError, ValueError):
+                    return None
+                return max(0, min(10, n))
+
+            db = load_db()
+            if not any(name in members for members in db.get("teams", {}).values()):
+                self.send_json({"error": "Kursant tapılmadı."}, 404)
+                return
+            db.setdefault("scores", {})[name] = {
+                "serbest": norm(body.get("serbest")),
+                "defter": norm(body.get("defter")),
+            }
+            save_db(db)
+            self.send_json({"success": True, "name": name, "scores": db["scores"][name]})
+
+        elif path == "/api/cabinet-login":
             body = self.read_body()
             cid = (body.get("id") or "").strip().upper()
             password = body.get("password") or ""

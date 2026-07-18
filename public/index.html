@@ -1605,6 +1605,28 @@
         .cab-row-bar { flex: 1; }
         .cab-row .bal, .cab-row .grade { flex-shrink: 0; }
         .cab-scale { margin-top: 10px; font-size: 0.72rem; color: var(--text-dim); }
+        /* Müəllim bal inputu */
+        .score-inp {
+            width: 58px;
+            padding: 7px 6px;
+            border: 1.5px solid #d5e8d4;
+            border-radius: 8px;
+            background: #fff;
+            color: var(--text);
+            font-family: inherit;
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-align: center;
+            outline: none;
+            transition: all 0.25s ease;
+            -moz-appearance: textfield;
+        }
+        .score-inp:focus { border-color: #455f51; box-shadow: 0 0 0 3px rgba(69,95,81,0.1); }
+        .score-inp::-webkit-outer-spin-button, .score-inp::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        .results-table th small { display: block; font-size: 0.58rem; opacity: 0.65; text-transform: none; letter-spacing: 0; margin-top: 2px; font-weight: 600; }
+        .cab-row-total { border-top: 2px solid rgba(69,95,81,0.25); }
+        .cab-row-total .cab-row-name { color: var(--accent-dark); font-weight: 800; }
+
         /* E-Kollokvium canlı bal göstəricisi */
         .live-dot {
             display: inline-block;
@@ -2156,14 +2178,14 @@
                 <div class="icon">&#128202;</div>
                 <span>M&#601;nims&#601;m&#601; g&#246;st&#601;ricil&#601;ri &#8212; <strong style="color:var(--accent)">YT 24A1</strong></span>
             </div>
-            <p style="color:var(--text-muted);font-size:0.82rem;margin:-6px 0 14px;">&#8220;H&#601;rbi M&#252;h&#601;ndis Texnikas&#305;&#8221; f&#601;nni &#252;zr&#601; proqram&#305;n yekun m&#601;nims&#601;m&#601; g&#246;st&#601;ricisi &#8226; 2025/2026 yaz semestri</p>
+            <p style="color:var(--text-muted);font-size:0.82rem;margin:-6px 0 14px;">M&#601;nims&#601;m&#601; = Kollokvium c&#601;mi (maks 30) + S&#601;rb&#601;st i&#351; (maks 10) + D&#601;ft&#601;r/&#304;ntizam (maks 10) &#8226; ballar avtomatik c&#601;ml&#601;nir v&#601; kursant&#305;n kabinetind&#601; d&#601;rhal g&#246;r&#252;n&#252;r</p>
             <div class="search-wrapper">
                 <input type="text" class="search-box" id="menimseme1Search" placeholder="Ad&#305;n&#305;z&#305; axtar&#305;n..." oninput="filterResults(this,'menimseme1Body')">
             </div>
             <div class="results-table-wrap">
                 <table class="results-table">
                     <thead>
-                        <tr><th class="col-num">&#8470;</th><th>Kursant&#305;n ad&#305;</th><th class="col-bal">Yekun</th></tr>
+                        <tr><th class="col-num">&#8470;</th><th>Kursant&#305;n ad&#305;</th><th class="col-bal">K1</th><th class="col-bal">K2</th><th class="col-bal">K3</th><th class="col-bal">Koll. &#8721;<small>maks 30</small></th><th class="col-bal">S&#601;rb&#601;st i&#351;<small>maks 10</small></th><th class="col-bal">D&#601;ft&#601;r / &#304;ntizam<small>maks 10</small></th><th class="col-bal">M&#601;nims&#601;m&#601;<small>maks 50</small></th></tr>
                     </thead>
                     <tbody id="menimseme1Body"></tbody>
                 </table>
@@ -2182,14 +2204,14 @@
                 <div class="icon">&#128202;</div>
                 <span>M&#601;nims&#601;m&#601; g&#246;st&#601;ricil&#601;ri &#8212; <strong style="color:var(--accent)">YT 24A2</strong></span>
             </div>
-            <p style="color:var(--text-muted);font-size:0.82rem;margin:-6px 0 14px;">&#8220;H&#601;rbi M&#252;h&#601;ndis Texnikas&#305;&#8221; f&#601;nni &#252;zr&#601; proqram&#305;n yekun m&#601;nims&#601;m&#601; g&#246;st&#601;ricisi &#8226; 2025/2026 yaz semestri</p>
+            <p style="color:var(--text-muted);font-size:0.82rem;margin:-6px 0 14px;">M&#601;nims&#601;m&#601; = Kollokvium c&#601;mi (maks 30) + S&#601;rb&#601;st i&#351; (maks 10) + D&#601;ft&#601;r/&#304;ntizam (maks 10) &#8226; ballar avtomatik c&#601;ml&#601;nir v&#601; kursant&#305;n kabinetind&#601; d&#601;rhal g&#246;r&#252;n&#252;r</p>
             <div class="search-wrapper">
                 <input type="text" class="search-box" id="menimseme2Search" placeholder="Ad&#305;n&#305;z&#305; axtar&#305;n..." oninput="filterResults(this,'menimseme2Body')">
             </div>
             <div class="results-table-wrap">
                 <table class="results-table">
                     <thead>
-                        <tr><th class="col-num">&#8470;</th><th>Kursant&#305;n ad&#305;</th><th class="col-bal">Yekun</th></tr>
+                        <tr><th class="col-num">&#8470;</th><th>Kursant&#305;n ad&#305;</th><th class="col-bal">K1</th><th class="col-bal">K2</th><th class="col-bal">K3</th><th class="col-bal">Koll. &#8721;<small>maks 30</small></th><th class="col-bal">S&#601;rb&#601;st i&#351;<small>maks 10</small></th><th class="col-bal">D&#601;ft&#601;r / &#304;ntizam<small>maks 10</small></th><th class="col-bal">M&#601;nims&#601;m&#601;<small>maks 50</small></th></tr>
                     </thead>
                     <tbody id="menimseme2Body"></tbody>
                 </table>
@@ -2929,7 +2951,11 @@
         // KPI statistika kartları
         const kvals = kmerged.map(x => x.n).filter(n => !isNaN(n));
         const kavg = kvals.length ? kvals.reduce((a, b) => a + b, 0) / kvals.length : null;
-        const men = r.menimseme != null ? parseInt(r.menimseme) : null;
+        // Mənimsəmə = Kollokvium cəmi (30) + Sərbəst iş (10) + Dəftər/İntizam (10)
+        const kollokSum = kmerged.reduce((a, x) => a + (isNaN(x.n) ? 0 : x.n), 0);
+        const sc = cabData.scores || null;
+        const hasScores = !!(sc && (sc.serbest != null || sc.defter != null));
+        const men = hasScores ? kollokSum + (sc.serbest || 0) + (sc.defter || 0) : null;
         const imt = r.imtahan ? parseInt(r.imtahan[0]) : null;
         const selCnt = Math.min(2, (cabData.selections || []).length);
         const tiles = [
@@ -2970,11 +2996,24 @@
                 : '<p class="cab-scale">Maksimum bal: 10</p>');
         } else k.innerHTML = empty;
 
-        // Mənimsəmə
+        // Mənimsəmə — bölgü: Kollokvium ∑ + Sərbəst iş + Dəftər/İntizam
         const m = document.getElementById('cabMenimseme');
-        if (men != null) {
-            m.innerHTML = `<div class="cab-row"><span class="cab-row-name">Yekun</span><div class="cab-row-bar"><i class="${barCls(menCls(men))}" data-w="${Math.min(100, men * 2)}"></i></div>${balSpanHtml(r.menimseme, menCls(men))}</div><p class="cab-scale">Maksimum göstərici: 50</p>`;
-        } else m.innerHTML = empty;
+        const pctCls = p => p >= 80 ? 'bal-high' : p >= 60 ? 'bal-mid' : 'bal-low';
+        const serbestB = sc && sc.serbest != null ? sc.serbest : null;
+        const defterB = sc && sc.defter != null ? sc.defter : null;
+        const menRow = (label, val, max) => {
+            const has = val != null;
+            const pct = has ? (val / max) * 100 : 0;
+            const chip = has ? `<span class="bal ${pctCls(pct)}">${val}</span>` : '<span class="bal bal-none">&#8212;</span>';
+            return `<div class="cab-row"><span class="cab-row-name">${label}</span><div class="cab-row-bar"><i class="${has ? pctCls(pct).replace('bal-', 'bar-') : 'bar-mid'}" data-w="${Math.round(pct)}"></i></div>${chip}</div>`;
+        };
+        m.innerHTML =
+            menRow('Kollokvium &#8721;', hasKollok ? kollokSum : null, 30) +
+            menRow('Sərbəst iş', serbestB, 10) +
+            menRow('Dəftər/İntizam', defterB, 10) +
+            (men != null
+                ? `<div class="cab-row cab-row-total"><span class="cab-row-name">Mənimsəmə</span><div class="cab-row-bar"><i class="${barCls(menCls(men))}" data-w="${Math.min(100, men * 2)}"></i></div><span class="bal ${menCls(men)}">${men}<small style="font-weight:700;opacity:0.6;">/50</small></span></div>`
+                : '<p class="cab-scale">Sərbəst iş və Dəftər/İntizam ballarını müəllim daxil etdikdən sonra cəm avtomatik hesablanacaq</p>');
 
         // İmtahan
         const im = document.getElementById('cabImtahan');
@@ -3031,6 +3070,7 @@
         document.getElementById('cabinetView').style.display = 'none';
         try { if (!cabData) await fetchCabData(); } catch(e) { return; }
         renderTeacherTables(cabData.results || {});
+        enrichTeacherLive();
         document.getElementById('tabNav').style.display = '';
         const av = document.getElementById('appView');
         av.classList.remove('student-mode');
@@ -3073,16 +3113,7 @@
                 }
                 updateSummary(kb, [i - 1, ...sums.map((s, j) => cnts[j] ? (s / cnts[j]).toFixed(1) : '—')]);
             }
-            const mb = document.getElementById(menId);
-            if (mb) {
-                mb.innerHTML = '';
-                let i = 1, sum = 0, cnt = 0, mx = 0;
-                for (const [name, v] of Object.entries(g.menimseme)) {
-                    mb.insertAdjacentHTML('beforeend', `<tr data-name="${name}"><td class="col-num">${i++}</td><td>${name}</td><td class="col-bal">${balSpanHtml(v, menCls(v))}</td></tr>`);
-                    const n = parseInt(v); if (!isNaN(n)) { sum += n; cnt++; if (n > mx) mx = n; }
-                }
-                updateSummary(mb, [i - 1, cnt ? (sum / cnt).toFixed(1) : '—', mx || '—']);
-            }
+            renderMenimsemeTable(group, menId, g, teacherLive[group] || null);
             const ib = document.getElementById(imtId);
             if (ib) {
                 ib.innerHTML = '';
@@ -3094,6 +3125,134 @@
                 }
                 updateSummary(ib, [i - 1, cnt ? (sum / cnt).toFixed(1) : '—']);
             }
+        }
+    }
+
+    // ===== Müəllim: canlı kollokvium balları + mənimsəmə qiymətləndirməsi =====
+    const teacherLive = {};
+
+    async function fetchGroupLiveKollok(group) {
+        const gkey = group.replace(/\s/g, '_');
+        const maps = [{}, {}, {}];
+        await Promise.all([1, 2, 3].map(async k => {
+            try {
+                const ctl = new AbortController();
+                const tm = setTimeout(() => ctl.abort(), 6000);
+                const res = await fetch('https://kollokvium1-default-rtdb.firebaseio.com/sessions/K' + k + '_' + gkey + '/results.json', { signal: ctl.signal });
+                clearTimeout(tm);
+                if (!res.ok) return;
+                const data = await res.json();
+                if (!data) return;
+                (Array.isArray(data) ? data : Object.values(data)).forEach(r => {
+                    if (r && r.name && r.done) maps[k - 1][r.name] = r.absent ? 0 : (typeof r.total === 'number' ? r.total : parseInt(r.total) || 0);
+                });
+            } catch(e) {}
+        }));
+        return maps;
+    }
+
+    function mergedKollokFor(name, g, live) {
+        // Canlı bal statik baldan üstündür; [k1,k2,k3], null = bal yoxdur
+        const stat = (g.kollok && g.kollok[name]) || [null, null, null];
+        return [0, 1, 2].map(i => {
+            if (live && live[i] && live[i][name] != null) return live[i][name];
+            const n = parseInt(stat[i]);
+            return isNaN(n) ? null : n;
+        });
+    }
+
+    function renderMenimsemeTable(group, menId, g, live) {
+        const mb = document.getElementById(menId);
+        if (!mb) return;
+        const scores = cabData.scores || {};
+        mb.innerHTML = '';
+        let i = 1;
+        for (const name of Object.keys(g.kollok || {})) {
+            const ks = mergedKollokFor(name, g, live);
+            const ksum = ks.reduce((a, v) => a + (v || 0), 0);
+            const sc = scores[name] || {};
+            const sv = sc.serbest != null ? sc.serbest : '';
+            const dv = sc.defter != null ? sc.defter : '';
+            mb.insertAdjacentHTML('beforeend',
+                `<tr data-name="${name}" data-ksum="${ksum}"><td class="col-num">${i++}</td><td>${name}</td>` +
+                ks.map(v => `<td class="col-bal">${balSpanHtml(v, balCls(v))}</td>`).join('') +
+                `<td class="col-bal"><span class="bal ${ksum >= 24 ? 'bal-high' : ksum >= 18 ? 'bal-mid' : 'bal-low'}">${ksum}</span></td>` +
+                `<td class="col-bal"><input type="number" class="score-inp" data-field="serbest" min="0" max="10" value="${sv}" onchange="saveScore(this)"></td>` +
+                `<td class="col-bal"><input type="number" class="score-inp" data-field="defter" min="0" max="10" value="${dv}" onchange="saveScore(this)"></td>` +
+                `<td class="col-bal men-total"></td></tr>`);
+            updateMenRow(mb.lastElementChild);
+        }
+        updateMenSummary(mb);
+    }
+
+    function updateMenRow(tr) {
+        const ksum = parseInt(tr.dataset.ksum) || 0;
+        const s = tr.querySelector('input[data-field="serbest"]').value;
+        const d = tr.querySelector('input[data-field="defter"]').value;
+        const cell = tr.querySelector('.men-total');
+        if (s === '' && d === '') { cell.innerHTML = '<span class="bal bal-none">&#8212;</span>'; return; }
+        const total = ksum + (parseInt(s) || 0) + (parseInt(d) || 0);
+        cell.innerHTML = `<span class="bal ${menCls(total)}">${total}</span>`;
+    }
+
+    function updateMenSummary(mb) {
+        const totals = Array.from(mb.querySelectorAll('.men-total .bal')).map(el => parseInt(el.textContent)).filter(n => !isNaN(n));
+        updateSummary(mb, [mb.querySelectorAll('tr').length,
+            totals.length ? (totals.reduce((a, b) => a + b, 0) / totals.length).toFixed(1) : '—',
+            totals.length ? Math.max(...totals) : '—']);
+    }
+
+    async function saveScore(inp) {
+        let v = inp.value === '' ? null : Math.max(0, Math.min(10, parseInt(inp.value) || 0));
+        if (v != null) inp.value = v;
+        const tr = inp.closest('tr');
+        const name = tr.dataset.name;
+        const s = tr.querySelector('input[data-field="serbest"]').value;
+        const d = tr.querySelector('input[data-field="defter"]').value;
+        const payload = { name: name, serbest: s === '' ? null : parseInt(s), defter: d === '' ? null : parseInt(d) };
+        try {
+            const res = await fetch('/api/cabinet-scores', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.token },
+                body: JSON.stringify(payload)
+            });
+            if (res.status === 401) { cabinetLogout(); showToast('Sessiya bitib — yenidən daxil olun.', 'error'); return; }
+            if (!res.ok) throw 0;
+            cabData.scores = cabData.scores || {};
+            cabData.scores[name] = { serbest: payload.serbest, defter: payload.defter };
+            updateMenRow(tr);
+            updateMenSummary(tr.closest('tbody'));
+            tr.style.background = 'rgba(46,125,50,0.1)';
+            setTimeout(() => { tr.style.background = ''; }, 700);
+        } catch(e) {
+            showToast('Bal yadda saxlanıla bilmədi!', 'error');
+        }
+    }
+
+    function applyLiveToKollokTable(kolId, g, live) {
+        const kb = document.getElementById(kolId);
+        if (!kb || !live) return;
+        kb.innerHTML = '';
+        let i = 1;
+        const sums = [0, 0, 0], cnts = [0, 0, 0];
+        for (const name of Object.keys(g.kollok || {})) {
+            const ks = mergedKollokFor(name, g, live);
+            kb.insertAdjacentHTML('beforeend', `<tr data-name="${name}"><td class="col-num">${i++}</td><td>${name}</td>` +
+                ks.map(v => `<td class="col-bal">${balSpanHtml(v, balCls(v))}</td>`).join('') + '</tr>');
+            ks.forEach((v, j) => { if (v != null) { sums[j] += v; cnts[j]++; } });
+        }
+        updateSummary(kb, [i - 1, ...sums.map((s, j) => cnts[j] ? (s / cnts[j]).toFixed(1) : '—')]);
+    }
+
+    async function enrichTeacherLive() {
+        const groups = [['YT 24A1', 'kollokBody', 'menimseme1Body'], ['YT 24A2', 'kollok2Body', 'menimseme2Body']];
+        for (const [group, kolId, menId] of groups) {
+            const g = (cabData.results || {})[group];
+            if (!g) continue;
+            const live = await fetchGroupLiveKollok(group);
+            teacherLive[group] = live;
+            applyLiveToKollokTable(kolId, g, live);
+            renderMenimsemeTable(group, menId, g, live);
         }
     }
 

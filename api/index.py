@@ -347,6 +347,7 @@ def cabinet_data():
             "name": cred.get('name', 'Müəllim'),
             "results": RESULTS,
             "selections": db.get('selections', {}),
+            "scores": db.get('scores', {}),
         })
     db = load_db()
     name = cred['name']
@@ -358,7 +359,39 @@ def cabinet_data():
         "key": db.get('keys', {}).get(name, ''),
         "selections": db.get('selections', {}).get(name, []),
         "results": student_results(name, cred['team']),
+        "scores": db.get('scores', {}).get(name),
     })
+
+
+@app.route('/api/cabinet-scores', methods=['POST'])
+def cabinet_scores():
+    """Müəllim kursant üçün Sərbəst iş (0-10) və Dəftər/İntizam (0-10) balı yazır."""
+    cid = token_from_request()
+    if not cid or CREDENTIALS[cid].get('role') != 'teacher':
+        return jsonify({"error": "İcazə yoxdur."}), 401
+    body = request.get_json(silent=True) or {}
+    name = (body.get('name') or '').strip()
+    if not name:
+        return jsonify({"error": "Kursant adı göstərilməyib."}), 400
+
+    def norm(v):
+        if v is None or v == '':
+            return None
+        try:
+            n = int(v)
+        except (TypeError, ValueError):
+            return None
+        return max(0, min(10, n))
+
+    db = load_db()
+    if not any(name in members for members in db.get('teams', {}).values()):
+        return jsonify({"error": "Kursant tapılmadı."}), 404
+    db.setdefault('scores', {})[name] = {
+        "serbest": norm(body.get('serbest')),
+        "defter": norm(body.get('defter')),
+    }
+    save_db(db)
+    return jsonify({"success": True, "name": name, "scores": db['scores'][name]})
 
 
 @app.route('/api/works')

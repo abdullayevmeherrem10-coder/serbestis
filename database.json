@@ -251,11 +251,25 @@
     "Umudalıyev Nail Atakişi oğlu": "ND7DGU",
     "Vəliyev Ramazan Qəhrəman oğlu": "6BD2PH"
   },
-  "selections": {},
+  "selections": {
+    "Abbasov Ramal Ramil oğlu": [
+      0,
+      1
+    ]
+  },
   "work_taken_by": {
-    "YTF24A1": {},
+    "YTF24A1": {
+      "0": "Abbasov Ramal Ramil oğlu",
+      "1": "Abbasov Ramal Ramil oğlu"
+    },
     "YTF24A2": {},
     "HFT24A1": {},
     "HFT24A2": {}
+  },
+  "scores": {
+    "Abbasov Ramal Ramil oğlu": {
+      "serbest": 5,
+      "defter": 5
+    }
   }
 }
