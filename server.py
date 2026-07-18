@@ -106,6 +106,10 @@ class Handler(http.server.BaseHTTPRequestHandler):
                 self.end_headers()
                 return
 
+            # Qovluq üçün index.html ver (məs. /kollokvium/)
+            if os.path.isdir(file_path):
+                file_path = os.path.join(file_path, "index.html")
+
             if os.path.isfile(file_path):
                 mime, _ = mimetypes.guess_type(file_path)
                 if mime is None:

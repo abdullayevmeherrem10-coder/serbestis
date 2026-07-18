@@ -9,15 +9,16 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Inter', sans-serif;
-            background: #0f172a;
-            color: #f1f5f9;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e5edea 50%, #eef2f0 100%);
+            color: #1a1a2e;
             min-height: 100vh;
         }
         .header {
             text-align: center;
             padding: 24px 20px 16px;
-            background: rgba(15,23,42,0.95);
-            border-bottom: 1px solid rgba(212,168,83,0.2);
+            background: rgba(255,255,255,0.95);
+            border-bottom: 1.5px solid rgba(200,230,201,0.6);
+            box-shadow: 0 4px 20px rgba(69,95,81,0.08);
             position: sticky;
             top: 0;
             z-index: 10;
@@ -26,12 +27,12 @@
         .header h1 {
             font-size: 1.3rem;
             font-weight: 800;
-            background: linear-gradient(135deg, #f0c75e, #d4a853);
+            background: linear-gradient(135deg, #455f51, #2e4a3e);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             margin-bottom: 6px;
         }
-        .header p { color: #94a3b8; font-size: 0.85rem; }
+        .header p { color: #55635c; font-size: 0.85rem; }
         .nav {
             display: flex;
             align-items: center;
@@ -41,20 +42,22 @@
         }
         .nav button {
             padding: 8px 20px;
-            border-radius: 8px;
-            border: 1px solid rgba(212,168,83,0.3);
-            background: rgba(15,23,42,0.8);
-            color: #d4a853;
+            border-radius: 10px;
+            border: none;
+            background: linear-gradient(135deg, #455f51, #6b8f7b);
+            color: #fff;
             font-family: inherit;
             font-size: 0.85rem;
-            font-weight: 600;
+            font-weight: 700;
+            letter-spacing: 0.3px;
             cursor: pointer;
+            box-shadow: 0 4px 12px rgba(69,95,81,0.25);
             transition: all 0.3s;
         }
-        .nav button:hover { background: rgba(212,168,83,0.1); }
+        .nav button:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(69,95,81,0.35); }
         .nav .page-info {
             font-size: 0.9rem;
-            color: #94a3b8;
+            color: #55635c;
             display: flex;
             align-items: center;
             gap: 6px;
@@ -62,18 +65,19 @@
         .nav .page-input {
             width: 65px;
             padding: 6px 8px;
-            border-radius: 6px;
-            border: 1px solid rgba(212,168,83,0.3);
-            background: rgba(15,23,42,0.8);
-            color: #d4a853;
+            border-radius: 8px;
+            border: 1.5px solid #d5e8d4;
+            background: #ffffff;
+            color: #455f51;
             font-family: inherit;
             font-size: 0.9rem;
             font-weight: 700;
             text-align: center;
             outline: none;
             -moz-appearance: textfield;
+            transition: all 0.3s;
         }
-        .nav .page-input:focus { border-color: #d4a853; }
+        .nav .page-input:focus { border-color: #455f51; box-shadow: 0 0 0 3px rgba(69,95,81,0.1); }
         .nav .page-input::-webkit-outer-spin-button,
         .nav .page-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
         .back-btn {
@@ -82,17 +86,18 @@
             top: 50%;
             transform: translateY(-50%);
             padding: 8px 16px;
-            border-radius: 8px;
-            border: 1px solid rgba(212,168,83,0.2);
-            background: transparent;
-            color: #94a3b8;
+            border-radius: 10px;
+            border: 1.5px solid rgba(69,95,81,0.25);
+            background: rgba(255,255,255,0.8);
+            color: #455f51;
             font-family: inherit;
             font-size: 0.8rem;
+            font-weight: 600;
             cursor: pointer;
             text-decoration: none;
             transition: all 0.3s;
         }
-        .back-btn:hover { color: #d4a853; border-color: rgba(212,168,83,0.4); }
+        .back-btn:hover { color: #2e4a3e; border-color: rgba(69,95,81,0.5); background: rgba(69,95,81,0.06); }
 
         @media (max-width: 768px) {
             .back-btn {
@@ -114,9 +119,9 @@
         }
         .page-img {
             width: 100%;
-            border-radius: 8px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.4);
-            border: 1px solid rgba(212,168,83,0.1);
+            border-radius: 12px;
+            box-shadow: 8px 8px 0 rgba(143,166,155,0.38), 0 10px 30px rgba(69,95,81,0.12);
+            border: 1.5px solid rgba(200,230,201,0.6);
             -webkit-user-select: none;
             user-select: none;
             pointer-events: none;
@@ -135,7 +140,7 @@
         <p>İstifadə ediləcək ədəbiyyat</p>
         <div class="nav">
             <button onclick="prevPage()">&#8592; Əvvəlki</button>
-            <div class="page-info">Səhifə&nbsp;<input type="number" class="page-input" id="pageInput" value="1" min="1" max="224" onchange="goToPage(this.value)" onkeydown="if(event.key==='Enter')goToPage(this.value)"><span id="pageLabel" style="display:none;color:#d4a853;font-weight:700;font-size:0.9rem;"></span>&nbsp;/&nbsp;224</div>
+            <div class="page-info">Səhifə&nbsp;<input type="number" class="page-input" id="pageInput" value="1" min="1" max="224" onchange="goToPage(this.value)" onkeydown="if(event.key==='Enter')goToPage(this.value)"><span id="pageLabel" style="display:none;color:#455f51;font-weight:700;font-size:0.9rem;"></span>&nbsp;/&nbsp;224</div>
             <button onclick="nextPage()">Növbəti &#8594;</button>
         </div>
     </div>
@@ -210,7 +215,7 @@
     const pageImg = document.getElementById('pageImg');
     const overlay = document.createElement('div');
     overlay.id = 'ssOverlay';
-    overlay.style.cssText = 'display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:#0f172a;z-index:9999;align-items:center;justify-content:center;color:#d4a853;font-size:1.2rem;font-family:Inter,sans-serif;font-weight:700;';
+    overlay.style.cssText = 'display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:#455f51;z-index:9999;align-items:center;justify-content:center;color:#fff;font-size:1.2rem;font-family:Inter,sans-serif;font-weight:700;';
     overlay.textContent = 'Ekran görüntüsü almaq qadağandır!';
     document.body.appendChild(overlay);
 
