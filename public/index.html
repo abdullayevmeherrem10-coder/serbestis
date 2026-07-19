@@ -1886,6 +1886,7 @@
     </style>
 </head>
 <body class="loading">
+<canvas id="bgCanvas" style="position:fixed; top:0; left:0; width:100%; height:100%; z-index:0; pointer-events:none;"></canvas>
 
 <div class="container">
     <!-- Header -->
@@ -3558,6 +3559,58 @@
 
     // Səhifə yenilənəndə aktiv sessiya varsa avtomatik yönləndirmə etmirik —
     // istifadəçi semestri seçəndə routeCabinet() işə düşür.
+
+    // Fon animasiyası — Elektron Kollokvium Sistemindəki hissəcik effekti
+    (function() {
+        var c = document.getElementById('bgCanvas');
+        if (!c) return;
+        var ctx = c.getContext('2d');
+        var particles = [], w, h;
+        function resize() {
+            w = c.width = window.innerWidth;
+            h = c.height = window.innerHeight;
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        for (var i = 0; i < 60; i++) {
+            particles.push({
+                x: Math.random() * w,
+                y: Math.random() * h,
+                r: Math.random() * 3 + 1,
+                dx: (Math.random() - 0.5) * 0.8,
+                dy: (Math.random() - 0.5) * 0.8,
+                o: Math.random() * 0.3 + 0.05,
+                color: Math.random() > 0.5 ? '69,95,81' : '143,166,155'
+            });
+        }
+        function draw() {
+            ctx.clearRect(0, 0, w, h);
+            for (var i = 0; i < particles.length; i++) {
+                var p = particles[i];
+                p.x += p.dx; p.y += p.dy;
+                if (p.x < 0) p.x = w; if (p.x > w) p.x = 0;
+                if (p.y < 0) p.y = h; if (p.y > h) p.y = 0;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(' + p.color + ',' + p.o + ')';
+                ctx.fill();
+                for (var j = i + 1; j < particles.length; j++) {
+                    var p2 = particles[j];
+                    var dist = Math.sqrt((p.x - p2.x) * (p.x - p2.x) + (p.y - p2.y) * (p.y - p2.y));
+                    if (dist < 120) {
+                        ctx.beginPath();
+                        ctx.moveTo(p.x, p.y);
+                        ctx.lineTo(p2.x, p2.y);
+                        ctx.strokeStyle = 'rgba(69,95,81,' + (0.08 * (1 - dist / 120)) + ')';
+                        ctx.lineWidth = 0.5;
+                        ctx.stroke();
+                    }
+                }
+            }
+            requestAnimationFrame(draw);
+        }
+        draw();
+    })();
 
     // Start — sayt birbaşa kabinet girişi ilə açılır
     init();
