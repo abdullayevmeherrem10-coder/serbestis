@@ -354,6 +354,7 @@ def cabinet_data():
             "results": RESULTS,
             "selections": db.get('selections', {}),
             "scores": db.get('scores', {}),
+            "deadline": db.get('deadline', '20 may 2026'),
         })
     db = load_db()
     name = cred['name']
@@ -366,7 +367,24 @@ def cabinet_data():
         "selections": db.get('selections', {}).get(name, []),
         "results": student_results(name, cred['team']),
         "scores": db.get('scores', {}).get(name),
+        "deadline": db.get('deadline', '20 may 2026'),
     })
+
+
+@app.route('/api/cabinet-deadline', methods=['POST'])
+def cabinet_deadline():
+    """Müəllim sərbəst işlərin son təhvil tarixini dəyişir."""
+    cid = token_from_request()
+    if not cid or CREDENTIALS[cid].get('role') != 'teacher':
+        return jsonify({"error": "İcazə yoxdur."}), 401
+    body = request.get_json(silent=True) or {}
+    deadline = (body.get('deadline') or '').strip()[:60]
+    if not deadline:
+        return jsonify({"error": "Tarix boş ola bilməz."}), 400
+    db = load_db()
+    db['deadline'] = deadline
+    save_db(db)
+    return jsonify({"success": True, "deadline": deadline})
 
 
 @app.route('/api/cabinet-scores', methods=['POST'])

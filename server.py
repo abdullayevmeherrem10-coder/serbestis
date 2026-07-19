@@ -149,6 +149,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
                     "results": RESULTS,
                     "selections": db.get("selections", {}),
                     "scores": db.get("scores", {}),
+                    "deadline": db.get("deadline", "20 may 2026"),
                 })
                 return
             name = cred["name"]
@@ -161,6 +162,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
                 "selections": db.get("selections", {}).get(name, []),
                 "results": student_results(name, cred["team"]),
                 "scores": db.get("scores", {}).get(name),
+                "deadline": db.get("deadline", "20 may 2026"),
             })
 
         elif path == "/api/student-status":
@@ -234,7 +236,23 @@ class Handler(http.server.BaseHTTPRequestHandler):
         parsed = urllib.parse.urlparse(self.path)
         path = parsed.path
 
-        if path == "/api/cabinet-scores":
+        if path == "/api/cabinet-deadline":
+            auth = self.headers.get("Authorization", "")
+            cid = verify_token(auth[7:].strip()) if auth.startswith("Bearer ") else None
+            if not cid or CREDENTIALS[cid].get("role") != "teacher":
+                self.send_json({"error": "İcazə yoxdur."}, 401)
+                return
+            body = self.read_body()
+            deadline = (body.get("deadline") or "").strip()[:60]
+            if not deadline:
+                self.send_json({"error": "Tarix boş ola bilməz."}, 400)
+                return
+            db = load_db()
+            db["deadline"] = deadline
+            save_db(db)
+            self.send_json({"success": True, "deadline": deadline})
+
+        elif path == "/api/cabinet-scores":
             auth = self.headers.get("Authorization", "")
             cid = verify_token(auth[7:].strip()) if auth.startswith("Bearer ") else None
             if not cid or CREDENTIALS[cid].get("role") != "teacher":

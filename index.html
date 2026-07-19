@@ -1185,6 +1185,43 @@
             border-radius: 6px;
             border: 1px solid rgba(69,95,81,0.3);
         }
+        .dl-edit {
+            margin-left: 8px;
+            padding: 4px 12px;
+            border-radius: 8px;
+            border: 1.5px solid rgba(69,95,81,0.3);
+            background: rgba(255,255,255,0.85);
+            color: #455f51;
+            font-family: inherit;
+            font-size: 0.76rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+        .dl-edit:hover { background: rgba(69,95,81,0.08); border-color: #455f51; }
+        .dl-input {
+            width: 150px;
+            padding: 4px 10px;
+            border: 1.5px solid #455f51;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--text);
+            outline: none;
+            background: #fff;
+        }
+        .dl-save {
+            margin-left: 5px;
+            padding: 4px 14px;
+            border-radius: 8px;
+            border: none;
+            background: linear-gradient(135deg, #455f51, #6b8f7b);
+            color: #fff;
+            font-family: inherit;
+            font-weight: 800;
+            cursor: pointer;
+        }
         @media (max-width: 768px) {
             .deadline-banner { padding: 12px 16px; gap: 10px; }
             .deadline-banner .dl-text { font-size: 0.82rem; }
@@ -1900,6 +1937,14 @@
 
         <div class="cab-stats" id="cabStats"></div>
 
+        <div class="deadline-banner" role="alert">
+            <span class="dl-icon">&#9888;</span>
+            <span class="dl-text">
+                <strong>Diqqət!</strong> Sərbəst işlərin son təhvil verilmə və müdafiə tarixi:
+                <span class="dl-date" id="cabDlDate">20 may 2026</span>
+            </span>
+        </div>
+
         <div class="cab-grid">
             <div class="card">
                 <div class="card-title"><div class="icon">&#128221;</div> Kollokvium nəticələri</div>
@@ -1988,7 +2033,8 @@
             <span class="dl-icon">&#9888;</span>
             <span class="dl-text">
                 <strong>Diqqət!</strong> Sərbəst işlərin son təhvil verilmə və müdafiə tarixi:
-                <span class="dl-date">20 may 2026</span>
+                <span class="dl-date" id="dlDate">20 may 2026</span>
+                <button class="dl-edit" id="dlEditBtn" onclick="editDeadline()" title="Tarixi dəyiş" style="display:none;">&#9998; Dəyiş</button>
             </span>
         </div>
         <div class="card">
@@ -2898,6 +2944,7 @@
         try { liveK = await fetchLiveKollok(cabData.team, name); } catch(e) {}
         buildPersonalCards(cabData.results || {}, liveK);
         renderCabSerbest();
+        setDeadlineText(cabData.deadline || '20 may 2026', false);
         document.getElementById('cabinetView').style.display = '';
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
@@ -3042,7 +3089,7 @@
         } else if (!cabData.key) {
             el.innerHTML = '<p class="cab-empty">Sərbəst iş seçimi üçün təsdiq açarı hələ təyin edilməyib — müəllimlə əlaqə saxlayın.</p>';
         } else {
-            el.innerHTML = `<p class="cab-empty" style="margin-bottom:14px;">Hələ sərbəst iş seçməmisiniz. Son təhvil tarixi: <strong style="color:var(--danger);">20 may 2026</strong></p>
+            el.innerHTML = `<p class="cab-empty" style="margin-bottom:14px;">Hələ sərbəst iş seçməmisiniz. Son təhvil tarixi: <strong style="color:var(--danger);">${cabData.deadline || '20 may 2026'}</strong></p>
                 <button class="btn btn-primary" onclick="startSerbestFlow()">Sərbəst iş seç &#8594;</button>`;
         }
     }
@@ -3069,6 +3116,7 @@
         try { if (!cabData) await fetchCabData(); } catch(e) { return; }
         renderTeacherTables(cabData.results || {});
         enrichTeacherLive();
+        setDeadlineText(cabData.deadline || '20 may 2026', true);
         document.getElementById('tabNav').style.display = '';
         const av = document.getElementById('appView');
         av.classList.remove('student-mode');
@@ -3123,6 +3171,45 @@
                 }
                 updateSummary(ib, [i - 1, cnt ? (sum / cnt).toFixed(1) : '—']);
             }
+        }
+    }
+
+    // ===== Son təhvil tarixi (müəllim təyin edir, hamıda görünür) =====
+    function setDeadlineText(d, isTeacher) {
+        const span = document.getElementById('dlDate');
+        if (span) span.textContent = d;
+        const btn = document.getElementById('dlEditBtn');
+        if (btn) btn.style.display = isTeacher ? '' : 'none';
+        const cd = document.getElementById('cabDlDate');
+        if (cd) cd.textContent = d;
+    }
+
+    function editDeadline() {
+        if (!session || session.role !== 'teacher') return;
+        const span = document.getElementById('dlDate');
+        const cur = span.textContent.trim();
+        span.innerHTML = `<input id="dlInput" class="dl-input" value="${cur}" maxlength="40" onkeydown="if(event.key==='Enter')saveDeadline()"><button class="dl-save" onclick="saveDeadline()">&#10003;</button>`;
+        document.getElementById('dlEditBtn').style.display = 'none';
+        document.getElementById('dlInput').focus();
+    }
+
+    async function saveDeadline() {
+        const inp = document.getElementById('dlInput');
+        const v = inp.value.trim();
+        if (!v) { showToast('Tarix boş ola bilməz!', 'error'); return; }
+        try {
+            const res = await fetch('/api/cabinet-deadline', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.token },
+                body: JSON.stringify({ deadline: v })
+            });
+            if (res.status === 401) { cabinetLogout(); showToast('Sessiya bitib — yenidən daxil olun.', 'error'); return; }
+            if (!res.ok) throw 0;
+            cabData.deadline = v;
+            setDeadlineText(v, true);
+            showToast('Tarix yeniləndi — kursantların kabinetində də görünəcək', 'success');
+        } catch(e) {
+            showToast('Tarix yadda saxlanıla bilmədi!', 'error');
         }
     }
 
