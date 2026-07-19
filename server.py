@@ -379,7 +379,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
                 return
             body = self.read_body()
             fb_path = (body.get("path") or "").strip()
-            if not re.fullmatch(r"sessions/[A-Za-z0-9_\-/]+", fb_path):
+            if not re.fullmatch(r"(sessions|topics)/[A-Za-z0-9_\-/]+", fb_path):
                 self.send_json({"error": "Yol etibarsızdır."}, 400)
                 return
             url = _fb_url(fb_path)

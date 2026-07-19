@@ -872,12 +872,7 @@
                 </select>
                 <div id="editIncompleteTopics" style="display:none; margin-top:10px;">
                     <label style="font-size:12px; color:#666; font-weight:600;">Yarımçıq mövzular:</label>
-                    <div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:6px;">
-                        <label style="font-size:13px; cursor:pointer; background:rgba(232,245,233,0.8); padding:4px 10px; border-radius:8px; border:1px solid rgba(165,214,167,0.5);"><input type="checkbox" class="edit-incomplete-topic" value="M1" style="margin-right:4px;"> M1</label>
-                        <label style="font-size:13px; cursor:pointer; background:rgba(232,245,233,0.8); padding:4px 10px; border-radius:8px; border:1px solid rgba(165,214,167,0.5);"><input type="checkbox" class="edit-incomplete-topic" value="M2" style="margin-right:4px;"> M2</label>
-                        <label style="font-size:13px; cursor:pointer; background:rgba(232,245,233,0.8); padding:4px 10px; border-radius:8px; border:1px solid rgba(165,214,167,0.5);"><input type="checkbox" class="edit-incomplete-topic" value="M3" style="margin-right:4px;"> M3</label>
-                        <label style="font-size:13px; cursor:pointer; background:rgba(232,245,233,0.8); padding:4px 10px; border-radius:8px; border:1px solid rgba(165,214,167,0.5);"><input type="checkbox" class="edit-incomplete-topic" value="M4" style="margin-right:4px;"> M4</label>
-                    </div>
+                    <div id="editIncompleteTopicsBox" style="display:flex; flex-wrap:wrap; gap:6px; margin-top:6px;"></div>
                 </div>
             </div>
             <div class="edit-field">
@@ -1068,6 +1063,9 @@
                         <button id="kTab1" onclick="switchKollokvium(1)" style="padding:12px 28px; border-radius:12px; font-size:16px; font-weight:800; cursor:pointer; border:2px solid #455f51; background:#455f51; color:#fff; transition:all 0.3s; letter-spacing:0.5px;">Kollokvium 1</button>
                         <button id="kTab2" onclick="switchKollokvium(2)" style="padding:12px 28px; border-radius:12px; font-size:16px; font-weight:800; cursor:pointer; border:2px solid #8fa69b; background:rgba(255,255,255,0.9); color:#455f51; transition:all 0.3s; letter-spacing:0.5px;">Kollokvium 2</button>
                         <button id="kTab3" onclick="switchKollokvium(3)" style="padding:12px 28px; border-radius:12px; font-size:16px; font-weight:800; cursor:pointer; border:2px solid #8fa69b; background:rgba(255,255,255,0.9); color:#455f51; transition:all 0.3s; letter-spacing:0.5px;">Kollokvium 3</button>
+                    </div>
+                    <div style="text-align:center; margin:-12px 0 20px;">
+                        <button onclick="editTopics()" style="padding:8px 18px; border-radius:10px; border:1.5px solid rgba(69,95,81,0.35); background:rgba(255,255,255,0.9); color:#455f51; font-size:13px; font-weight:700; cursor:pointer; transition:all 0.3s;" onmouseenter="this.style.background='rgba(69,95,81,0.08)'" onmouseleave="this.style.background='rgba(255,255,255,0.9)'">&#128211; Dəftər mövzularını redaktə et (Kollokvium <span id="topicsEditKNum">1</span>)</button>
                     </div>
 
                     <!-- Boş kollokvium mesajı -->
@@ -1317,12 +1315,8 @@
                             </div>
                             <div style="margin-bottom:10px;">
                                 <label style="font-size:12px; color:#666; font-weight:600; text-transform:uppercase; letter-spacing:1px;">Yarımçıq mövzular:</label>
-                                <div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:6px; justify-content:center;">
-                                    <label style="font-size:13px; cursor:pointer; background:rgba(232,245,233,0.8); padding:4px 10px; border-radius:8px; border:1px solid rgba(165,214,167,0.5);"><input type="checkbox" class="incomplete-topic" value="Mövzu 1" style="margin-right:4px;"> M1</label>
-                                    <label style="font-size:13px; cursor:pointer; background:rgba(232,245,233,0.8); padding:4px 10px; border-radius:8px; border:1px solid rgba(165,214,167,0.5);"><input type="checkbox" class="incomplete-topic" value="Mövzu 2" style="margin-right:4px;"> M2</label>
-                                    <label style="font-size:13px; cursor:pointer; background:rgba(232,245,233,0.8); padding:4px 10px; border-radius:8px; border:1px solid rgba(165,214,167,0.5);"><input type="checkbox" class="incomplete-topic" value="Mövzu 3" style="margin-right:4px;"> M3</label>
-                                    <label style="font-size:13px; cursor:pointer; background:rgba(232,245,233,0.8); padding:4px 10px; border-radius:8px; border:1px solid rgba(165,214,167,0.5);"><input type="checkbox" class="incomplete-topic" value="Mövzu 4" style="margin-right:4px;"> M4</label>
-                                </div>
+                                <button type="button" onclick="editTopics()" title="Bu kollokvium üçün mövzu siyahısını dəyiş" style="margin-left:8px; padding:3px 10px; border-radius:8px; border:1px solid rgba(69,95,81,0.35); background:rgba(255,255,255,0.9); color:#455f51; font-size:11px; font-weight:700; cursor:pointer;">&#9998; Redaktə</button>
+                                <div id="incompleteTopicsBox" style="display:flex; flex-wrap:wrap; gap:6px; margin-top:6px; justify-content:center;"></div>
                             </div>
                             <div style="margin-bottom:12px;">
                                 <label style="font-size:12px; color:#666; font-weight:600; text-transform:uppercase; letter-spacing:1px;">Əlavə qeyd:</label>
@@ -1756,6 +1750,68 @@ function fbWrite(path, data) {
     });
 }
 
+// ==================== DƏFTƏR MÖVZULARI (hər kollokvium üçün müəllim təyin edir) ====================
+var kollokTopics = { 1: null, 2: null, 3: null };  // Firebase topics/K1..K3
+var DEFAULT_TOPICS = ['Mövzu 1', 'Mövzu 2', 'Mövzu 3', 'Mövzu 4'];
+
+function currentTopics() {
+    var t = kollokTopics[currentKollokvium];
+    return (t && t.length) ? t : DEFAULT_TOPICS;
+}
+
+function escT(s) {
+    return String(s == null ? '' : s)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function renderTopicCheckboxes() {
+    var topics = currentTopics();
+    function mk(cls) {
+        return topics.map(function(t) {
+            return '<label style="font-size:13px; cursor:pointer; background:rgba(232,245,233,0.8); padding:4px 10px; border-radius:8px; border:1px solid rgba(165,214,167,0.5);"><input type="checkbox" class="' + cls + '" value="' + escT(t) + '" style="margin-right:4px;"> ' + escT(t) + '</label>';
+        }).join('');
+    }
+    var b1 = document.getElementById('incompleteTopicsBox');
+    if (b1) b1.innerHTML = mk('incomplete-topic');
+    var b2 = document.getElementById('editIncompleteTopicsBox');
+    if (b2) b2.innerHTML = mk('edit-incomplete-topic');
+    var kn = document.getElementById('topicsEditKNum');
+    if (kn) kn.textContent = currentKollokvium;
+}
+
+function loadTopics() {
+    fetch('https://kollokvium1-default-rtdb.firebaseio.com/topics.json')
+        .then(function(r) { return r.json(); })
+        .then(function(d) {
+            if (d) {
+                kollokTopics[1] = (d.K1 && d.K1.length) ? d.K1 : null;
+                kollokTopics[2] = (d.K2 && d.K2.length) ? d.K2 : null;
+                kollokTopics[3] = (d.K3 && d.K3.length) ? d.K3 : null;
+            }
+            renderTopicCheckboxes();
+        })
+        .catch(function() { renderTopicCheckboxes(); });
+}
+
+function editTopics() {
+    var topics = currentTopics();
+    var input = prompt(
+        'Kollokvium ' + currentKollokvium + ' üçün dəftər mövzuları.\n' +
+        'Mövzuları vergüllə ayırın (məs: Mövzu 1, Mövzu 2, Mövzu 4.1):',
+        topics.join(', ')
+    );
+    if (input === null) return;
+    var arr = input.split(',').map(function(s) { return s.trim(); }).filter(Boolean).slice(0, 30);
+    if (!arr.length) { alert('Ən azı bir mövzu yazın!'); return; }
+    fbWrite('topics/K' + currentKollokvium, arr).then(function() {
+        kollokTopics[currentKollokvium] = arr;
+        renderTopicCheckboxes();
+        alert('Kollokvium ' + currentKollokvium + ' üçün mövzular yadda saxlanıldı!');
+    }).catch(function(e) {
+        console.warn('Mövzu yazma:', e.message);
+    });
+}
+
 // Köhnə adla uyğunluq
 function saveToFirebase(examFinished) { saveResults(examFinished); }
 
@@ -1786,6 +1842,7 @@ function loadPreviousSession() {
 }
 
 initFirebase();
+loadTopics();
 
 // ==================== DATA ====================
 var selectedGroup = '';
@@ -2480,6 +2537,8 @@ function switchKollokvium(num) {
 
     // Tab stilini yenilə
     updateKollokviumTabs();
+    // Dəftər mövzularını bu kollokviuma uyğun yenilə
+    renderTopicCheckboxes();
     // SelectedGroupPanel gizlə
     var panel = document.getElementById('selectedGroupPanel');
     if (panel) panel.style.display = 'none';

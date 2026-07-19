@@ -539,7 +539,7 @@ def kollok_write():
         return jsonify({"error": "Yazmaq üçün əsas saytda müəllim kimi daxil olmalısınız."}), 401
     body = request.get_json(silent=True) or {}
     path = (body.get('path') or '').strip()
-    if not re.fullmatch(r'sessions/[A-Za-z0-9_\-/]+', path):
+    if not re.fullmatch(r'(sessions|topics)/[A-Za-z0-9_\-/]+', path):
         return jsonify({"error": "Yol etibarsızdır."}), 400
     url = _fb_url(path)
     data = body.get('data', None)
