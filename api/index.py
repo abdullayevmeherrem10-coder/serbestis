@@ -1,7 +1,13 @@
 # -*- coding: utf-8 -*-
 from flask import Flask, request, jsonify
-import json, os, string, random, hashlib, hmac, base64, time
+import json, os, sys, string, random, hashlib, hmac, base64, time
 import urllib.request as urlreq
+
+# Vercel-də funksiya qovluğu sys.path-da olmur — qonşu modulların importu üçün əlavə edilir
+_HERE = os.path.dirname(os.path.abspath(__file__))
+if _HERE not in sys.path:
+    sys.path.insert(0, _HERE)
+
 from _credentials import CREDENTIALS
 from _results import RESULTS
 
