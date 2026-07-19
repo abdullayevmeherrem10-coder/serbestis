@@ -10,6 +10,7 @@ if _HERE not in sys.path:
 
 from _credentials import CREDENTIALS
 from _results import RESULTS
+from _roster import roster_action
 
 app = Flask(__name__)
 
@@ -266,7 +267,7 @@ def verify_token(token):
         if payload.get("exp", 0) < time.time():
             return None
         cid = payload.get("id", "")
-        return cid if cid in CREDENTIALS else None
+        return cid if cid else None
     except Exception:
         return None
 
@@ -287,10 +288,25 @@ def exam_grade(bal):
     return 'F “Qeyri-kafi”'
 
 
-def student_results(name, team, exam_scores=None):
+def effective_results(db):
+    """Statik nəticələr — ad/taqım dəyişmələri tətbiq edilmiş halda."""
+    rn = db.get("renames", {})
+    tr = db.get("team_renames", {})
+    out = {}
+    for group, data in RESULTS.items():
+        out[group] = {
+            "team": tr.get(data["team"], data["team"]),
+            "kollok": {rn.get(n, n): v for n, v in data["kollok"].items()},
+            "menimseme": {rn.get(n, n): v for n, v in data["menimseme"].items()},
+            "imtahan": {rn.get(n, n): v for n, v in data["imtahan"].items()},
+        }
+    return out
+
+
+def student_results(name, team, db):
     """Kursantın öz nəticələri (yoxdursa None sahələr). Müəllimin manual imtahan balı üstündür."""
     out = {"group": None, "kollok": None, "menimseme": None, "imtahan": None}
-    for group, data in RESULTS.items():
+    for group, data in effective_results(db).items():
         if data["team"] == team:
             out = {
                 "group": group,
@@ -299,10 +315,30 @@ def student_results(name, team, exam_scores=None):
                 "imtahan": data["imtahan"].get(name),
             }
             break
-    if exam_scores and name in exam_scores:
+    exam_scores = db.get("exam_scores", {})
+    if name in exam_scores:
         bal = exam_scores[name]
         out["imtahan"] = [str(bal), exam_grade(bal)]
     return out
+
+
+def raw_cred(cid, db):
+    """Statik və ya dinamik (müəllimin əlavə etdiyi) hesab."""
+    return CREDENTIALS.get(cid) or db.get("credentials_dyn", {}).get(cid)
+
+
+def resolve_cred(cid, db):
+    """ID → aktual hesab (ad/taqım dəyişmələri tətbiq edilmiş); silinibsə None."""
+    cred = raw_cred(cid, db)
+    if not cred:
+        return None
+    if cred.get("role") == "teacher":
+        return {"role": "teacher", "name": cred.get("name", "Müəllim")}
+    name = db.get("renames", {}).get(cred["name"], cred["name"])
+    if name in db.get("deleted_names", []):
+        return None
+    team = db.get("team_renames", {}).get(cred["team"], cred["team"])
+    return {"role": "student", "name": name, "team": team}
 
 
 def admin_guard():
@@ -339,18 +375,19 @@ def cabinet_login():
     body = request.get_json(silent=True) or {}
     cid = (body.get('id') or '').strip().upper()
     password = body.get('password') or ''
-    cred = CREDENTIALS.get(cid)
-    if not cred or cred_hash(cid, password) != cred.get('hash'):
+    db = load_db()
+    raw = raw_cred(cid, db)
+    if not raw or cred_hash(cid, password) != raw.get('hash'):
         record_failed_attempt(ip)
         remaining = max(0, MAX_ATTEMPTS - attempts - 1)
         return jsonify({"error": f"ID və ya şifrə yanlışdır! {remaining} cəhd qalıb."}), 403
     clear_rate_limit(ip)
-    resp = {"token": make_token(cid), "id": cid, "name": cred.get('name', '')}
-    if cred.get('role') == 'teacher':
-        resp["role"] = "teacher"
-    else:
-        resp["role"] = "student"
-        resp["team"] = cred['team']
+    cred = resolve_cred(cid, db)
+    if not cred:
+        return jsonify({"error": "Bu hesab deaktiv edilib."}), 403
+    resp = {"token": make_token(cid), "id": cid, "name": cred["name"], "role": cred["role"]}
+    if cred["role"] == "student":
+        resp["team"] = cred["team"]
     return jsonify(resp)
 
 
@@ -359,13 +396,15 @@ def cabinet_data():
     cid = token_from_request()
     if not cid:
         return jsonify({"error": "Sessiya bitib. Yenidən daxil olun."}), 401
-    cred = CREDENTIALS[cid]
+    db = load_db()
+    cred = resolve_cred(cid, db)
+    if not cred:
+        return jsonify({"error": "Sessiya bitib. Yenidən daxil olun."}), 401
     if cred.get('role') == 'teacher':
-        db = load_db()
         return jsonify({
             "role": "teacher",
             "name": cred.get('name', 'Müəllim'),
-            "results": RESULTS,
+            "results": effective_results(db),
             "selections": db.get('selections', {}),
             "scores": db.get('scores', {}),
             "deadlines": db.get('deadlines', {}),
@@ -376,7 +415,6 @@ def cabinet_data():
             "subject": db.get('subject', 'Hərbi Mühəndis Texnikası'),
             "exam_scores": db.get('exam_scores', {}),
         })
-    db = load_db()
     name = cred['name']
     return jsonify({
         "role": "student",
@@ -385,7 +423,7 @@ def cabinet_data():
         "team": cred['team'],
         "key": db.get('keys', {}).get(name, ''),
         "selections": db.get('selections', {}).get(name, []),
-        "results": student_results(name, cred['team'], db.get('exam_scores', {})),
+        "results": student_results(name, cred['team'], db),
         "scores": db.get('scores', {}).get(name),
         "deadline": db.get('deadlines', {}).get(name),
         "semester": db.get('semester', '2025/2026 yaz semestri'),
@@ -407,7 +445,7 @@ def semester_info():
 def cabinet_semester():
     """Müəllim semestr və fənn adını dəyişir."""
     cid = token_from_request()
-    if not cid or CREDENTIALS[cid].get('role') != 'teacher':
+    if not cid or CREDENTIALS.get(cid, {}).get('role') != 'teacher':
         return jsonify({"error": "İcazə yoxdur."}), 401
     body = request.get_json(silent=True) or {}
     semester = (body.get('semester') or '').strip()[:60]
@@ -425,7 +463,7 @@ def cabinet_semester():
 def cabinet_reset():
     """Müəllim bir kursantın sərbəst iş seçimini sıfırlayır."""
     cid = token_from_request()
-    if not cid or CREDENTIALS[cid].get('role') != 'teacher':
+    if not cid or CREDENTIALS.get(cid, {}).get('role') != 'teacher':
         return jsonify({"error": "İcazə yoxdur."}), 401
     body = request.get_json(silent=True) or {}
     name = (body.get('name') or '').strip()
@@ -443,7 +481,7 @@ def cabinet_reset():
 def cabinet_reset_all():
     """Müəllim bütün sərbəst iş seçimlərini sıfırlayır (ballara toxunmur)."""
     cid = token_from_request()
-    if not cid or CREDENTIALS[cid].get('role') != 'teacher':
+    if not cid or CREDENTIALS.get(cid, {}).get('role') != 'teacher':
         return jsonify({"error": "İcazə yoxdur."}), 401
     db = load_db()
     db['selections'] = {}
@@ -452,11 +490,25 @@ def cabinet_reset_all():
     return jsonify({"success": True, "selections": {}, "work_taken_by": db['work_taken_by']})
 
 
+@app.route('/api/cabinet-roster', methods=['POST'])
+def cabinet_roster():
+    """Müəllim taqım/kursant idarəetməsi: əlavə, ad dəyişmə, silmə."""
+    cid = token_from_request()
+    if not cid or CREDENTIALS.get(cid, {}).get('role') != 'teacher':
+        return jsonify({"error": "İcazə yoxdur."}), 401
+    body = request.get_json(silent=True) or {}
+    db = load_db()
+    changed, resp, code = roster_action(db, body, CREDENTIALS)
+    if changed:
+        save_db(db)
+    return jsonify(resp), code
+
+
 @app.route('/api/cabinet-exam', methods=['POST'])
 def cabinet_exam():
     """Müəllim kursantın imtahan balını (0-100) manual yazır; boş → statik nəticəyə qayıdır."""
     cid = token_from_request()
-    if not cid or CREDENTIALS[cid].get('role') != 'teacher':
+    if not cid or CREDENTIALS.get(cid, {}).get('role') != 'teacher':
         return jsonify({"error": "İcazə yoxdur."}), 401
     body = request.get_json(silent=True) or {}
     name = (body.get('name') or '').strip()
@@ -484,7 +536,7 @@ def cabinet_exam():
 def cabinet_deadline():
     """Müəllim sərbəst işlərin son təhvil tarixini dəyişir."""
     cid = token_from_request()
-    if not cid or CREDENTIALS[cid].get('role') != 'teacher':
+    if not cid or CREDENTIALS.get(cid, {}).get('role') != 'teacher':
         return jsonify({"error": "İcazə yoxdur."}), 401
     body = request.get_json(silent=True) or {}
     deadline = (body.get('deadline') or '').strip()[:60]
@@ -507,7 +559,7 @@ def cabinet_deadline():
 def cabinet_scores():
     """Müəllim kursant üçün Sərbəst iş (0-10) və Dəftər/İntizam (0-10) balı yazır."""
     cid = token_from_request()
-    if not cid or CREDENTIALS[cid].get('role') != 'teacher':
+    if not cid or CREDENTIALS.get(cid, {}).get('role') != 'teacher':
         return jsonify({"error": "İcazə yoxdur."}), 401
     body = request.get_json(silent=True) or {}
     name = (body.get('name') or '').strip()

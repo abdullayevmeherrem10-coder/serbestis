@@ -20,6 +20,7 @@ DB_FILE = os.path.join(BASE_DIR, "database.json")
 sys.path.insert(0, os.path.join(BASE_DIR, "api"))
 from _credentials import CREDENTIALS
 from _results import RESULTS
+from _roster import roster_action
 
 # Admin şifrəsi koda yazılmır: əvvəlcə ENV dəyişəni, sonra gitignore-lanmış
 # admin_secret.txt faylı oxunur. Heç biri yoxdursa təsadüfi (bilinməyən)
@@ -74,7 +75,7 @@ def verify_token(token):
         if payload.get("exp", 0) < time.time():
             return None
         cid = payload.get("id", "")
-        return cid if cid in CREDENTIALS else None
+        return cid if cid else None
     except Exception:
         return None
 
@@ -86,9 +87,23 @@ def exam_grade(bal):
     if bal >= 51: return 'E “Qənaətbəxş”'
     return 'F “Qeyri-kafi”'
 
-def student_results(name, team, exam_scores=None):
-    out = {"group": None, "kollok": None, "menimseme": None, "imtahan": None}
+def effective_results(db):
+    """Statik nəticələr — ad/taqım dəyişmələri tətbiq edilmiş halda."""
+    rn = db.get("renames", {})
+    tr = db.get("team_renames", {})
+    out = {}
     for group, data in RESULTS.items():
+        out[group] = {
+            "team": tr.get(data["team"], data["team"]),
+            "kollok": {rn.get(n, n): v for n, v in data["kollok"].items()},
+            "menimseme": {rn.get(n, n): v for n, v in data["menimseme"].items()},
+            "imtahan": {rn.get(n, n): v for n, v in data["imtahan"].items()},
+        }
+    return out
+
+def student_results(name, team, db):
+    out = {"group": None, "kollok": None, "menimseme": None, "imtahan": None}
+    for group, data in effective_results(db).items():
         if data["team"] == team:
             out = {
                 "group": group,
@@ -97,10 +112,28 @@ def student_results(name, team, exam_scores=None):
                 "imtahan": data["imtahan"].get(name),
             }
             break
-    if exam_scores and name in exam_scores:
+    exam_scores = db.get("exam_scores", {})
+    if name in exam_scores:
         bal = exam_scores[name]
         out["imtahan"] = [str(bal), exam_grade(bal)]
     return out
+
+def raw_cred(cid, db):
+    """Statik və ya dinamik (müəllimin əlavə etdiyi) hesab."""
+    return CREDENTIALS.get(cid) or db.get("credentials_dyn", {}).get(cid)
+
+def resolve_cred(cid, db):
+    """ID → aktual hesab (ad/taqım dəyişmələri tətbiq edilmiş); silinibsə None."""
+    cred = raw_cred(cid, db)
+    if not cred:
+        return None
+    if cred.get("role") == "teacher":
+        return {"role": "teacher", "name": cred.get("name", "Müəllim")}
+    name = db.get("renames", {}).get(cred["name"], cred["name"])
+    if name in db.get("deleted_names", []):
+        return None
+    team = db.get("team_renames", {}).get(cred["team"], cred["team"])
+    return {"role": "student", "name": name, "team": team}
 
 def generate_key(length=6):
     chars = string.ascii_uppercase + string.digits
@@ -160,13 +193,16 @@ class Handler(http.server.BaseHTTPRequestHandler):
             if not cid:
                 self.send_json({"error": "Sessiya bitib. Yenidən daxil olun."}, 401)
                 return
-            cred = CREDENTIALS[cid]
             db = load_db()
+            cred = resolve_cred(cid, db)
+            if not cred:
+                self.send_json({"error": "Sessiya bitib. Yenidən daxil olun."}, 401)
+                return
             if cred.get("role") == "teacher":
                 self.send_json({
                     "role": "teacher",
                     "name": cred.get("name", "Müəllim"),
-                    "results": RESULTS,
+                    "results": effective_results(db),
                     "selections": db.get("selections", {}),
                     "scores": db.get("scores", {}),
                     "deadlines": db.get("deadlines", {}),
@@ -186,7 +222,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
                 "team": cred["team"],
                 "key": db.get("keys", {}).get(name, ""),
                 "selections": db.get("selections", {}).get(name, []),
-                "results": student_results(name, cred["team"], db.get("exam_scores", {})),
+                "results": student_results(name, cred["team"], db),
                 "scores": db.get("scores", {}).get(name),
                 "deadline": db.get("deadlines", {}).get(name),
                 "semester": db.get("semester", "2025/2026 yaz semestri"),
@@ -262,10 +298,23 @@ class Handler(http.server.BaseHTTPRequestHandler):
         parsed = urllib.parse.urlparse(self.path)
         path = parsed.path
 
-        if path == "/api/cabinet-exam":
+        if path == "/api/cabinet-roster":
             auth = self.headers.get("Authorization", "")
             cid = verify_token(auth[7:].strip()) if auth.startswith("Bearer ") else None
-            if not cid or CREDENTIALS[cid].get("role") != "teacher":
+            if not cid or CREDENTIALS.get(cid, {}).get("role") != "teacher":
+                self.send_json({"error": "İcazə yoxdur."}, 401)
+                return
+            body = self.read_body()
+            db = load_db()
+            changed, resp, code = roster_action(db, body, CREDENTIALS)
+            if changed:
+                save_db(db)
+            self.send_json(resp, code)
+
+        elif path == "/api/cabinet-exam":
+            auth = self.headers.get("Authorization", "")
+            cid = verify_token(auth[7:].strip()) if auth.startswith("Bearer ") else None
+            if not cid or CREDENTIALS.get(cid, {}).get("role") != "teacher":
                 self.send_json({"error": "İcazə yoxdur."}, 401)
                 return
             body = self.read_body()
@@ -296,7 +345,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
         elif path == "/api/cabinet-semester":
             auth = self.headers.get("Authorization", "")
             cid = verify_token(auth[7:].strip()) if auth.startswith("Bearer ") else None
-            if not cid or CREDENTIALS[cid].get("role") != "teacher":
+            if not cid or CREDENTIALS.get(cid, {}).get("role") != "teacher":
                 self.send_json({"error": "İcazə yoxdur."}, 401)
                 return
             body = self.read_body()
@@ -314,7 +363,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
         elif path == "/api/cabinet-reset":
             auth = self.headers.get("Authorization", "")
             cid = verify_token(auth[7:].strip()) if auth.startswith("Bearer ") else None
-            if not cid or CREDENTIALS[cid].get("role") != "teacher":
+            if not cid or CREDENTIALS.get(cid, {}).get("role") != "teacher":
                 self.send_json({"error": "İcazə yoxdur."}, 401)
                 return
             body = self.read_body()
@@ -332,7 +381,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
         elif path == "/api/cabinet-reset-all":
             auth = self.headers.get("Authorization", "")
             cid = verify_token(auth[7:].strip()) if auth.startswith("Bearer ") else None
-            if not cid or CREDENTIALS[cid].get("role") != "teacher":
+            if not cid or CREDENTIALS.get(cid, {}).get("role") != "teacher":
                 self.send_json({"error": "İcazə yoxdur."}, 401)
                 return
             db = load_db()
@@ -344,7 +393,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
         elif path == "/api/cabinet-deadline":
             auth = self.headers.get("Authorization", "")
             cid = verify_token(auth[7:].strip()) if auth.startswith("Bearer ") else None
-            if not cid or CREDENTIALS[cid].get("role") != "teacher":
+            if not cid or CREDENTIALS.get(cid, {}).get("role") != "teacher":
                 self.send_json({"error": "İcazə yoxdur."}, 401)
                 return
             body = self.read_body()
@@ -368,7 +417,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
         elif path == "/api/cabinet-scores":
             auth = self.headers.get("Authorization", "")
             cid = verify_token(auth[7:].strip()) if auth.startswith("Bearer ") else None
-            if not cid or CREDENTIALS[cid].get("role") != "teacher":
+            if not cid or CREDENTIALS.get(cid, {}).get("role") != "teacher":
                 self.send_json({"error": "İcazə yoxdur."}, 401)
                 return
             body = self.read_body()
@@ -401,15 +450,17 @@ class Handler(http.server.BaseHTTPRequestHandler):
             body = self.read_body()
             cid = (body.get("id") or "").strip().upper()
             password = body.get("password") or ""
-            cred = CREDENTIALS.get(cid)
-            if not cred or cred_hash(cid, password) != cred.get("hash"):
+            db = load_db()
+            raw = raw_cred(cid, db)
+            if not raw or cred_hash(cid, password) != raw.get("hash"):
                 self.send_json({"error": "ID və ya şifrə yanlışdır!"}, 403)
                 return
-            resp = {"token": make_token(cid), "id": cid, "name": cred.get("name", "")}
-            if cred.get("role") == "teacher":
-                resp["role"] = "teacher"
-            else:
-                resp["role"] = "student"
+            cred = resolve_cred(cid, db)
+            if not cred:
+                self.send_json({"error": "Bu hesab deaktiv edilib."}, 403)
+                return
+            resp = {"token": make_token(cid), "id": cid, "name": cred["name"], "role": cred["role"]}
+            if cred["role"] == "student":
                 resp["team"] = cred["team"]
             self.send_json(resp)
 

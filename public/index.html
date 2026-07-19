@@ -1742,6 +1742,33 @@
             white-space: nowrap;
         }
         .btn-reset:hover { background: rgba(198,40,40,0.06); border-color: var(--danger); }
+        .tp-tools { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+        .btn-mini {
+            padding: 8px 16px;
+            border-radius: 10px;
+            border: 1.5px solid rgba(69,95,81,0.3);
+            background: rgba(255,255,255,0.9);
+            color: #455f51;
+            font-family: inherit;
+            font-size: 0.78rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+        .btn-mini:hover { background: rgba(69,95,81,0.08); border-color: #455f51; transform: translateY(-1px); }
+        .row-edit {
+            border: none;
+            background: none;
+            color: #8fa69b;
+            cursor: pointer;
+            font-size: 0.8rem;
+            padding: 2px 5px;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+            vertical-align: middle;
+        }
+        .row-edit:hover { color: #455f51; background: rgba(69,95,81,0.08); }
+        .tp-actions { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; }
         .tp-sel { margin: 0; padding-left: 18px; font-size: 0.82rem; line-height: 1.6; }
         .tp-sel li { padding: 2px 0; }
 
@@ -2181,6 +2208,11 @@
         <div class="card">
             <div class="card-title"><div class="icon">&#128203;</div> Sərbəst iş seçimləri və son tarixlər</div>
             <div class="subtab-nav" id="tpTeamTabs"></div>
+            <div class="tp-tools">
+                <button class="btn-mini" onclick="tpAddStudent()">&#10133; Kursant əlavə et</button>
+                <button class="btn-mini" onclick="tpRenameTeam()">&#9998; Taqım adını dəyiş</button>
+                <button class="btn-mini" onclick="tpAddTeam()">&#10133; Yeni taqım</button>
+            </div>
             <div class="results-table-wrap">
                 <table class="results-table">
                     <thead>
@@ -3218,7 +3250,8 @@
             if (kb) {
                 kb.innerHTML = '';
                 let i = 1, sums = [0, 0, 0], cnts = [0, 0, 0];
-                for (const [name, vals] of Object.entries(g.kollok)) {
+                for (const name of teamRoster(g)) {
+                    const vals = (g.kollok && g.kollok[name]) || [null, null, null];
                     kb.insertAdjacentHTML('beforeend', `<tr data-name="${name}"><td class="col-num">${i++}</td><td>${name}</td>` +
                         vals.map(v => `<td class="col-bal">${balSpanHtml(v, balCls(v))}</td>`).join('') + '</tr>');
                     vals.forEach((v, j) => { const n = parseInt(v); if (!isNaN(n)) { sums[j] += n; cnts[j]++; } });
@@ -3357,10 +3390,10 @@
                 : '<span class="bal bal-none">Seçməyib</span>';
             tb.insertAdjacentHTML('beforeend', `<tr data-name="${name}">
                 <td class="col-num">${i + 1}</td>
-                <td>${name}</td>
+                <td>${name} <button class="row-edit" title="Adı dəyiş" onclick="tpRenameStudent(this)">&#9998;</button></td>
                 <td>${selHtml}</td>
                 <td class="col-bal"><input type="text" class="dl-input dl-inp-cell" value="${dls[name] || ''}" placeholder="&#8212;" maxlength="40" onchange="saveStudentDeadline(this)"></td>
-                <td class="col-bal">${sel.length ? '<button class="btn-reset" onclick="tpResetStudent(this)">Sıfırla</button>' : ''}</td>
+                <td class="col-bal"><div class="tp-actions">${sel.length ? '<button class="btn-reset" onclick="tpResetStudent(this)">Sıfırla</button>' : ''}<button class="btn-reset" title="Kursantı sil" onclick="tpDeleteStudent(this)">&#128465;</button></div></td>
             </tr>`);
         });
     }
@@ -3417,6 +3450,80 @@
         }
     }
 
+    // ===== Müəllim: taqım/kursant idarəetməsi =====
+    async function rosterPost(payload) {
+        const res = await fetch('/api/cabinet-roster', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.token },
+            body: JSON.stringify(payload)
+        });
+        if (res.status === 401) { cabinetLogout(); showToast('Sessiya bitib — yenidən daxil olun.', 'error'); throw 0; }
+        const d = await res.json();
+        if (!res.ok) { showToast(d.error || 'Xəta baş verdi!', 'error'); throw 0; }
+        return d;
+    }
+
+    async function tpRefreshAll() {
+        cabData = null;
+        try { await fetchCabData(); } catch(e) { return; }
+        renderTeacherTables(cabData.results || {});
+        enrichTeacherLive();
+        renderTeacherPanel();
+    }
+
+    async function tpAddTeam() {
+        const t = prompt('Yeni taqımın adı:');
+        if (!t || !t.trim()) return;
+        try {
+            await rosterPost({ action: 'add_team', team: t.trim() });
+            tpTeam = t.trim();
+            await tpRefreshAll();
+            showToast('Taqım əlavə edildi', 'success');
+        } catch(e) {}
+    }
+
+    async function tpRenameTeam() {
+        const nv = prompt('"' + tpTeam + '" taqımının yeni adı:', tpTeam);
+        if (!nv || !nv.trim() || nv.trim() === tpTeam) return;
+        try {
+            await rosterPost({ action: 'rename_team', team: tpTeam, new: nv.trim() });
+            tpTeam = nv.trim();
+            await tpRefreshAll();
+            showToast('Taqım adı dəyişdirildi', 'success');
+        } catch(e) {}
+    }
+
+    async function tpAddStudent() {
+        const n = prompt('"' + tpTeam + '" taqımına yeni kursantın tam adı:');
+        if (!n || !n.trim()) return;
+        try {
+            const d = await rosterPost({ action: 'add_student', team: tpTeam, name: n.trim() });
+            await tpRefreshAll();
+            alert('Kursant əlavə edildi!\n\nID: ' + d.id + '\nŞifrə: ' + d.password + '\n\nBu məlumatları kursanta verin — şifrə yalnız indi göstərilir!');
+        } catch(e) {}
+    }
+
+    async function tpRenameStudent(btn) {
+        const old = btn.closest('tr').dataset.name;
+        const nv = prompt('Kursantın yeni adı:', old);
+        if (!nv || !nv.trim() || nv.trim() === old) return;
+        try {
+            await rosterPost({ action: 'rename_student', name: old, new: nv.trim() });
+            await tpRefreshAll();
+            showToast('Ad dəyişdirildi — bütün ballar və seçimlər saxlanıldı', 'success');
+        } catch(e) {}
+    }
+
+    async function tpDeleteStudent(btn) {
+        const name = btn.closest('tr').dataset.name;
+        if (!confirm(name + ' — silinsin? Bütün balları, seçimi və girişi ləğv olunacaq.')) return;
+        try {
+            await rosterPost({ action: 'delete_student', name: name });
+            await tpRefreshAll();
+            showToast('Kursant silindi', 'success');
+        } catch(e) {}
+    }
+
     // ===== Müəllim: canlı kollokvium balları + mənimsəmə qiymətləndirməsi =====
     const teacherLive = {};
 
@@ -3440,6 +3547,10 @@
         return maps;
     }
 
+    function teamRoster(g) {
+        return (cabData.teams || {})[g.team] || Object.keys(g.kollok || {});
+    }
+
     function mergedKollokFor(name, g, live) {
         // Canlı bal statik baldan üstündür; [k1,k2,k3], null = bal yoxdur
         const stat = (g.kollok && g.kollok[name]) || [null, null, null];
@@ -3456,7 +3567,7 @@
         const scores = cabData.scores || {};
         mb.innerHTML = '';
         let i = 1;
-        for (const name of Object.keys(g.kollok || {})) {
+        for (const name of teamRoster(g)) {
             const ks = mergedKollokFor(name, g, live);
             const ksum = ks.reduce((a, v) => a + (v || 0), 0);
             const sc = scores[name] || {};
@@ -3524,7 +3635,7 @@
         kb.innerHTML = '';
         let i = 1;
         const sums = [0, 0, 0], cnts = [0, 0, 0];
-        for (const name of Object.keys(g.kollok || {})) {
+        for (const name of teamRoster(g)) {
             const ks = mergedKollokFor(name, g, live);
             kb.insertAdjacentHTML('beforeend', `<tr data-name="${name}"><td class="col-num">${i++}</td><td>${name}</td>` +
                 ks.map(v => `<td class="col-bal">${balSpanHtml(v, balCls(v))}</td>`).join('') + '</tr>');
@@ -3557,7 +3668,8 @@
         const manual = cabData.exam_scores || {};
         ib.innerHTML = '';
         let i = 1;
-        for (const [name, v] of Object.entries(g.imtahan)) {
+        for (const name of teamRoster(g)) {
+            const v = (g.imtahan || {})[name];
             const staticBal = v ? parseInt(v[0]) : NaN;
             const bal = manual[name] != null ? manual[name] : (isNaN(staticBal) ? null : staticBal);
             ib.insertAdjacentHTML('beforeend',
