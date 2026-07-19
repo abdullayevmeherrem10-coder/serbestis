@@ -2185,7 +2185,7 @@
             <div class="results-table-wrap">
                 <table class="results-table">
                     <thead>
-                        <tr><th class="col-num">&#8470;</th><th>Kursant&#305;n ad&#305;</th><th class="col-bal">K1</th><th class="col-bal">K2</th><th class="col-bal">K3</th><th class="col-bal">Koll. &#8721;<small>maks 30</small></th><th class="col-bal">S&#601;rb&#601;st i&#351;<small>maks 10</small></th><th class="col-bal">D&#601;ft&#601;r / &#304;ntizam<small>maks 10</small></th><th class="col-bal">M&#601;nims&#601;m&#601;<small>maks 50</small></th></tr>
+                        <tr><th class="col-num">&#8470;</th><th>Kursant&#305;n ad&#305;</th><th class="col-bal">K1</th><th class="col-bal">K2</th><th class="col-bal">K3</th><th class="col-bal">Koll. c&#601;mi<small>maks 30</small></th><th class="col-bal">S&#601;rb&#601;st i&#351;<small>maks 10</small></th><th class="col-bal">D&#601;ft&#601;r / &#304;ntizam<small>maks 10</small></th><th class="col-bal">M&#601;nims&#601;m&#601;<small>maks 50</small></th></tr>
                     </thead>
                     <tbody id="menimseme1Body"></tbody>
                 </table>
@@ -2211,7 +2211,7 @@
             <div class="results-table-wrap">
                 <table class="results-table">
                     <thead>
-                        <tr><th class="col-num">&#8470;</th><th>Kursant&#305;n ad&#305;</th><th class="col-bal">K1</th><th class="col-bal">K2</th><th class="col-bal">K3</th><th class="col-bal">Koll. &#8721;<small>maks 30</small></th><th class="col-bal">S&#601;rb&#601;st i&#351;<small>maks 10</small></th><th class="col-bal">D&#601;ft&#601;r / &#304;ntizam<small>maks 10</small></th><th class="col-bal">M&#601;nims&#601;m&#601;<small>maks 50</small></th></tr>
+                        <tr><th class="col-num">&#8470;</th><th>Kursant&#305;n ad&#305;</th><th class="col-bal">K1</th><th class="col-bal">K2</th><th class="col-bal">K3</th><th class="col-bal">Koll. c&#601;mi<small>maks 30</small></th><th class="col-bal">S&#601;rb&#601;st i&#351;<small>maks 10</small></th><th class="col-bal">D&#601;ft&#601;r / &#304;ntizam<small>maks 10</small></th><th class="col-bal">M&#601;nims&#601;m&#601;<small>maks 50</small></th></tr>
                     </thead>
                     <tbody id="menimseme2Body"></tbody>
                 </table>
@@ -2991,9 +2991,7 @@
                     row += `<div class="cab-subrow">Səbəb: ${x.live.absentReason}</div>`;
                 }
                 return row;
-            }).join('') + (kmerged.some(x => x.live)
-                ? '<p class="cab-scale"><span class="live-dot" style="margin-left:0;margin-right:5px;"></span>Elektron Kollokvium Sistemindən avtomatik yenilənir</p>'
-                : '<p class="cab-scale">Maksimum bal: 10</p>');
+            }).join('') + '<p class="cab-scale">Maksimum bal: 10</p>';
         } else k.innerHTML = empty;
 
         // Mənimsəmə — bölgü: Kollokvium ∑ + Sərbəst iş + Dəftər/İntizam
@@ -3008,7 +3006,7 @@
             return `<div class="cab-row"><span class="cab-row-name">${label}</span><div class="cab-row-bar"><i class="${has ? pctCls(pct).replace('bal-', 'bar-') : 'bar-mid'}" data-w="${Math.round(pct)}"></i></div>${chip}</div>`;
         };
         m.innerHTML =
-            menRow('Kollokvium &#8721;', hasKollok ? kollokSum : null, 30) +
+            menRow('Kollokvium cəmi', hasKollok ? kollokSum : null, 30) +
             menRow('Sərbəst iş', serbestB, 10) +
             menRow('Dəftər/İntizam', defterB, 10) +
             (men != null
