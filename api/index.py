@@ -354,7 +354,7 @@ def cabinet_data():
             "results": RESULTS,
             "selections": db.get('selections', {}),
             "scores": db.get('scores', {}),
-            "deadline": db.get('deadline', '20 may 2026'),
+            "deadlines": db.get('deadlines', {}),
         })
     db = load_db()
     name = cred['name']
@@ -367,7 +367,7 @@ def cabinet_data():
         "selections": db.get('selections', {}).get(name, []),
         "results": student_results(name, cred['team']),
         "scores": db.get('scores', {}).get(name),
-        "deadline": db.get('deadline', '20 may 2026'),
+        "deadline": db.get('deadlines', {}).get(name),
     })
 
 
@@ -379,12 +379,19 @@ def cabinet_deadline():
         return jsonify({"error": "İcazə yoxdur."}), 401
     body = request.get_json(silent=True) or {}
     deadline = (body.get('deadline') or '').strip()[:60]
-    if not deadline:
-        return jsonify({"error": "Tarix boş ola bilməz."}), 400
+    name = (body.get('name') or '').strip()
+    if not name:
+        return jsonify({"error": "Kursant adı göstərilməyib."}), 400
     db = load_db()
-    db['deadline'] = deadline
+    if not any(name in members for members in db.get('teams', {}).values()):
+        return jsonify({"error": "Kursant tapılmadı."}), 404
+    dls = db.setdefault('deadlines', {})
+    if deadline:
+        dls[name] = deadline
+    else:
+        dls.pop(name, None)
     save_db(db)
-    return jsonify({"success": True, "deadline": deadline})
+    return jsonify({"success": True, "name": name, "deadline": deadline or None})
 
 
 @app.route('/api/cabinet-scores', methods=['POST'])

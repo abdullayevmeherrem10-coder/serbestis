@@ -149,7 +149,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
                     "results": RESULTS,
                     "selections": db.get("selections", {}),
                     "scores": db.get("scores", {}),
-                    "deadline": db.get("deadline", "20 may 2026"),
+                    "deadlines": db.get("deadlines", {}),
                 })
                 return
             name = cred["name"]
@@ -162,7 +162,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
                 "selections": db.get("selections", {}).get(name, []),
                 "results": student_results(name, cred["team"]),
                 "scores": db.get("scores", {}).get(name),
-                "deadline": db.get("deadline", "20 may 2026"),
+                "deadline": db.get("deadlines", {}).get(name),
             })
 
         elif path == "/api/student-status":
@@ -244,13 +244,21 @@ class Handler(http.server.BaseHTTPRequestHandler):
                 return
             body = self.read_body()
             deadline = (body.get("deadline") or "").strip()[:60]
-            if not deadline:
-                self.send_json({"error": "Tarix boş ola bilməz."}, 400)
+            name = (body.get("name") or "").strip()
+            if not name:
+                self.send_json({"error": "Kursant adı göstərilməyib."}, 400)
                 return
             db = load_db()
-            db["deadline"] = deadline
+            if not any(name in members for members in db.get("teams", {}).values()):
+                self.send_json({"error": "Kursant tapılmadı."}, 404)
+                return
+            dls = db.setdefault("deadlines", {})
+            if deadline:
+                dls[name] = deadline
+            else:
+                dls.pop(name, None)
             save_db(db)
-            self.send_json({"success": True, "deadline": deadline})
+            self.send_json({"success": True, "name": name, "deadline": deadline or None})
 
         elif path == "/api/cabinet-scores":
             auth = self.headers.get("Authorization", "")

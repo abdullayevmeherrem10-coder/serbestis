@@ -1185,20 +1185,6 @@
             border-radius: 6px;
             border: 1px solid rgba(69,95,81,0.3);
         }
-        .dl-edit {
-            margin-left: 8px;
-            padding: 4px 12px;
-            border-radius: 8px;
-            border: 1.5px solid rgba(69,95,81,0.3);
-            background: rgba(255,255,255,0.85);
-            color: #455f51;
-            font-family: inherit;
-            font-size: 0.76rem;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.25s ease;
-        }
-        .dl-edit:hover { background: rgba(69,95,81,0.08); border-color: #455f51; }
         .dl-input {
             width: 150px;
             padding: 4px 10px;
@@ -1211,17 +1197,15 @@
             outline: none;
             background: #fff;
         }
-        .dl-save {
-            margin-left: 5px;
-            padding: 4px 14px;
-            border-radius: 8px;
-            border: none;
-            background: linear-gradient(135deg, #455f51, #6b8f7b);
-            color: #fff;
-            font-family: inherit;
-            font-weight: 800;
-            cursor: pointer;
+        .dl-inp-cell {
+            width: 116px;
+            padding: 6px 8px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            border-color: #d5e8d4;
+            transition: all 0.25s ease;
         }
+        .dl-inp-cell:focus { border-color: #455f51; box-shadow: 0 0 0 3px rgba(69,95,81,0.1); }
         @media (max-width: 768px) {
             .deadline-banner { padding: 12px 16px; gap: 10px; }
             .deadline-banner .dl-text { font-size: 0.82rem; }
@@ -1937,11 +1921,11 @@
 
         <div class="cab-stats" id="cabStats"></div>
 
-        <div class="deadline-banner" role="alert">
+        <div class="deadline-banner" role="alert" id="cabDeadlineBanner" style="display:none">
             <span class="dl-icon">&#9888;</span>
             <span class="dl-text">
-                <strong>Diqqət!</strong> Sərbəst işlərin son təhvil verilmə və müdafiə tarixi:
-                <span class="dl-date" id="cabDlDate">20 may 2026</span>
+                <strong>Diqqət!</strong> Sərbəst işinizin son təhvil verilmə və müdafiə tarixi:
+                <span class="dl-date" id="cabDlDate"></span>
             </span>
         </div>
 
@@ -2029,14 +2013,6 @@
 
     <!-- Section 1: Team Selection -->
     <div class="section active" id="sec-team">
-        <div class="deadline-banner" role="alert">
-            <span class="dl-icon">&#9888;</span>
-            <span class="dl-text">
-                <strong>Diqqət!</strong> Sərbəst işlərin son təhvil verilmə və müdafiə tarixi:
-                <span class="dl-date" id="dlDate">20 may 2026</span>
-                <button class="dl-edit" id="dlEditBtn" onclick="editDeadline()" title="Tarixi dəyiş" style="display:none;">&#9998; Dəyiş</button>
-            </span>
-        </div>
         <div class="card">
             <div class="card-title">
                 <div class="icon">&#9776;</div>
@@ -2231,7 +2207,7 @@
             <div class="results-table-wrap">
                 <table class="results-table">
                     <thead>
-                        <tr><th class="col-num">&#8470;</th><th>Kursant&#305;n ad&#305;</th><th class="col-bal">K1</th><th class="col-bal">K2</th><th class="col-bal">K3</th><th class="col-bal">Koll. c&#601;mi<small>maks 30</small></th><th class="col-bal">S&#601;rb&#601;st i&#351;<small>maks 10</small></th><th class="col-bal">D&#601;ft&#601;r / &#304;ntizam<small>maks 10</small></th><th class="col-bal">M&#601;nims&#601;m&#601;<small>maks 50</small></th></tr>
+                        <tr><th class="col-num">&#8470;</th><th>Kursant&#305;n ad&#305;</th><th class="col-bal">K1</th><th class="col-bal">K2</th><th class="col-bal">K3</th><th class="col-bal">Koll. c&#601;mi<small>maks 30</small></th><th class="col-bal">S&#601;rb&#601;st i&#351;<small>maks 10</small></th><th class="col-bal">D&#601;ft&#601;r / &#304;ntizam<small>maks 10</small></th><th class="col-bal">M&#601;nims&#601;m&#601;<small>maks 50</small></th><th class="col-bal">Son tarix<small>f&#601;rdi</small></th></tr>
                     </thead>
                     <tbody id="menimseme1Body"></tbody>
                 </table>
@@ -2257,7 +2233,7 @@
             <div class="results-table-wrap">
                 <table class="results-table">
                     <thead>
-                        <tr><th class="col-num">&#8470;</th><th>Kursant&#305;n ad&#305;</th><th class="col-bal">K1</th><th class="col-bal">K2</th><th class="col-bal">K3</th><th class="col-bal">Koll. c&#601;mi<small>maks 30</small></th><th class="col-bal">S&#601;rb&#601;st i&#351;<small>maks 10</small></th><th class="col-bal">D&#601;ft&#601;r / &#304;ntizam<small>maks 10</small></th><th class="col-bal">M&#601;nims&#601;m&#601;<small>maks 50</small></th></tr>
+                        <tr><th class="col-num">&#8470;</th><th>Kursant&#305;n ad&#305;</th><th class="col-bal">K1</th><th class="col-bal">K2</th><th class="col-bal">K3</th><th class="col-bal">Koll. c&#601;mi<small>maks 30</small></th><th class="col-bal">S&#601;rb&#601;st i&#351;<small>maks 10</small></th><th class="col-bal">D&#601;ft&#601;r / &#304;ntizam<small>maks 10</small></th><th class="col-bal">M&#601;nims&#601;m&#601;<small>maks 50</small></th><th class="col-bal">Son tarix<small>f&#601;rdi</small></th></tr>
                     </thead>
                     <tbody id="menimseme2Body"></tbody>
                 </table>
@@ -2944,7 +2920,7 @@
         try { liveK = await fetchLiveKollok(cabData.team, name); } catch(e) {}
         buildPersonalCards(cabData.results || {}, liveK);
         renderCabSerbest();
-        setDeadlineText(cabData.deadline || '20 may 2026', false);
+        setDeadlineText(cabData.deadline);
         document.getElementById('cabinetView').style.display = '';
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
@@ -3089,7 +3065,8 @@
         } else if (!cabData.key) {
             el.innerHTML = '<p class="cab-empty">Sərbəst iş seçimi üçün təsdiq açarı hələ təyin edilməyib — müəllimlə əlaqə saxlayın.</p>';
         } else {
-            el.innerHTML = `<p class="cab-empty" style="margin-bottom:14px;">Hələ sərbəst iş seçməmisiniz. Son təhvil tarixi: <strong style="color:var(--danger);">${cabData.deadline || '20 may 2026'}</strong></p>
+            const dlTxt = cabData.deadline ? ` Son təhvil tarixi: <strong style="color:var(--danger);">${cabData.deadline}</strong>` : '';
+            el.innerHTML = `<p class="cab-empty" style="margin-bottom:14px;">Hələ sərbəst iş seçməmisiniz.${dlTxt}</p>
                 <button class="btn btn-primary" onclick="startSerbestFlow()">Sərbəst iş seç &#8594;</button>`;
         }
     }
@@ -3116,7 +3093,6 @@
         try { if (!cabData) await fetchCabData(); } catch(e) { return; }
         renderTeacherTables(cabData.results || {});
         enrichTeacherLive();
-        setDeadlineText(cabData.deadline || '20 may 2026', true);
         document.getElementById('tabNav').style.display = '';
         const av = document.getElementById('appView');
         av.classList.remove('student-mode');
@@ -3174,40 +3150,35 @@
         }
     }
 
-    // ===== Son təhvil tarixi (müəllim təyin edir, hamıda görünür) =====
-    function setDeadlineText(d, isTeacher) {
-        const span = document.getElementById('dlDate');
-        if (span) span.textContent = d;
-        const btn = document.getElementById('dlEditBtn');
-        if (btn) btn.style.display = isTeacher ? '' : 'none';
-        const cd = document.getElementById('cabDlDate');
-        if (cd) cd.textContent = d;
+    // ===== Fərdi son təhvil tarixi =====
+    function setDeadlineText(d) {
+        const banner = document.getElementById('cabDeadlineBanner');
+        if (!banner) return;
+        if (d) {
+            const cd = document.getElementById('cabDlDate');
+            if (cd) cd.textContent = d;
+            banner.style.display = '';
+        } else {
+            banner.style.display = 'none';
+        }
     }
 
-    function editDeadline() {
-        if (!session || session.role !== 'teacher') return;
-        const span = document.getElementById('dlDate');
-        const cur = span.textContent.trim();
-        span.innerHTML = `<input id="dlInput" class="dl-input" value="${cur}" maxlength="40" onkeydown="if(event.key==='Enter')saveDeadline()"><button class="dl-save" onclick="saveDeadline()">&#10003;</button>`;
-        document.getElementById('dlEditBtn').style.display = 'none';
-        document.getElementById('dlInput').focus();
-    }
-
-    async function saveDeadline() {
-        const inp = document.getElementById('dlInput');
+    async function saveStudentDeadline(inp) {
+        const tr = inp.closest('tr');
+        const name = tr.dataset.name;
         const v = inp.value.trim();
-        if (!v) { showToast('Tarix boş ola bilməz!', 'error'); return; }
         try {
             const res = await fetch('/api/cabinet-deadline', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.token },
-                body: JSON.stringify({ deadline: v })
+                body: JSON.stringify({ name: name, deadline: v })
             });
             if (res.status === 401) { cabinetLogout(); showToast('Sessiya bitib — yenidən daxil olun.', 'error'); return; }
             if (!res.ok) throw 0;
-            cabData.deadline = v;
-            setDeadlineText(v, true);
-            showToast('Tarix yeniləndi — kursantların kabinetində də görünəcək', 'success');
+            cabData.deadlines = cabData.deadlines || {};
+            if (v) cabData.deadlines[name] = v; else delete cabData.deadlines[name];
+            tr.style.background = 'rgba(46,125,50,0.1)';
+            setTimeout(() => { tr.style.background = ''; }, 700);
         } catch(e) {
             showToast('Tarix yadda saxlanıla bilmədi!', 'error');
         }
@@ -3264,7 +3235,8 @@
                 `<td class="col-bal"><span class="bal ${ksum >= 24 ? 'bal-high' : ksum >= 18 ? 'bal-mid' : 'bal-low'}">${ksum}</span></td>` +
                 `<td class="col-bal"><input type="number" class="score-inp" data-field="serbest" min="0" max="10" value="${sv}" onchange="saveScore(this)"></td>` +
                 `<td class="col-bal"><input type="number" class="score-inp" data-field="defter" min="0" max="10" value="${dv}" onchange="saveScore(this)"></td>` +
-                `<td class="col-bal men-total"></td></tr>`);
+                `<td class="col-bal men-total"></td>` +
+                `<td class="col-bal"><input type="text" class="dl-input dl-inp-cell" value="${(cabData.deadlines || {})[name] || ''}" placeholder="&#8212;" maxlength="40" onchange="saveStudentDeadline(this)"></td></tr>`);
             updateMenRow(mb.lastElementChild);
         }
         updateMenSummary(mb);

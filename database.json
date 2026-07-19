@@ -270,6 +270,15 @@
     "Abbasov Ramal Ramil oğlu": {
       "serbest": 5,
       "defter": 5
+    },
+    "Ağabalayev Oktay Mahmud oğlu": {
+      "serbest": 7,
+      "defter": 7
+    },
+    "Axundzadə Onur Zəki oğlu": {
+      "serbest": 10,
+      "defter": 10
     }
-  }
+  },
+  "deadlines": {}
 }
