@@ -358,6 +358,8 @@ def cabinet_data():
             "teams": db.get('teams', {}),
             "works": db.get('works', []),
             "work_taken_by": db.get('work_taken_by', {}),
+            "semester": db.get('semester', '2025/2026 yaz semestri'),
+            "subject": db.get('subject', 'Hərbi Mühəndis Texnikası'),
         })
     db = load_db()
     name = cred['name']
@@ -371,7 +373,37 @@ def cabinet_data():
         "results": student_results(name, cred['team']),
         "scores": db.get('scores', {}).get(name),
         "deadline": db.get('deadlines', {}).get(name),
+        "semester": db.get('semester', '2025/2026 yaz semestri'),
+        "subject": db.get('subject', 'Hərbi Mühəndis Texnikası'),
     })
+
+
+@app.route('/api/semester-info')
+def semester_info():
+    """Giriş səhifəsi üçün açıq məlumat: semestr və fənn adı."""
+    db = load_db()
+    return jsonify({
+        "semester": db.get('semester', '2025/2026 yaz semestri'),
+        "subject": db.get('subject', 'Hərbi Mühəndis Texnikası'),
+    })
+
+
+@app.route('/api/cabinet-semester', methods=['POST'])
+def cabinet_semester():
+    """Müəllim semestr və fənn adını dəyişir."""
+    cid = token_from_request()
+    if not cid or CREDENTIALS[cid].get('role') != 'teacher':
+        return jsonify({"error": "İcazə yoxdur."}), 401
+    body = request.get_json(silent=True) or {}
+    semester = (body.get('semester') or '').strip()[:60]
+    subject = (body.get('subject') or '').strip()[:60]
+    if not semester or not subject:
+        return jsonify({"error": "Semestr və fənn boş ola bilməz."}), 400
+    db = load_db()
+    db['semester'] = semester
+    db['subject'] = subject
+    save_db(db)
+    return jsonify({"success": True, "semester": semester, "subject": subject})
 
 
 @app.route('/api/cabinet-reset', methods=['POST'])

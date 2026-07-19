@@ -1903,7 +1903,7 @@
                 <div class="cab-login-back"></div>
                 <div class="cab-login-card">
                     <div class="cab-login-chip">&#128274; Şəxsi Kabinet</div>
-                    <p class="cab-login-sub">2025/2026 yaz semestri &#8226; Hərbi Mühəndis Texnikası</p>
+                    <p class="cab-login-sub" id="loginSemSub">2025/2026 yaz semestri &#8226; Hərbi Mühəndis Texnikası</p>
                     <div class="input-wrapper" style="text-align:left;">
                         <label>ID</label>
                         <input type="text" id="cabId" placeholder="Məs: Y1-07" autocomplete="off" style="text-transform:uppercase;" onkeydown="if(event.key==='Enter')cabinetLoginSubmit()">
@@ -1941,7 +1941,7 @@
             </div>
             <div class="cab-hero-chip">
                 <span class="cab-hero-chip-dot"></span>
-                2025/2026 yaz semestri
+                <span id="cabSemChip">2025/2026 yaz semestri</span>
             </div>
         </div>
 
@@ -2172,6 +2172,22 @@
             </div>
         </div>
 
+        <div class="card">
+            <div class="card-title"><div class="icon">&#128197;</div> Semestr və fənn</div>
+            <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end;">
+                <div class="input-wrapper" style="flex:1;min-width:220px;margin-bottom:0;">
+                    <label>Semestr</label>
+                    <input type="text" id="tpSemester" maxlength="60" placeholder="Məs: 2025/2026 yaz semestri">
+                </div>
+                <div class="input-wrapper" style="flex:1;min-width:220px;margin-bottom:0;">
+                    <label>Fənn</label>
+                    <input type="text" id="tpSubject" maxlength="60" placeholder="Məs: Hərbi Mühəndis Texnikası">
+                </div>
+                <button class="btn btn-primary" onclick="tpSaveSemester()">Yadda saxla</button>
+            </div>
+            <p class="cab-scale" style="margin-top:14px;">Giriş səhifəsində, kursant kabinetində və bütün panellərdə avtomatik görünür.</p>
+        </div>
+
         <div class="card" style="border-color: rgba(198,40,40,0.4);">
             <div class="card-title"><div class="icon" style="background:rgba(198,40,40,0.08);border-color:rgba(198,40,40,0.25);">&#9888;</div> İdarəetmə</div>
             <button class="btn btn-download" onclick="tpResetAll()">Bütün seçimləri sıfırla</button>
@@ -2321,7 +2337,7 @@
                 <div class="icon">&#127942;</div>
                 <span>&#304;mtahan n&#601;tic&#601;l&#601;ri &#8212; <strong style="color:var(--accent)">YT 24A1</strong></span>
             </div>
-            <p style="color:var(--text-muted);font-size:0.82rem;margin:-6px 0 14px;">&#8220;H&#601;rbi M&#252;h&#601;ndis Texnikas&#305;&#8221; f&#601;nni &#252;zr&#601; imtahan n&#601;tic&#601;l&#601;ri &#8226; 2025/2026 yaz semestri</p>
+            <p class="imt-desc" style="color:var(--text-muted);font-size:0.82rem;margin:-6px 0 14px;">&#8220;H&#601;rbi M&#252;h&#601;ndis Texnikas&#305;&#8221; f&#601;nni &#252;zr&#601; imtahan n&#601;tic&#601;l&#601;ri &#8226; 2025/2026 yaz semestri</p>
             <div class="search-wrapper">
                 <input type="text" class="search-box" id="imtahan1Search" placeholder="Ad&#305;n&#305;z&#305; axtar&#305;n..." oninput="filterResults(this,'imtahan1Body')">
             </div>
@@ -2347,7 +2363,7 @@
                 <div class="icon">&#127942;</div>
                 <span>&#304;mtahan n&#601;tic&#601;l&#601;ri &#8212; <strong style="color:var(--accent)">YT 24A2</strong></span>
             </div>
-            <p style="color:var(--text-muted);font-size:0.82rem;margin:-6px 0 14px;">&#8220;H&#601;rbi M&#252;h&#601;ndis Texnikas&#305;&#8221; f&#601;nni &#252;zr&#601; imtahan n&#601;tic&#601;l&#601;ri &#8226; 2025/2026 yaz semestri</p>
+            <p class="imt-desc" style="color:var(--text-muted);font-size:0.82rem;margin:-6px 0 14px;">&#8220;H&#601;rbi M&#252;h&#601;ndis Texnikas&#305;&#8221; f&#601;nni &#252;zr&#601; imtahan n&#601;tic&#601;l&#601;ri &#8226; 2025/2026 yaz semestri</p>
             <div class="search-wrapper">
                 <input type="text" class="search-box" id="imtahan2Search" placeholder="Ad&#305;n&#305;z&#305; axtar&#305;n..." oninput="filterResults(this,'imtahan2Body')">
             </div>
@@ -2960,6 +2976,9 @@
         }
         if (!res.ok) { showToast('Məlumat yüklənə bilmədi!', 'error'); throw new Error('fail'); }
         cabData = await res.json();
+        if (cabData.semester) semInfo.semester = cabData.semester;
+        if (cabData.subject) semInfo.subject = cabData.subject;
+        applySemesterInfo();
     }
 
     // Bal rəng qaydaları
@@ -3211,6 +3230,57 @@
                 }
                 updateSummary(ib, [i - 1, cnt ? (sum / cnt).toFixed(1) : '—']);
             }
+        }
+    }
+
+    // ===== Semestr və fənn (müəllim təyin edir) =====
+    let semInfo = { semester: '2025/2026 yaz semestri', subject: 'Hərbi Mühəndis Texnikası' };
+
+    function applySemesterInfo() {
+        const full = semInfo.semester + ' \u2022 ' + semInfo.subject;
+        const ls = document.getElementById('loginSemSub');
+        if (ls) ls.textContent = full;
+        document.querySelectorAll('.app-sem-label').forEach(el => { el.textContent = full; });
+        const chip = document.getElementById('cabSemChip');
+        if (chip) chip.textContent = semInfo.semester;
+        document.querySelectorAll('.imt-desc').forEach(el => {
+            el.textContent = '\u201C' + semInfo.subject + '\u201D fənni üzrə imtahan nəticələri \u2022 ' + semInfo.semester;
+        });
+        const si = document.getElementById('tpSemester');
+        const su = document.getElementById('tpSubject');
+        if (si && document.activeElement !== si) si.value = semInfo.semester;
+        if (su && document.activeElement !== su) su.value = semInfo.subject;
+    }
+
+    async function loadSemesterInfo() {
+        try {
+            const res = await fetch('/api/semester-info');
+            if (!res.ok) return;
+            const d = await res.json();
+            if (d.semester) semInfo.semester = d.semester;
+            if (d.subject) semInfo.subject = d.subject;
+            applySemesterInfo();
+        } catch(e) {}
+    }
+
+    async function tpSaveSemester() {
+        const semester = document.getElementById('tpSemester').value.trim();
+        const subject = document.getElementById('tpSubject').value.trim();
+        if (!semester || !subject) { showToast('Semestr və fənn boş ola bilməz!', 'error'); return; }
+        try {
+            const res = await fetch('/api/cabinet-semester', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.token },
+                body: JSON.stringify({ semester: semester, subject: subject })
+            });
+            if (res.status === 401) { cabinetLogout(); showToast('Sessiya bitib — yenidən daxil olun.', 'error'); return; }
+            if (!res.ok) { const d = await res.json(); showToast(d.error || 'Xəta!', 'error'); return; }
+            semInfo.semester = semester;
+            semInfo.subject = subject;
+            applySemesterInfo();
+            showToast('Semestr və fənn yeniləndi — hamıda görünəcək', 'success');
+        } catch(e) {
+            showToast('Yadda saxlanıla bilmədi!', 'error');
         }
     }
 
@@ -3490,6 +3560,7 @@
 
     // Start — sayt birbaşa kabinet girişi ilə açılır
     init();
+    loadSemesterInfo();
     routeCabinet();
 </script>
 

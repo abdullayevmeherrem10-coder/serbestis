@@ -114,7 +114,14 @@ class Handler(http.server.BaseHTTPRequestHandler):
         parsed = urllib.parse.urlparse(self.path)
         path = urllib.parse.unquote(parsed.path)
 
-        if path == "/api/teams":
+        if path == "/api/semester-info":
+            db = load_db()
+            self.send_json({
+                "semester": db.get("semester", "2025/2026 yaz semestri"),
+                "subject": db.get("subject", "Hərbi Mühəndis Texnikası"),
+            })
+
+        elif path == "/api/teams":
             db = load_db()
             self.send_json({"teams": {t: members for t, members in db["teams"].items()}})
 
@@ -153,6 +160,8 @@ class Handler(http.server.BaseHTTPRequestHandler):
                     "teams": db.get("teams", {}),
                     "works": db.get("works", []),
                     "work_taken_by": db.get("work_taken_by", {}),
+                    "semester": db.get("semester", "2025/2026 yaz semestri"),
+                    "subject": db.get("subject", "Hərbi Mühəndis Texnikası"),
                 })
                 return
             name = cred["name"]
@@ -166,6 +175,8 @@ class Handler(http.server.BaseHTTPRequestHandler):
                 "results": student_results(name, cred["team"]),
                 "scores": db.get("scores", {}).get(name),
                 "deadline": db.get("deadlines", {}).get(name),
+                "semester": db.get("semester", "2025/2026 yaz semestri"),
+                "subject": db.get("subject", "Hərbi Mühəndis Texnikası"),
             })
 
         elif path == "/api/student-status":
@@ -237,7 +248,25 @@ class Handler(http.server.BaseHTTPRequestHandler):
         parsed = urllib.parse.urlparse(self.path)
         path = parsed.path
 
-        if path == "/api/cabinet-reset":
+        if path == "/api/cabinet-semester":
+            auth = self.headers.get("Authorization", "")
+            cid = verify_token(auth[7:].strip()) if auth.startswith("Bearer ") else None
+            if not cid or CREDENTIALS[cid].get("role") != "teacher":
+                self.send_json({"error": "İcazə yoxdur."}, 401)
+                return
+            body = self.read_body()
+            semester = (body.get("semester") or "").strip()[:60]
+            subject = (body.get("subject") or "").strip()[:60]
+            if not semester or not subject:
+                self.send_json({"error": "Semestr və fənn boş ola bilməz."}, 400)
+                return
+            db = load_db()
+            db["semester"] = semester
+            db["subject"] = subject
+            save_db(db)
+            self.send_json({"success": True, "semester": semester, "subject": subject})
+
+        elif path == "/api/cabinet-reset":
             auth = self.headers.get("Authorization", "")
             cid = verify_token(auth[7:].strip()) if auth.startswith("Bearer ") else None
             if not cid or CREDENTIALS[cid].get("role") != "teacher":
