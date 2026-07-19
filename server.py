@@ -84,13 +84,13 @@ CABINET_SECRET = os.environ.get('CABINET_SECRET') or hashlib.sha256(
     ("cab|" + ADMIN_PASSWORD + "|" + "|".join(sorted(c["hash"] for c in CREDENTIALS.values()))).encode("utf-8")
 ).hexdigest()
 
-def make_token(cid):
-    payload = json.dumps({"id": cid, "exp": int(time.time()) + TOKEN_TTL})
+def make_token(cid, role="student"):
+    payload = json.dumps({"id": cid, "role": role, "exp": int(time.time()) + TOKEN_TTL})
     b = base64.urlsafe_b64encode(payload.encode("utf-8")).decode("ascii").rstrip("=")
     sig = hmac.new(CABINET_SECRET.encode("utf-8"), b.encode("ascii"), hashlib.sha256).hexdigest()[:32]
     return f"{b}.{sig}"
 
-def verify_token(token):
+def token_payload(token):
     try:
         b, sig = token.split(".")
         good = hmac.new(CABINET_SECRET.encode("utf-8"), b.encode("ascii"), hashlib.sha256).hexdigest()[:32]
@@ -99,10 +99,13 @@ def verify_token(token):
         payload = json.loads(base64.urlsafe_b64decode(b + "=" * (-len(b) % 4)))
         if payload.get("exp", 0) < time.time():
             return None
-        cid = payload.get("id", "")
-        return cid if cid else None
+        return payload if payload.get("id") else None
     except Exception:
         return None
+
+def verify_token(token):
+    p = token_payload(token)
+    return p.get("id") if p else None
 
 def exam_grade(bal):
     if bal >= 91: return 'A “Əla”'
@@ -314,10 +317,10 @@ class Handler(http.server.BaseHTTPRequestHandler):
 
             # Kitab səhifələri yalnız daxil olmuş istifadəçilərə (kabinet cookie-si)
             rel_l = rel.lower()
+            cookie = self.headers.get("Cookie", "")
+            cm = re.search(r"(?:^|;\s*)kabinet=([^;]+)", cookie)
+            tok = urllib.parse.unquote(cm.group(1)) if cm else ""
             if rel_l == "kitab.html" or rel_l.startswith("kitab/"):
-                cookie = self.headers.get("Cookie", "")
-                cm = re.search(r"(?:^|;\s*)kabinet=([^;]+)", cookie)
-                tok = urllib.parse.unquote(cm.group(1)) if cm else ""
                 if not verify_token(tok):
                     if rel_l == "kitab.html":
                         self.send_response(302)
@@ -325,6 +328,17 @@ class Handler(http.server.BaseHTTPRequestHandler):
                         self.end_headers()
                     else:
                         self.send_json({"error": "Giriş tələb olunur."}, 401)
+                    return
+            # Elektron Kollokvium sistemi yalnız müəllimə açıqdır
+            if rel_l == "kollokvium/index.html" or rel_l.startswith("kollokvium/"):
+                pl = token_payload(tok)
+                if not pl or pl.get("role") != "teacher":
+                    if rel_l == "kollokvium/index.html":
+                        self.send_response(302)
+                        self.send_header("Location", "/")
+                        self.end_headers()
+                    else:
+                        self.send_json({"error": "Yalnız müəllim."}, 401)
                     return
 
             if os.path.isfile(file_path):
@@ -541,7 +555,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
             if not cred:
                 self.send_json({"error": "Bu hesab deaktiv edilib."}, 403)
                 return
-            resp = {"token": make_token(cid), "id": cid, "name": cred["name"], "role": cred["role"]}
+            resp = {"token": make_token(cid, cred["role"]), "id": cid, "name": cred["name"], "role": cred["role"]}
             if cred["role"] == "student":
                 resp["team"] = cred["team"]
             self.send_json(resp)

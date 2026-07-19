@@ -249,15 +249,15 @@ CABINET_SECRET = os.environ.get('CABINET_SECRET') or hashlib.sha256(
 ).hexdigest()
 
 
-def make_token(cid):
-    payload = json.dumps({"id": cid, "exp": int(time.time()) + TOKEN_TTL})
+def make_token(cid, role="student"):
+    payload = json.dumps({"id": cid, "role": role, "exp": int(time.time()) + TOKEN_TTL})
     b = base64.urlsafe_b64encode(payload.encode("utf-8")).decode("ascii").rstrip("=")
     sig = hmac.new(CABINET_SECRET.encode("utf-8"), b.encode("ascii"), hashlib.sha256).hexdigest()[:32]
     return f"{b}.{sig}"
 
 
-def verify_token(token):
-    """Etibarlıdırsa credential id-ni, əks halda None qaytarır."""
+def token_payload(token):
+    """Etibarlıdırsa payload-ı ({id, role, exp}), əks halda None qaytarır."""
     try:
         b, sig = token.split(".")
         good = hmac.new(CABINET_SECRET.encode("utf-8"), b.encode("ascii"), hashlib.sha256).hexdigest()[:32]
@@ -266,10 +266,15 @@ def verify_token(token):
         payload = json.loads(base64.urlsafe_b64decode(b + "=" * (-len(b) % 4)))
         if payload.get("exp", 0) < time.time():
             return None
-        cid = payload.get("id", "")
-        return cid if cid else None
+        return payload if payload.get("id") else None
     except Exception:
         return None
+
+
+def verify_token(token):
+    """Etibarlıdırsa credential id-ni, əks halda None qaytarır."""
+    p = token_payload(token)
+    return p.get("id") if p else None
 
 
 def token_from_request():
@@ -389,7 +394,7 @@ def cabinet_login():
     cred = resolve_cred(cid, db)
     if not cred:
         return jsonify({"error": "Bu hesab deaktiv edilib."}), 403
-    resp = {"token": make_token(cid), "id": cid, "name": cred["name"], "role": cred["role"]}
+    resp = {"token": make_token(cid, cred["role"]), "id": cid, "name": cred["name"], "role": cred["role"]}
     if cred["role"] == "student":
         resp["team"] = cred["team"]
     return jsonify(resp)
