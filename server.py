@@ -63,6 +63,21 @@ if not FIREBASE_SECRET:
         with open(_fb_file, encoding="utf-8") as f:
             FIREBASE_SECRET = f.read().strip()
 
+try:
+    from _fbauth import get_access_token as _fb_access_token
+except Exception:
+    def _fb_access_token():
+        return None
+
+def _fb_url(path):
+    url = f"{FIREBASE_DB_URL}/{path}.json"
+    tok = _fb_access_token()
+    if tok:
+        return url + "?access_token=" + tok
+    if FIREBASE_SECRET:
+        return url + "?auth=" + FIREBASE_SECRET
+    return url
+
 # Kabinet token sistemi (HMAC imzalı, 12 saat etibarlı)
 TOKEN_TTL = 12 * 3600
 CABINET_SECRET = os.environ.get('CABINET_SECRET') or hashlib.sha256(
@@ -350,9 +365,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
             if not re.fullmatch(r"sessions/[A-Za-z0-9_\-/]+", fb_path):
                 self.send_json({"error": "Yol etibarsızdır."}, 400)
                 return
-            url = f"{FIREBASE_DB_URL}/{fb_path}.json"
-            if FIREBASE_SECRET:
-                url += "?auth=" + FIREBASE_SECRET
+            url = _fb_url(fb_path)
             data = body.get("data", None)
             try:
                 import urllib.request as _urlreq

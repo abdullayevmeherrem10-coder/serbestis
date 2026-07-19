@@ -500,6 +500,22 @@ def cabinet_reset_all():
 FIREBASE_DB_URL = 'https://kollokvium1-default-rtdb.firebaseio.com'
 FIREBASE_SECRET = os.environ.get('FIREBASE_SECRET', '')
 
+try:
+    from _fbauth import get_access_token as _fb_access_token
+except Exception:
+    def _fb_access_token():
+        return None
+
+
+def _fb_url(path):
+    url = f"{FIREBASE_DB_URL}/{path}.json"
+    tok = _fb_access_token()
+    if tok:
+        return url + "?access_token=" + tok
+    if FIREBASE_SECRET:
+        return url + "?auth=" + FIREBASE_SECRET
+    return url
+
 
 def teacher_from_request():
     """Bearer token və ya kabinet cookie-sindən müəllim yoxlanışı."""
@@ -520,9 +536,7 @@ def kollok_write():
     path = (body.get('path') or '').strip()
     if not re.fullmatch(r'sessions/[A-Za-z0-9_\-/]+', path):
         return jsonify({"error": "Yol etibarsızdır."}), 400
-    url = f"{FIREBASE_DB_URL}/{path}.json"
-    if FIREBASE_SECRET:
-        url += "?auth=" + FIREBASE_SECRET
+    url = _fb_url(path)
     data = body.get('data', None)
     try:
         if data is None:
