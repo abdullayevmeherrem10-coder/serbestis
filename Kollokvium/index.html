@@ -1446,16 +1446,29 @@ function initParticleCanvas(canvasId) {
 var audioCtx = null;
 var soundEnabled = true;
 function getAudioCtx() {
-    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (!audioCtx) {
+        try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return null; }
+    }
     // Brauzer avtoplay siyasəti: kontekst "suspended" başlayır — davam etdir
     if (audioCtx.state === 'suspended' && audioCtx.resume) audioCtx.resume();
     return audioCtx;
 }
-// İlk istifadəçi hərəkətində səs kontekstini kilidini aç
-['click', 'keydown', 'touchstart'].forEach(function(ev) {
-    document.addEventListener(ev, function() {
-        if (audioCtx && audioCtx.state === 'suspended' && audioCtx.resume) audioCtx.resume();
-    }, { passive: true });
+// İlk istifadəçi hərəkətində səs kontekstini YARAT və kilidini aç (user gesture kontekstində)
+function unlockAudio() {
+    var ctx = getAudioCtx();
+    if (!ctx) return;
+    if (ctx.state === 'suspended' && ctx.resume) ctx.resume();
+    // Sükut "unlock" səsi — brauzeri aktivləşdirir
+    try {
+        var b = ctx.createBuffer(1, 1, 22050);
+        var s = ctx.createBufferSource();
+        s.buffer = b;
+        s.connect(ctx.destination);
+        s.start(0);
+    } catch (e) {}
+}
+['pointerdown', 'touchstart', 'keydown', 'click'].forEach(function(ev) {
+    document.addEventListener(ev, unlockAudio, { passive: true });
 });
 function toggleSound() {
     soundEnabled = !soundEnabled;
