@@ -150,6 +150,9 @@ class Handler(http.server.BaseHTTPRequestHandler):
                     "selections": db.get("selections", {}),
                     "scores": db.get("scores", {}),
                     "deadlines": db.get("deadlines", {}),
+                    "teams": db.get("teams", {}),
+                    "works": db.get("works", []),
+                    "work_taken_by": db.get("work_taken_by", {}),
                 })
                 return
             name = cred["name"]
@@ -183,8 +186,6 @@ class Handler(http.server.BaseHTTPRequestHandler):
             # Serve static files
             if path == "/":
                 path = "/index.html"
-            elif path == "/admin":
-                path = "/admin.html"
 
             file_path = os.path.join(BASE_DIR, path.lstrip("/"))
             file_path = os.path.normpath(file_path)
@@ -236,7 +237,37 @@ class Handler(http.server.BaseHTTPRequestHandler):
         parsed = urllib.parse.urlparse(self.path)
         path = parsed.path
 
-        if path == "/api/cabinet-deadline":
+        if path == "/api/cabinet-reset":
+            auth = self.headers.get("Authorization", "")
+            cid = verify_token(auth[7:].strip()) if auth.startswith("Bearer ") else None
+            if not cid or CREDENTIALS[cid].get("role") != "teacher":
+                self.send_json({"error": "İcazə yoxdur."}, 401)
+                return
+            body = self.read_body()
+            name = (body.get("name") or "").strip()
+            if not name:
+                self.send_json({"error": "Kursant adı göstərilməyib."}, 400)
+                return
+            db = load_db()
+            db.get("selections", {}).pop(name, None)
+            for team, taken in db.get("work_taken_by", {}).items():
+                db["work_taken_by"][team] = {wid: n for wid, n in taken.items() if n != name}
+            save_db(db)
+            self.send_json({"success": True, "selections": db.get("selections", {}), "work_taken_by": db.get("work_taken_by", {})})
+
+        elif path == "/api/cabinet-reset-all":
+            auth = self.headers.get("Authorization", "")
+            cid = verify_token(auth[7:].strip()) if auth.startswith("Bearer ") else None
+            if not cid or CREDENTIALS[cid].get("role") != "teacher":
+                self.send_json({"error": "İcazə yoxdur."}, 401)
+                return
+            db = load_db()
+            db["selections"] = {}
+            db["work_taken_by"] = {t: {} for t in db.get("teams", {})}
+            save_db(db)
+            self.send_json({"success": True, "selections": {}, "work_taken_by": db["work_taken_by"]})
+
+        elif path == "/api/cabinet-deadline":
             auth = self.headers.get("Authorization", "")
             cid = verify_token(auth[7:].strip()) if auth.startswith("Bearer ") else None
             if not cid or CREDENTIALS[cid].get("role") != "teacher":

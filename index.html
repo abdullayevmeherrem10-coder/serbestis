@@ -1714,6 +1714,32 @@
             line-height: 1.4;
         }
 
+        /* Müəllim idarəetmə paneli */
+        #teacherPanel { display: none; }
+        .teacher-mode #teacherPanel { display: block; }
+        .teacher-mode .steps,
+        .teacher-mode .tab-subtitle,
+        .teacher-mode #sec-team,
+        .teacher-mode #sec-student,
+        .teacher-mode #sec-works,
+        .teacher-mode #sec-success { display: none !important; }
+        .btn-reset {
+            padding: 5px 13px;
+            border-radius: 8px;
+            border: 1.5px solid rgba(198,40,40,0.4);
+            background: #fff;
+            color: var(--danger);
+            font-family: inherit;
+            font-size: 0.72rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            white-space: nowrap;
+        }
+        .btn-reset:hover { background: rgba(198,40,40,0.06); border-color: var(--danger); }
+        .tp-sel { margin: 0; padding-left: 18px; font-size: 0.82rem; line-height: 1.6; }
+        .tp-sel li { padding: 2px 0; }
+
         /* Kursant rejimi: taqım/kursant addımları görünmür */
         .student-mode .steps { display: none; }
         .student-mode .tab-subtitle { display: none; }
@@ -2117,6 +2143,41 @@
             <button class="btn btn-secondary" style="margin-top:20px;" onclick="resetAll()">&#8592; Əsas səhifəyə qayıt</button>
         </div>
     </div>
+    <!-- ===================== MÜƏLLİM: idarəetmə paneli ===================== -->
+    <div id="teacherPanel">
+        <div class="cab-stats" id="tpStats"></div>
+
+        <div class="card">
+            <div class="card-title"><div class="icon">&#128203;</div> Sərbəst iş seçimləri və son tarixlər</div>
+            <div class="subtab-nav" id="tpTeamTabs"></div>
+            <div class="results-table-wrap">
+                <table class="results-table">
+                    <thead>
+                        <tr><th class="col-num">&#8470;</th><th>Kursant&#305;n ad&#305;</th><th>Se&#231;diyi i&#351;l&#601;r</th><th class="col-bal">Son tarix<small>f&#601;rdi</small></th><th class="col-bal">&#399;m&#601;liyyat</th></tr>
+                    </thead>
+                    <tbody id="tpStudents"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title"><div class="icon">&#128218;</div> <span>İşlərin bölgüsü — <strong style="color:var(--accent)" id="tpWorksTeam"></strong></span></div>
+            <div class="results-table-wrap">
+                <table class="results-table">
+                    <thead>
+                        <tr><th class="col-num">&#8470;</th><th>S&#601;rb&#601;st i&#351;in ad&#305;</th><th>G&#246;t&#252;r&#601;n kursant</th></tr>
+                    </thead>
+                    <tbody id="tpWorks"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card" style="border-color: rgba(198,40,40,0.4);">
+            <div class="card-title"><div class="icon" style="background:rgba(198,40,40,0.08);border-color:rgba(198,40,40,0.25);">&#9888;</div> İdarəetmə</div>
+            <button class="btn btn-download" onclick="tpResetAll()">Bütün seçimləri sıfırla</button>
+            <p class="cab-scale" style="margin-top:12px;">Bütün kursantların sərbəst iş seçimlərini silir — ballara və tarixlərə toxunmur. Kursantlar yenidən seçim edə bilər.</p>
+        </div>
+    </div>
     </div><!-- /tab-serbest -->
 
     <!-- ===================== TAB: Kollokvium nəticələri ===================== -->
@@ -2207,7 +2268,7 @@
             <div class="results-table-wrap">
                 <table class="results-table">
                     <thead>
-                        <tr><th class="col-num">&#8470;</th><th>Kursant&#305;n ad&#305;</th><th class="col-bal">K1</th><th class="col-bal">K2</th><th class="col-bal">K3</th><th class="col-bal">Koll. c&#601;mi<small>maks 30</small></th><th class="col-bal">S&#601;rb&#601;st i&#351;<small>maks 10</small></th><th class="col-bal">D&#601;ft&#601;r / &#304;ntizam<small>maks 10</small></th><th class="col-bal">M&#601;nims&#601;m&#601;<small>maks 50</small></th><th class="col-bal">Son tarix<small>f&#601;rdi</small></th></tr>
+                        <tr><th class="col-num">&#8470;</th><th>Kursant&#305;n ad&#305;</th><th class="col-bal">K1</th><th class="col-bal">K2</th><th class="col-bal">K3</th><th class="col-bal">Koll. c&#601;mi<small>maks 30</small></th><th class="col-bal">S&#601;rb&#601;st i&#351;<small>maks 10</small></th><th class="col-bal">D&#601;ft&#601;r / &#304;ntizam<small>maks 10</small></th><th class="col-bal">M&#601;nims&#601;m&#601;<small>maks 50</small></th></tr>
                     </thead>
                     <tbody id="menimseme1Body"></tbody>
                 </table>
@@ -2233,7 +2294,7 @@
             <div class="results-table-wrap">
                 <table class="results-table">
                     <thead>
-                        <tr><th class="col-num">&#8470;</th><th>Kursant&#305;n ad&#305;</th><th class="col-bal">K1</th><th class="col-bal">K2</th><th class="col-bal">K3</th><th class="col-bal">Koll. c&#601;mi<small>maks 30</small></th><th class="col-bal">S&#601;rb&#601;st i&#351;<small>maks 10</small></th><th class="col-bal">D&#601;ft&#601;r / &#304;ntizam<small>maks 10</small></th><th class="col-bal">M&#601;nims&#601;m&#601;<small>maks 50</small></th><th class="col-bal">Son tarix<small>f&#601;rdi</small></th></tr>
+                        <tr><th class="col-num">&#8470;</th><th>Kursant&#305;n ad&#305;</th><th class="col-bal">K1</th><th class="col-bal">K2</th><th class="col-bal">K3</th><th class="col-bal">Koll. c&#601;mi<small>maks 30</small></th><th class="col-bal">S&#601;rb&#601;st i&#351;<small>maks 10</small></th><th class="col-bal">D&#601;ft&#601;r / &#304;ntizam<small>maks 10</small></th><th class="col-bal">M&#601;nims&#601;m&#601;<small>maks 50</small></th></tr>
                     </thead>
                     <tbody id="menimseme2Body"></tbody>
                 </table>
@@ -3078,6 +3139,7 @@
         document.getElementById('cabinetView').style.display = 'none';
         document.getElementById('tabNav').style.display = 'none';
         const av = document.getElementById('appView');
+        av.classList.remove('teacher-mode');
         av.classList.add('student-mode');
         av.style.display = '';
         switchTab('serbest');
@@ -3093,9 +3155,11 @@
         try { if (!cabData) await fetchCabData(); } catch(e) { return; }
         renderTeacherTables(cabData.results || {});
         enrichTeacherLive();
+        renderTeacherPanel();
         document.getElementById('tabNav').style.display = '';
         const av = document.getElementById('appView');
         av.classList.remove('student-mode');
+        av.classList.add('teacher-mode');
         av.style.display = '';
         const activeTab = document.querySelector('.tab-nav .tab-btn.active');
         if (activeTab) {
@@ -3184,6 +3248,108 @@
         }
     }
 
+    // ===== Müəllim: idarəetmə paneli =====
+    let tpTeam = 'YTF24A1';
+
+    function renderTeacherPanel() {
+        const teams = cabData.teams || {};
+        const sels = cabData.selections || {};
+        document.getElementById('tpStats').innerHTML = Object.entries(teams).map(([team, members]) => {
+            const done = members.filter(n => (sels[n] || []).length >= 2).length;
+            const pct = members.length ? Math.round(done / members.length * 100) : 0;
+            return `<div class="cab-stat"><div class="cab-stat-ico">&#128101;</div><div class="cab-stat-val">${done}<span class="cab-stat-max">/${members.length}</span></div><div class="cab-stat-label">${team} — seçib</div><div class="cab-stat-bar"><i class="${pct === 100 ? 'bar-high' : pct >= 50 ? 'bar-mid' : 'bar-low'}" data-w="${pct}"></i></div></div>`;
+        }).join('');
+        document.getElementById('tpTeamTabs').innerHTML = Object.keys(teams).map(t =>
+            `<button class="subtab-btn${t === tpTeam ? ' active' : ''}" onclick="tpSwitchTeam('${t}', this)">${t}</button>`).join('');
+        renderTpStudents();
+        renderTpWorks();
+        requestAnimationFrame(() => setTimeout(() => {
+            document.querySelectorAll('#tpStats [data-w]').forEach(el => { el.style.width = el.dataset.w + '%'; });
+        }, 80));
+    }
+
+    function tpSwitchTeam(t, btn) {
+        tpTeam = t;
+        document.querySelectorAll('#tpTeamTabs .subtab-btn').forEach(b => b.classList.remove('active'));
+        if (btn) btn.classList.add('active');
+        renderTpStudents();
+        renderTpWorks();
+    }
+
+    function renderTpStudents() {
+        const members = (cabData.teams || {})[tpTeam] || [];
+        const sels = cabData.selections || {};
+        const works = cabData.works || [];
+        const dls = cabData.deadlines || {};
+        const tb = document.getElementById('tpStudents');
+        tb.innerHTML = '';
+        members.forEach((name, i) => {
+            const sel = sels[name] || [];
+            const selHtml = sel.length
+                ? '<ol class="tp-sel">' + sel.map(id => `<li>${works[id] || ('Sərbəst iş #' + (id + 1))}</li>`).join('') + '</ol>'
+                : '<span class="bal bal-none">Seçməyib</span>';
+            tb.insertAdjacentHTML('beforeend', `<tr data-name="${name}">
+                <td class="col-num">${i + 1}</td>
+                <td>${name}</td>
+                <td>${selHtml}</td>
+                <td class="col-bal"><input type="text" class="dl-input dl-inp-cell" value="${dls[name] || ''}" placeholder="&#8212;" maxlength="40" onchange="saveStudentDeadline(this)"></td>
+                <td class="col-bal">${sel.length ? '<button class="btn-reset" onclick="tpResetStudent(this)">Sıfırla</button>' : ''}</td>
+            </tr>`);
+        });
+    }
+
+    function renderTpWorks() {
+        document.getElementById('tpWorksTeam').textContent = tpTeam;
+        const works = cabData.works || [];
+        const taken = (cabData.work_taken_by || {})[tpTeam] || {};
+        document.getElementById('tpWorks').innerHTML = works.map((w, i) => {
+            const owner = taken[String(i)];
+            return `<tr><td class="col-num">${i + 1}</td><td>${w}</td><td>${owner ? `<span class="bal bal-high" style="font-size:0.75rem;">${owner}</span>` : '<span class="bal bal-none">Boş</span>'}</td></tr>`;
+        }).join('');
+    }
+
+    async function tpResetStudent(btn) {
+        const name = btn.closest('tr').dataset.name;
+        if (!confirm(name + ' — sərbəst iş seçimi sıfırlansın? Kursant yenidən seçim edə biləcək.')) return;
+        try {
+            const res = await fetch('/api/cabinet-reset', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.token },
+                body: JSON.stringify({ name: name })
+            });
+            if (res.status === 401) { cabinetLogout(); showToast('Sessiya bitib — yenidən daxil olun.', 'error'); return; }
+            const data = await res.json();
+            if (!res.ok) throw 0;
+            cabData.selections = data.selections;
+            cabData.work_taken_by = data.work_taken_by;
+            renderTeacherPanel();
+            showToast(name + ' — seçim sıfırlandı', 'success');
+        } catch(e) {
+            showToast('Sıfırlama alınmadı!', 'error');
+        }
+    }
+
+    async function tpResetAll() {
+        if (!confirm('DİQQƏT! Bütün kursantların sərbəst iş seçimləri silinəcək. Əminsiniz?')) return;
+        if (!confirm('Son təsdiq: bu əməliyyat geri qaytarıla bilməz. Davam edilsin?')) return;
+        try {
+            const res = await fetch('/api/cabinet-reset-all', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.token },
+                body: JSON.stringify({})
+            });
+            if (res.status === 401) { cabinetLogout(); showToast('Sessiya bitib — yenidən daxil olun.', 'error'); return; }
+            const data = await res.json();
+            if (!res.ok) throw 0;
+            cabData.selections = data.selections;
+            cabData.work_taken_by = data.work_taken_by;
+            renderTeacherPanel();
+            showToast('Bütün seçimlər sıfırlandı', 'success');
+        } catch(e) {
+            showToast('Sıfırlama alınmadı!', 'error');
+        }
+    }
+
     // ===== Müəllim: canlı kollokvium balları + mənimsəmə qiymətləndirməsi =====
     const teacherLive = {};
 
@@ -3235,8 +3401,7 @@
                 `<td class="col-bal"><span class="bal ${ksum >= 24 ? 'bal-high' : ksum >= 18 ? 'bal-mid' : 'bal-low'}">${ksum}</span></td>` +
                 `<td class="col-bal"><input type="number" class="score-inp" data-field="serbest" min="0" max="10" value="${sv}" onchange="saveScore(this)"></td>` +
                 `<td class="col-bal"><input type="number" class="score-inp" data-field="defter" min="0" max="10" value="${dv}" onchange="saveScore(this)"></td>` +
-                `<td class="col-bal men-total"></td>` +
-                `<td class="col-bal"><input type="text" class="dl-input dl-inp-cell" value="${(cabData.deadlines || {})[name] || ''}" placeholder="&#8212;" maxlength="40" onchange="saveStudentDeadline(this)"></td></tr>`);
+                `<td class="col-bal men-total"></td></tr>`);
             updateMenRow(mb.lastElementChild);
         }
         updateMenSummary(mb);

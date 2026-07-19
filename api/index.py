@@ -355,6 +355,9 @@ def cabinet_data():
             "selections": db.get('selections', {}),
             "scores": db.get('scores', {}),
             "deadlines": db.get('deadlines', {}),
+            "teams": db.get('teams', {}),
+            "works": db.get('works', []),
+            "work_taken_by": db.get('work_taken_by', {}),
         })
     db = load_db()
     name = cred['name']
@@ -369,6 +372,37 @@ def cabinet_data():
         "scores": db.get('scores', {}).get(name),
         "deadline": db.get('deadlines', {}).get(name),
     })
+
+
+@app.route('/api/cabinet-reset', methods=['POST'])
+def cabinet_reset():
+    """Müəllim bir kursantın sərbəst iş seçimini sıfırlayır."""
+    cid = token_from_request()
+    if not cid or CREDENTIALS[cid].get('role') != 'teacher':
+        return jsonify({"error": "İcazə yoxdur."}), 401
+    body = request.get_json(silent=True) or {}
+    name = (body.get('name') or '').strip()
+    if not name:
+        return jsonify({"error": "Kursant adı göstərilməyib."}), 400
+    db = load_db()
+    db.get('selections', {}).pop(name, None)
+    for team, taken in db.get('work_taken_by', {}).items():
+        db['work_taken_by'][team] = {wid: n for wid, n in taken.items() if n != name}
+    save_db(db)
+    return jsonify({"success": True, "selections": db.get('selections', {}), "work_taken_by": db.get('work_taken_by', {})})
+
+
+@app.route('/api/cabinet-reset-all', methods=['POST'])
+def cabinet_reset_all():
+    """Müəllim bütün sərbəst iş seçimlərini sıfırlayır (ballara toxunmur)."""
+    cid = token_from_request()
+    if not cid or CREDENTIALS[cid].get('role') != 'teacher':
+        return jsonify({"error": "İcazə yoxdur."}), 401
+    db = load_db()
+    db['selections'] = {}
+    db['work_taken_by'] = {t: {} for t in db.get('teams', {})}
+    save_db(db)
+    return jsonify({"success": True, "selections": {}, "work_taken_by": db['work_taken_by']})
 
 
 @app.route('/api/cabinet-deadline', methods=['POST'])
