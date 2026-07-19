@@ -1718,6 +1718,8 @@
         }
 
         /* Müəllim idarəetmə paneli */
+        #ekollokBanner { display: none; }
+        .teacher-mode #ekollokBanner { display: flex; }
         #teacherPanel { display: none; }
         .teacher-mode #teacherPanel { display: block; }
         .teacher-mode .steps,
@@ -2018,6 +2020,16 @@
         <button class="tab-btn" onclick="switchTab('imtahan', this)"><span class="tab-ico">&#127942;</span> İmtahan nəticələri</button>
     </div>
 
+    <!-- E-Kollokvium keçidi — yalnız müəllim rejimində, tabların altında -->
+    <a href="kollokvium/" class="ekollok-banner" id="ekollokBanner">
+        <span class="ek-ico">&#128421;&#65039;</span>
+        <span class="ek-text">
+            <strong>Elektron Kollokvium Sistemi</strong>
+            <small>Kollokviumu onlayn verin &#8212; suallar, vaxt n&#601;zar&#601;ti v&#601; n&#601;tic&#601;l&#601;r</small>
+        </span>
+        <span class="ek-arrow">&#8594;</span>
+    </a>
+
     <!-- ===================== TAB: Sərbəst işlər ===================== -->
     <div class="tab-panel active" id="tab-serbest">
     <p class="tab-subtitle">Sərbəst İşini Özün Seç</p>
@@ -2203,14 +2215,6 @@
 
     <!-- ===================== TAB: Kollokvium nəticələri ===================== -->
     <div class="tab-panel" id="tab-kollokvium">
-        <a href="kollokvium/" class="ekollok-banner">
-            <span class="ek-ico">&#128421;&#65039;</span>
-            <span class="ek-text">
-                <strong>Elektron Kollokvium Sistemi</strong>
-                <small>Kollokviumu onlayn verin &#8212; suallar, vaxt n&#601;zar&#601;ti v&#601; n&#601;tic&#601;l&#601;r</small>
-            </span>
-            <span class="ek-arrow">&#8594;</span>
-        </a>
         <div class="subtab-nav">
             <button class="subtab-btn active" onclick="switchKollok('a1', this)">YT 24A1</button>
             <button class="subtab-btn" onclick="switchKollok('a2', this)">YT 24A2</button>
