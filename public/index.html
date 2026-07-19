@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sərbəst İş Seçim Platforması</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary: #455f51;
@@ -1443,42 +1443,191 @@
 
 
         /* ===== Şəxsi Kabinet ===== */
-        .cab-login-wrap { display: flex; justify-content: center; padding: 30px 10px 60px; }
-        .cab-login-box { position: relative; width: 100%; max-width: 420px; }
-        .cab-login-back { position: absolute; top: 10px; left: 10px; width: 100%; height: 100%; background: #8fa69b; border-radius: 18px; }
-        .cab-login-card {
-            position: relative;
-            background: rgba(255,255,255,0.97);
-            border: 1.5px solid rgba(200,230,201,0.5);
-            border-radius: 18px;
-            padding: 34px 30px;
-            text-align: center;
-            box-shadow: 0 4px 24px rgba(0,0,0,0.08);
-        }
-        .cab-login-chip {
-            display: inline-block;
-            background: linear-gradient(135deg, #455f51, #6b8f7b);
-            color: #fff;
-            padding: 10px 26px;
-            border-radius: 10px;
-            font-weight: 800;
-            letter-spacing: 1px;
-            margin-bottom: 8px;
+        .cab-login-wrap { display: flex; justify-content: center; padding: 22px 10px 60px; }
+        .cab-login-err { color: var(--danger); font-size: 0.8rem; font-weight: 600; min-height: 18px; margin-bottom: 8px; }
+
+        /* Akademiya banneri (loqo üstü) */
+        .acad-banner {
             position: relative;
             overflow: hidden;
+            background: linear-gradient(135deg, #253c31 0%, #3c5347 55%, #455f51 100%);
+            border-radius: 18px;
+            padding: 32px 26px 26px;
+            text-align: center;
+            margin: 4px 0 14px;
+            box-shadow: 0 14px 40px rgba(37,60,49,0.35);
         }
-        .cab-login-chip::after {
+        .acad-banner::after {
             content: '';
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.18), transparent);
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent);
+            background-size: 200% 100%;
+            animation: shimmerBtn 5s ease infinite;
+            pointer-events: none;
+        }
+        .acad-title {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: clamp(1.45rem, 3.4vw, 2.1rem);
+            font-weight: 600;
+            color: #fff;
+            background: none;
+            -webkit-background-clip: initial;
+            -webkit-text-fill-color: #fff;
+            line-height: 1.3;
+            margin: 0 0 14px;
+            text-shadow: 0 2px 12px rgba(0,0,0,0.3);
+        }
+        .acad-divider {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 13px;
+            color: #d4b06a;
+        }
+        .acad-divider span { width: 74px; height: 1px; background: linear-gradient(90deg, transparent, #d4b06a); }
+        .acad-divider span:last-child { background: linear-gradient(90deg, #d4b06a, transparent); }
+        .acad-divider i { font-style: normal; font-size: 0.62rem; }
+        .acad-sub {
+            color: rgba(255,255,255,0.72);
+            font-size: 0.68rem;
+            font-weight: 600;
+            letter-spacing: 3px;
+        }
+
+        /* Lüks giriş kartı */
+        .lux-card {
+            width: 100%;
+            max-width: 450px;
+            background: #f4f1e9;
+            border: 1px solid #e4ddcc;
+            border-radius: 20px;
+            padding: 44px 42px 36px;
+            text-align: left;
+            box-shadow: 0 24px 70px rgba(60,55,40,0.16);
+            animation: fadeSlideIn 0.5s cubic-bezier(0.4,0,0.2,1);
+        }
+        .lux-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            color: #a5824f;
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin-bottom: 16px;
+        }
+        .lux-chip-ico {
+            width: 30px; height: 30px;
+            border-radius: 8px;
+            background: rgba(165,130,79,0.15);
+            border: 1px solid rgba(165,130,79,0.25);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.82rem;
+        }
+        .lux-title {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 1.9rem;
+            font-weight: 600;
+            color: #23281f;
+            line-height: 1.25;
+            margin-bottom: 5px;
+        }
+        .lux-sub { color: #7d7a6f; font-size: 0.87rem; margin-bottom: 26px; }
+        .lux-label {
+            display: block;
+            font-size: 0.66rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: #6b6659;
+            margin-bottom: 8px;
+        }
+        .lux-input-wrap { position: relative; margin-bottom: 18px; }
+        .lux-inp-ico {
+            position: absolute;
+            left: 14px; top: 50%;
+            transform: translateY(-50%);
+            color: #a5a294;
+            pointer-events: none;
+        }
+        .lux-input-wrap input {
+            width: 100%;
+            padding: 14px 44px 14px 42px;
+            background: #fff;
+            border: 1.5px solid #e2dccd;
+            border-radius: 12px;
+            font-family: inherit;
+            font-size: 0.92rem;
+            color: #23281f;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+        .lux-input-wrap input::placeholder { color: #b3af9f; }
+        .lux-input-wrap input:focus { border-color: #455f51; box-shadow: 0 0 0 3px rgba(69,95,81,0.1); }
+        .lux-eye {
+            position: absolute;
+            right: 12px; top: 50%;
+            transform: translateY(-50%);
+            border: none;
+            background: none;
+            cursor: pointer;
+            color: #a5a294;
+            padding: 4px;
+            display: flex;
+            transition: color 0.25s ease;
+        }
+        .lux-eye:hover { color: #455f51; }
+        .lux-forgot { text-align: right; margin: -8px 0 10px; }
+        .lux-forgot a { color: #7d7a6f; font-size: 0.78rem; text-decoration: none; transition: color 0.25s ease; }
+        .lux-forgot a:hover { color: #455f51; text-decoration: underline; }
+        .lux-btn {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 14px;
+            background: linear-gradient(135deg, #3c5347, #455f51);
+            color: #fff;
+            font-family: inherit;
+            font-size: 0.95rem;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 8px 24px rgba(60,83,71,0.35);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .lux-btn::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.14), transparent);
             background-size: 200% 100%;
             animation: shimmerBtn 3s ease infinite;
             pointer-events: none;
         }
-        .cab-login-sub { color: var(--text-muted); font-size: 0.82rem; margin-bottom: 22px; }
-        .cab-login-err { color: var(--danger); font-size: 0.8rem; font-weight: 600; min-height: 18px; margin-bottom: 8px; }
-        .cab-login-note { color: var(--text-dim); font-size: 0.75rem; margin-top: 14px; }
+        .lux-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(60,83,71,0.45); }
+        .lux-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+        .lux-divider {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin: 24px 0 12px;
+            color: #a5a294;
+            font-size: 0.62rem;
+            font-weight: 700;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+        .lux-divider::before, .lux-divider::after { content: ''; flex: 1; height: 1px; background: #ddd6c5; }
+        .lux-note { text-align: center; color: #8a8678; font-size: 0.8rem; }
         .logout-btn {
             margin-left: auto;
             padding: 7px 16px;
@@ -1809,7 +1958,9 @@
             .cab-hero { flex-direction: column; text-align: center; padding: 26px 20px; }
             .cab-badges { justify-content: center; }
             .cab-hero-chip { margin-left: 0; }
-            .cab-login-card { padding: 26px 20px; }
+            .lux-card { padding: 32px 24px 28px; }
+            .lux-title { font-size: 1.55rem; }
+            .acad-banner { padding: 24px 18px 20px; }
             .cab-row-name { min-width: 78px; font-size: 0.74rem; }
         }
 
@@ -1890,7 +2041,11 @@
 <div class="container">
     <!-- Header -->
     <div class="header">
-        <h1 id="siteTitle">Hərbi Mühəndis Texnikası</h1>
+        <div class="acad-banner">
+            <h1 class="acad-title">Fövqəladə Hallar Nazirliyinin Akademiyası</h1>
+            <div class="acad-divider"><span></span><i>&#9670;</i><span></span></div>
+            <p class="acad-sub">ACADEMY OF THE MINISTRY OF EMERGENCY SITUATIONS</p>
+        </div>
         <div class="logo-wrapper">
             <img src="loqo-esas.webp" alt="Logo">
         </div>
@@ -1899,23 +2054,32 @@
     <!-- ===================== ŞƏXSİ KABİNET: giriş ===================== -->
     <div id="cabinetLogin" style="display:none">
         <div class="cab-login-wrap">
-            <div class="cab-login-box">
-                <div class="cab-login-back"></div>
-                <div class="cab-login-card">
-                    <div class="cab-login-chip">&#128274; Şəxsi Kabinet</div>
-                    <p class="cab-login-sub">2025/2026 yaz semestri &#8226; Hərbi Mühəndis Texnikası</p>
-                    <div class="input-wrapper" style="text-align:left;">
-                        <label>ID</label>
-                        <input type="text" id="cabId" placeholder="Məs: Y1-07" autocomplete="off" style="text-transform:uppercase;" onkeydown="if(event.key==='Enter')cabinetLoginSubmit()">
-                    </div>
-                    <div class="input-wrapper" style="text-align:left;">
-                        <label>Şifrə</label>
-                        <input type="password" id="cabPass" placeholder="Şifrənizi daxil edin" autocomplete="off" onkeydown="if(event.key==='Enter')cabinetLoginSubmit()">
-                    </div>
-                    <div id="cabErr" class="cab-login-err"></div>
-                    <button class="btn btn-primary btn-block" id="cabBtn" onclick="cabinetLoginSubmit()">Daxil ol &#8594;</button>
-                    <p class="cab-login-note">ID və şifrəni müəllimdən əldə edin</p>
+            <div class="lux-card">
+                <div class="lux-chip"><span class="lux-chip-ico">&#128274;</span>Şəxsi Kabinet</div>
+                <h2 class="lux-title">Hərbi Mühəndis Texnikası</h2>
+                <p class="lux-sub">2025 / 2026 yaz semestri</p>
+
+                <label class="lux-label" for="cabId">İstifadəçi ID</label>
+                <div class="lux-input-wrap">
+                    <svg class="lux-inp-ico" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    <input type="text" id="cabId" placeholder="Məs: Y1-07" autocomplete="off" style="text-transform:uppercase;" onkeydown="if(event.key==='Enter')cabinetLoginSubmit()">
                 </div>
+
+                <label class="lux-label" for="cabPass">Şifrə</label>
+                <div class="lux-input-wrap">
+                    <svg class="lux-inp-ico" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                    <input type="password" id="cabPass" placeholder="Şifrənizi daxil edin" autocomplete="off" onkeydown="if(event.key==='Enter')cabinetLoginSubmit()">
+                    <button type="button" class="lux-eye" onclick="togglePassVisibility()" title="Şifrəni göstər/gizlət">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                    </button>
+                </div>
+
+                <div class="lux-forgot"><a href="#" onclick="forgotPass(event)">Şifrəni unutmusunuz?</a></div>
+                <div id="cabErr" class="cab-login-err"></div>
+                <button class="lux-btn" id="cabBtn" onclick="cabinetLoginSubmit()">Daxil ol &#8594;</button>
+
+                <div class="lux-divider"><span>Qeyd</span></div>
+                <p class="lux-note">ID və şifrəni müəllimdən əldə edin</p>
             </div>
         </div>
     </div>
@@ -3212,6 +3376,17 @@
                 updateSummary(ib, [i - 1, cnt ? (sum / cnt).toFixed(1) : '—']);
             }
         }
+    }
+
+    // Giriş ekranı köməkçiləri
+    function togglePassVisibility() {
+        const inp = document.getElementById('cabPass');
+        inp.type = inp.type === 'password' ? 'text' : 'password';
+    }
+
+    function forgotPass(e) {
+        e.preventDefault();
+        showToast('ID və şifrəni müəllimdən əldə edə bilərsiniz.', 'success');
     }
 
     // ===== Fərdi son təhvil tarixi =====
