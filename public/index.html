@@ -2509,6 +2509,13 @@
     let selectedWorks = new Set();
     let currentStep = 1;
 
+    // XSS qoruması: HTML/atribut kontekstində istifadəçi mətnini təhlükəsizləşdirir
+    function esc(s) {
+        return String(s == null ? '' : s)
+            .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+
     // Kabinet sessiyası — yalnız yaddaşda saxlanır: səhifə yenilənəndə (refresh)
     // avtomatik çıxış edilir, yenidən giriş tələb olunur
     let session = null, cabData = null;
@@ -2541,7 +2548,7 @@
             const card = document.createElement('div');
             card.className = 'team-card';
             card.innerHTML = `
-                <h3>${name}</h3>
+                <h3>${esc(name)}</h3>
                 <div class="arrow">&#8594;</div>
             `;
             card.onclick = () => selectTeam(name);
@@ -2624,7 +2631,7 @@
         workIds.forEach((id, i) => {
             const title = works[id] ? works[id].title : `Sərbəst iş #${id + 1}`;
             const li = document.createElement('li');
-            li.innerHTML = `<span style="color:var(--accent);font-weight:700;">${i+1}.</span> ${title}`;
+            li.innerHTML = `<span style="color:var(--accent);font-weight:700;">${i+1}.</span> ${esc(title)}`;
             list.appendChild(li);
         });
         goToStep(4);
@@ -2655,7 +2662,7 @@
 
             div.innerHTML = `
                 <div class="work-num">${w.id + 1}</div>
-                <div class="work-title">${w.title}</div>
+                <div class="work-title">${esc(w.title)}</div>
                 ${badge}
             `;
 
@@ -2727,7 +2734,7 @@
         let i = 1;
         selectedWorks.forEach(id => {
             const li = document.createElement('li');
-            li.innerHTML = `<span class="cab-sel-num">${i++}</span><span>${works[id].title}</span>`;
+            li.innerHTML = `<span class="cab-sel-num">${i++}</span><span>${esc(works[id].title)}</span>`;
             list.appendChild(li);
         });
         const inp = document.getElementById('confirmKeyInput');
@@ -2814,7 +2821,7 @@
             list.innerHTML = '';
             data.selected.forEach((title, i) => {
                 const li = document.createElement('li');
-                li.innerHTML = `<span style="color:var(--accent);font-weight:700;">${i+1}.</span> ${title}`;
+                li.innerHTML = `<span style="color:var(--accent);font-weight:700;">${i+1}.</span> ${esc(title)}`;
                 list.appendChild(li);
             });
 
@@ -3137,9 +3144,9 @@
                 const dot = x.live ? '<span class="live-dot" title="Elektron Kollokvium Sistemindən canlı bal"></span>' : '';
                 let row = `<div class="cab-row"><span class="cab-row-name">Kollokvium ${i + 1}${dot}</span><div class="cab-row-bar"><i class="${barCls(balCls(x.absent ? null : x.val))}" data-w="${isNaN(x.n) ? 0 : x.n * 10}"></i></div>${chip}</div>`;
                 if (x.live && !x.absent) {
-                    row += `<div class="cab-subrow">Suallar: ${x.live.qsum}/5 &#8226; Dəftər: ${x.live.notebook}${x.live.note ? ' &#8226; ' + x.live.note : ''}</div>`;
+                    row += `<div class="cab-subrow">Suallar: ${x.live.qsum}/5 &#8226; Dəftər: ${x.live.notebook}${x.live.note ? ' &#8226; ' + esc(x.live.note) : ''}</div>`;
                 } else if (x.live && x.absent && x.live.absentReason) {
-                    row += `<div class="cab-subrow">Səbəb: ${x.live.absentReason}</div>`;
+                    row += `<div class="cab-subrow">Səbəb: ${esc(x.live.absentReason)}</div>`;
                 }
                 return row;
             }).join('') + '<p class="cab-scale">Maksimum bal: 10</p>';
@@ -3188,7 +3195,7 @@
                 titles = sel.map(i => wres.works[i] ? wres.works[i].title : `Sərbəst iş #${i + 1}`);
             } catch(e) {}
             el.innerHTML = '<ul class="cab-sel-list">' + titles.map((t, i) =>
-                `<li><span class="cab-sel-num">${i + 1}</span><span>${t}</span></li>`).join('') +
+                `<li><span class="cab-sel-num">${i + 1}</span><span>${esc(t)}</span></li>`).join('') +
                 '</ul><p class="cab-note-ok">&#10003; Seçiminiz qeydə alınıb</p>';
         } else if (!cabData.key) {
             el.innerHTML = '<p class="cab-empty">Sərbəst iş seçimi üçün təsdiq açarı hələ təyin edilməyib — müəllimlə əlaqə saxlayın.</p>';
@@ -3261,7 +3268,7 @@
                 let i = 1, sums = [0, 0, 0], cnts = [0, 0, 0];
                 for (const name of teamRoster(g)) {
                     const vals = (g.kollok && g.kollok[name]) || [null, null, null];
-                    kb.insertAdjacentHTML('beforeend', `<tr data-name="${name}"><td class="col-num">${i++}</td><td>${name}</td>` +
+                    kb.insertAdjacentHTML('beforeend', `<tr data-name="${esc(name)}"><td class="col-num">${i++}</td><td>${esc(name)}</td>` +
                         vals.map(v => `<td class="col-bal">${balSpanHtml(v, balCls(v))}</td>`).join('') + '</tr>');
                     vals.forEach((v, j) => { const n = parseInt(v); if (!isNaN(n)) { sums[j] += n; cnts[j]++; } });
                 }
@@ -3366,10 +3373,10 @@
         document.getElementById('tpStats').innerHTML = Object.entries(teams).map(([team, members]) => {
             const done = members.filter(n => (sels[n] || []).length >= 2).length;
             const pct = members.length ? Math.round(done / members.length * 100) : 0;
-            return `<div class="cab-stat"><div class="cab-stat-ico">&#128101;</div><div class="cab-stat-val">${done}<span class="cab-stat-max">/${members.length}</span></div><div class="cab-stat-label">${team} — seçib</div><div class="cab-stat-bar"><i class="${pct === 100 ? 'bar-high' : pct >= 50 ? 'bar-mid' : 'bar-low'}" data-w="${pct}"></i></div></div>`;
+            return `<div class="cab-stat"><div class="cab-stat-ico">&#128101;</div><div class="cab-stat-val">${done}<span class="cab-stat-max">/${members.length}</span></div><div class="cab-stat-label">${esc(team)} — seçib</div><div class="cab-stat-bar"><i class="${pct === 100 ? 'bar-high' : pct >= 50 ? 'bar-mid' : 'bar-low'}" data-w="${pct}"></i></div></div>`;
         }).join('');
         document.getElementById('tpTeamTabs').innerHTML = Object.keys(teams).map(t =>
-            `<button class="subtab-btn${t === tpTeam ? ' active' : ''}" onclick="tpSwitchTeam('${t}', this)">${t}</button>`).join('');
+            `<button class="subtab-btn${t === tpTeam ? ' active' : ''}" data-team="${esc(t)}" onclick="tpSwitchTeam(this.dataset.team, this)">${esc(t)}</button>`).join('');
         renderTpStudents();
         renderTpWorks();
         requestAnimationFrame(() => setTimeout(() => {
@@ -3395,13 +3402,13 @@
         members.forEach((name, i) => {
             const sel = sels[name] || [];
             const selHtml = sel.length
-                ? '<ol class="tp-sel">' + sel.map(id => `<li>${works[id] || ('Sərbəst iş #' + (id + 1))}</li>`).join('') + '</ol>'
+                ? '<ol class="tp-sel">' + sel.map(id => `<li>${esc(works[id] || ('Sərbəst iş #' + (id + 1)))}</li>`).join('') + '</ol>'
                 : '<span class="bal bal-none">Seçməyib</span>';
-            tb.insertAdjacentHTML('beforeend', `<tr data-name="${name}">
+            tb.insertAdjacentHTML('beforeend', `<tr data-name="${esc(name)}">
                 <td class="col-num">${i + 1}</td>
-                <td>${name} <button class="row-edit" title="Adı dəyiş" onclick="tpRenameStudent(this)">&#9998;</button></td>
+                <td>${esc(name)} <button class="row-edit" title="Adı dəyiş" onclick="tpRenameStudent(this)">&#9998;</button></td>
                 <td>${selHtml}</td>
-                <td class="col-bal"><input type="text" class="dl-input dl-inp-cell" value="${dls[name] || ''}" placeholder="&#8212;" maxlength="40" onchange="saveStudentDeadline(this)"></td>
+                <td class="col-bal"><input type="text" class="dl-input dl-inp-cell" value="${esc(dls[name] || '')}" placeholder="&#8212;" maxlength="40" onchange="saveStudentDeadline(this)"></td>
                 <td class="col-bal"><div class="tp-actions">${sel.length ? '<button class="btn-reset" onclick="tpResetStudent(this)">Sıfırla</button>' : ''}<button class="btn-reset" title="Kursantı sil" onclick="tpDeleteStudent(this)">&#128465;</button></div></td>
             </tr>`);
         });
@@ -3413,7 +3420,7 @@
         const taken = (cabData.work_taken_by || {})[tpTeam] || {};
         document.getElementById('tpWorks').innerHTML = works.map((w, i) => {
             const owner = taken[String(i)];
-            return `<tr data-id="${i}"><td class="col-num">${i + 1}</td><td>${w} <button class="row-edit" title="Adı dəyiş" onclick="tpEditWork(this)">&#9998;</button></td><td>${owner ? `<span class="bal bal-high" style="font-size:0.75rem;">${owner}</span>` : '<span class="bal bal-none">Boş</span>'}</td><td class="col-bal"><button class="btn-reset" title="İşi sil" onclick="tpDeleteWork(this)">&#128465;</button></td></tr>`;
+            return `<tr data-id="${i}"><td class="col-num">${i + 1}</td><td>${esc(w)} <button class="row-edit" title="Adı dəyiş" onclick="tpEditWork(this)">&#9998;</button></td><td>${owner ? `<span class="bal bal-high" style="font-size:0.75rem;">${esc(owner)}</span>` : '<span class="bal bal-none">Boş</span>'}</td><td class="col-bal"><button class="btn-reset" title="İşi sil" onclick="tpDeleteWork(this)">&#128465;</button></td></tr>`;
         }).join('');
     }
 
@@ -3622,7 +3629,7 @@
             const sv = sc.serbest != null ? sc.serbest : '';
             const dv = sc.defter != null ? sc.defter : '';
             mb.insertAdjacentHTML('beforeend',
-                `<tr data-name="${name}" data-ksum="${ksum}"><td class="col-num">${i++}</td><td>${name}</td>` +
+                `<tr data-name="${esc(name)}" data-ksum="${ksum}"><td class="col-num">${i++}</td><td>${esc(name)}</td>` +
                 ks.map(v => `<td class="col-bal">${balSpanHtml(v, balCls(v))}</td>`).join('') +
                 `<td class="col-bal"><span class="bal ${ksum >= 24 ? 'bal-high' : ksum >= 18 ? 'bal-mid' : 'bal-low'}">${ksum}</span></td>` +
                 `<td class="col-bal"><input type="number" class="score-inp" data-field="serbest" min="0" max="10" value="${sv}" onchange="saveScore(this)"></td>` +
@@ -3685,7 +3692,7 @@
         const sums = [0, 0, 0], cnts = [0, 0, 0];
         for (const name of teamRoster(g)) {
             const ks = mergedKollokFor(name, g, live);
-            kb.insertAdjacentHTML('beforeend', `<tr data-name="${name}"><td class="col-num">${i++}</td><td>${name}</td>` +
+            kb.insertAdjacentHTML('beforeend', `<tr data-name="${esc(name)}"><td class="col-num">${i++}</td><td>${esc(name)}</td>` +
                 ks.map(v => `<td class="col-bal">${balSpanHtml(v, balCls(v))}</td>`).join('') + '</tr>');
             ks.forEach((v, j) => { if (v != null) { sums[j] += v; cnts[j]++; } });
         }
@@ -3721,7 +3728,7 @@
             const staticBal = v ? parseInt(v[0]) : NaN;
             const bal = manual[name] != null ? manual[name] : (isNaN(staticBal) ? null : staticBal);
             ib.insertAdjacentHTML('beforeend',
-                `<tr data-name="${name}" data-static="${isNaN(staticBal) ? '' : staticBal}"><td class="col-num">${i++}</td><td>${name}</td>` +
+                `<tr data-name="${esc(name)}" data-static="${isNaN(staticBal) ? '' : staticBal}"><td class="col-num">${i++}</td><td>${esc(name)}</td>` +
                 `<td class="col-bal"><input type="number" class="score-inp" min="0" max="100" value="${bal != null ? bal : ''}" onchange="saveExamScore(this)"></td>` +
                 `<td class="col-grade exam-grade"></td></tr>`);
             updateExamRow(ib.lastElementChild);
