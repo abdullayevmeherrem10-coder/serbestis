@@ -2165,6 +2165,22 @@
         <div class="cab-stats" id="tpStats"></div>
 
         <div class="card">
+            <div class="card-title"><div class="icon">&#128197;</div> Semestr və fənn</div>
+            <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end;">
+                <div class="input-wrapper" style="flex:1;min-width:220px;margin-bottom:0;">
+                    <label>Semestr</label>
+                    <input type="text" id="tpSemester" maxlength="60" placeholder="Məs: 2025/2026 yaz semestri">
+                </div>
+                <div class="input-wrapper" style="flex:1;min-width:220px;margin-bottom:0;">
+                    <label>Fənn</label>
+                    <input type="text" id="tpSubject" maxlength="60" placeholder="Məs: Hərbi Mühəndis Texnikası">
+                </div>
+                <button class="btn btn-primary" onclick="tpSaveSemester()">Yadda saxla</button>
+            </div>
+            <p class="cab-scale" style="margin-top:14px;">Giriş səhifəsində, kursant kabinetində və bütün panellərdə avtomatik görünür.</p>
+        </div>
+
+        <div class="card">
             <div class="card-title"><div class="icon">&#128203;</div> Sərbəst iş seçimləri və son tarixlər</div>
             <div class="subtab-nav" id="tpTeamTabs"></div>
             <div class="results-table-wrap">
@@ -2187,22 +2203,6 @@
                     <tbody id="tpWorks"></tbody>
                 </table>
             </div>
-        </div>
-
-        <div class="card">
-            <div class="card-title"><div class="icon">&#128197;</div> Semestr və fənn</div>
-            <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end;">
-                <div class="input-wrapper" style="flex:1;min-width:220px;margin-bottom:0;">
-                    <label>Semestr</label>
-                    <input type="text" id="tpSemester" maxlength="60" placeholder="Məs: 2025/2026 yaz semestri">
-                </div>
-                <div class="input-wrapper" style="flex:1;min-width:220px;margin-bottom:0;">
-                    <label>Fənn</label>
-                    <input type="text" id="tpSubject" maxlength="60" placeholder="Məs: Hərbi Mühəndis Texnikası">
-                </div>
-                <button class="btn btn-primary" onclick="tpSaveSemester()">Yadda saxla</button>
-            </div>
-            <p class="cab-scale" style="margin-top:14px;">Giriş səhifəsində, kursant kabinetində və bütün panellərdə avtomatik görünür.</p>
         </div>
 
         <div class="card" style="border-color: rgba(198,40,40,0.4);">
