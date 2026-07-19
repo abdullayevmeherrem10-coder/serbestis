@@ -78,16 +78,29 @@ def verify_token(token):
     except Exception:
         return None
 
-def student_results(name, team):
+def exam_grade(bal):
+    if bal >= 91: return 'A “Əla”'
+    if bal >= 81: return 'B “Çox yaxşı”'
+    if bal >= 71: return 'C “Yaxşı”'
+    if bal >= 61: return 'D “Kafi”'
+    if bal >= 51: return 'E “Qənaətbəxş”'
+    return 'F “Qeyri-kafi”'
+
+def student_results(name, team, exam_scores=None):
+    out = {"group": None, "kollok": None, "menimseme": None, "imtahan": None}
     for group, data in RESULTS.items():
         if data["team"] == team:
-            return {
+            out = {
                 "group": group,
                 "kollok": data["kollok"].get(name),
                 "menimseme": data["menimseme"].get(name),
                 "imtahan": data["imtahan"].get(name),
             }
-    return {"group": None, "kollok": None, "menimseme": None, "imtahan": None}
+            break
+    if exam_scores and name in exam_scores:
+        bal = exam_scores[name]
+        out["imtahan"] = [str(bal), exam_grade(bal)]
+    return out
 
 def generate_key(length=6):
     chars = string.ascii_uppercase + string.digits
@@ -162,6 +175,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
                     "work_taken_by": db.get("work_taken_by", {}),
                     "semester": db.get("semester", "2025/2026 yaz semestri"),
                     "subject": db.get("subject", "Hərbi Mühəndis Texnikası"),
+                    "exam_scores": db.get("exam_scores", {}),
                 })
                 return
             name = cred["name"]
@@ -172,7 +186,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
                 "team": cred["team"],
                 "key": db.get("keys", {}).get(name, ""),
                 "selections": db.get("selections", {}).get(name, []),
-                "results": student_results(name, cred["team"]),
+                "results": student_results(name, cred["team"], db.get("exam_scores", {})),
                 "scores": db.get("scores", {}).get(name),
                 "deadline": db.get("deadlines", {}).get(name),
                 "semester": db.get("semester", "2025/2026 yaz semestri"),
@@ -248,7 +262,38 @@ class Handler(http.server.BaseHTTPRequestHandler):
         parsed = urllib.parse.urlparse(self.path)
         path = parsed.path
 
-        if path == "/api/cabinet-semester":
+        if path == "/api/cabinet-exam":
+            auth = self.headers.get("Authorization", "")
+            cid = verify_token(auth[7:].strip()) if auth.startswith("Bearer ") else None
+            if not cid or CREDENTIALS[cid].get("role") != "teacher":
+                self.send_json({"error": "İcazə yoxdur."}, 401)
+                return
+            body = self.read_body()
+            name = (body.get("name") or "").strip()
+            if not name:
+                self.send_json({"error": "Kursant adı göstərilməyib."}, 400)
+                return
+            db = load_db()
+            if not any(name in members for members in db.get("teams", {}).values()):
+                self.send_json({"error": "Kursant tapılmadı."}, 404)
+                return
+            bal = body.get("bal")
+            ex = db.setdefault("exam_scores", {})
+            if bal is None or bal == "":
+                ex.pop(name, None)
+                save_db(db)
+                self.send_json({"success": True, "name": name, "bal": None})
+                return
+            try:
+                bal = max(0, min(100, int(bal)))
+            except (TypeError, ValueError):
+                self.send_json({"error": "Bal 0-100 arası rəqəm olmalıdır."}, 400)
+                return
+            ex[name] = bal
+            save_db(db)
+            self.send_json({"success": True, "name": name, "bal": bal, "grade": exam_grade(bal)})
+
+        elif path == "/api/cabinet-semester":
             auth = self.headers.get("Authorization", "")
             cid = verify_token(auth[7:].strip()) if auth.startswith("Bearer ") else None
             if not cid or CREDENTIALS[cid].get("role") != "teacher":

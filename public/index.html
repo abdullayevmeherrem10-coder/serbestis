@@ -3226,17 +3226,7 @@
                 updateSummary(kb, [i - 1, ...sums.map((s, j) => cnts[j] ? (s / cnts[j]).toFixed(1) : '—')]);
             }
             renderMenimsemeTable(group, menId, g, teacherLive[group] || null);
-            const ib = document.getElementById(imtId);
-            if (ib) {
-                ib.innerHTML = '';
-                let i = 1, sum = 0, cnt = 0;
-                for (const [name, v] of Object.entries(g.imtahan)) {
-                    const bal = v ? v[0] : null, gr = v ? v[1] : null;
-                    ib.insertAdjacentHTML('beforeend', `<tr data-name="${name}"><td class="col-num">${i++}</td><td>${name}</td><td class="col-bal">${balSpanHtml(bal, imtCls(bal))}</td><td class="col-grade">${gr ? `<span class="grade ${imtCls(bal)}">${gr}</span>` : '<span class="bal bal-none">&#8212;</span>'}</td></tr>`);
-                    const n = parseInt(bal); if (!isNaN(n)) { sum += n; cnt++; }
-                }
-                updateSummary(ib, [i - 1, cnt ? (sum / cnt).toFixed(1) : '—']);
-            }
+            renderImtahanTable(imtId, g);
         }
     }
 
@@ -3552,6 +3542,72 @@
             teacherLive[group] = live;
             applyLiveToKollokTable(kolId, g, live);
             renderMenimsemeTable(group, menId, g, live);
+        }
+    }
+
+    // İmtahan qiymət hərfi (bal üzrə avtomatik)
+    function examGrade(b) {
+        return b >= 91 ? 'A “Əla”' : b >= 81 ? 'B “Çox yaxşı”' : b >= 71 ? 'C “Yaxşı”'
+             : b >= 61 ? 'D “Kafi”' : b >= 51 ? 'E “Qənaətbəxş”' : 'F “Qeyri-kafi”';
+    }
+
+    function renderImtahanTable(imtId, g) {
+        const ib = document.getElementById(imtId);
+        if (!ib) return;
+        const manual = cabData.exam_scores || {};
+        ib.innerHTML = '';
+        let i = 1;
+        for (const [name, v] of Object.entries(g.imtahan)) {
+            const staticBal = v ? parseInt(v[0]) : NaN;
+            const bal = manual[name] != null ? manual[name] : (isNaN(staticBal) ? null : staticBal);
+            ib.insertAdjacentHTML('beforeend',
+                `<tr data-name="${name}" data-static="${isNaN(staticBal) ? '' : staticBal}"><td class="col-num">${i++}</td><td>${name}</td>` +
+                `<td class="col-bal"><input type="number" class="score-inp" min="0" max="100" value="${bal != null ? bal : ''}" onchange="saveExamScore(this)"></td>` +
+                `<td class="col-grade exam-grade"></td></tr>`);
+            updateExamRow(ib.lastElementChild);
+        }
+        updateExamSummary(ib);
+    }
+
+    function updateExamRow(tr) {
+        const v = tr.querySelector('input').value;
+        const cell = tr.querySelector('.exam-grade');
+        if (v === '') { cell.innerHTML = '<span class="bal bal-none">&#8212;</span>'; return; }
+        const b = parseInt(v);
+        cell.innerHTML = `<span class="grade ${imtCls(b)}">${examGrade(b)}</span>`;
+    }
+
+    function updateExamSummary(ib) {
+        const vals = Array.from(ib.querySelectorAll('input')).map(el => parseInt(el.value)).filter(n => !isNaN(n));
+        updateSummary(ib, [ib.querySelectorAll('tr').length, vals.length ? (vals.reduce((a, b) => a + b, 0) / vals.length).toFixed(1) : '—']);
+    }
+
+    async function saveExamScore(inp) {
+        const tr = inp.closest('tr');
+        const name = tr.dataset.name;
+        let bal = inp.value === '' ? null : Math.max(0, Math.min(100, parseInt(inp.value) || 0));
+        if (bal != null) inp.value = bal;
+        try {
+            const res = await fetch('/api/cabinet-exam', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.token },
+                body: JSON.stringify({ name: name, bal: bal })
+            });
+            if (res.status === 401) { cabinetLogout(); showToast('Sessiya bitib — yenidən daxil olun.', 'error'); return; }
+            if (!res.ok) { const d = await res.json(); showToast(d.error || 'Xəta!', 'error'); return; }
+            cabData.exam_scores = cabData.exam_scores || {};
+            if (bal != null) cabData.exam_scores[name] = bal;
+            else {
+                delete cabData.exam_scores[name];
+                // manual bal silindisə statik nəticəyə qayıt
+                if (tr.dataset.static !== '') inp.value = tr.dataset.static;
+            }
+            updateExamRow(tr);
+            updateExamSummary(tr.closest('tbody'));
+            tr.style.background = 'rgba(46,125,50,0.1)';
+            setTimeout(() => { tr.style.background = ''; }, 700);
+        } catch(e) {
+            showToast('Bal yadda saxlanıla bilmədi!', 'error');
         }
     }
 

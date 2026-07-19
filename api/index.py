@@ -278,17 +278,31 @@ def token_from_request():
     return None
 
 
-def student_results(name, team):
-    """Kursantın öz nəticələri (yoxdursa None sahələr)."""
+def exam_grade(bal):
+    if bal >= 91: return 'A “Əla”'
+    if bal >= 81: return 'B “Çox yaxşı”'
+    if bal >= 71: return 'C “Yaxşı”'
+    if bal >= 61: return 'D “Kafi”'
+    if bal >= 51: return 'E “Qənaətbəxş”'
+    return 'F “Qeyri-kafi”'
+
+
+def student_results(name, team, exam_scores=None):
+    """Kursantın öz nəticələri (yoxdursa None sahələr). Müəllimin manual imtahan balı üstündür."""
+    out = {"group": None, "kollok": None, "menimseme": None, "imtahan": None}
     for group, data in RESULTS.items():
         if data["team"] == team:
-            return {
+            out = {
                 "group": group,
                 "kollok": data["kollok"].get(name),
                 "menimseme": data["menimseme"].get(name),
                 "imtahan": data["imtahan"].get(name),
             }
-    return {"group": None, "kollok": None, "menimseme": None, "imtahan": None}
+            break
+    if exam_scores and name in exam_scores:
+        bal = exam_scores[name]
+        out["imtahan"] = [str(bal), exam_grade(bal)]
+    return out
 
 
 def admin_guard():
@@ -360,6 +374,7 @@ def cabinet_data():
             "work_taken_by": db.get('work_taken_by', {}),
             "semester": db.get('semester', '2025/2026 yaz semestri'),
             "subject": db.get('subject', 'Hərbi Mühəndis Texnikası'),
+            "exam_scores": db.get('exam_scores', {}),
         })
     db = load_db()
     name = cred['name']
@@ -370,7 +385,7 @@ def cabinet_data():
         "team": cred['team'],
         "key": db.get('keys', {}).get(name, ''),
         "selections": db.get('selections', {}).get(name, []),
-        "results": student_results(name, cred['team']),
+        "results": student_results(name, cred['team'], db.get('exam_scores', {})),
         "scores": db.get('scores', {}).get(name),
         "deadline": db.get('deadlines', {}).get(name),
         "semester": db.get('semester', '2025/2026 yaz semestri'),
@@ -435,6 +450,34 @@ def cabinet_reset_all():
     db['work_taken_by'] = {t: {} for t in db.get('teams', {})}
     save_db(db)
     return jsonify({"success": True, "selections": {}, "work_taken_by": db['work_taken_by']})
+
+
+@app.route('/api/cabinet-exam', methods=['POST'])
+def cabinet_exam():
+    """Müəllim kursantın imtahan balını (0-100) manual yazır; boş → statik nəticəyə qayıdır."""
+    cid = token_from_request()
+    if not cid or CREDENTIALS[cid].get('role') != 'teacher':
+        return jsonify({"error": "İcazə yoxdur."}), 401
+    body = request.get_json(silent=True) or {}
+    name = (body.get('name') or '').strip()
+    if not name:
+        return jsonify({"error": "Kursant adı göstərilməyib."}), 400
+    db = load_db()
+    if not any(name in members for members in db.get('teams', {}).values()):
+        return jsonify({"error": "Kursant tapılmadı."}), 404
+    bal = body.get('bal')
+    ex = db.setdefault('exam_scores', {})
+    if bal is None or bal == '':
+        ex.pop(name, None)
+        save_db(db)
+        return jsonify({"success": True, "name": name, "bal": None})
+    try:
+        bal = max(0, min(100, int(bal)))
+    except (TypeError, ValueError):
+        return jsonify({"error": "Bal 0-100 arası rəqəm olmalıdır."}), 400
+    ex[name] = bal
+    save_db(db)
+    return jsonify({"success": True, "name": name, "bal": bal, "grade": exam_grade(bal)})
 
 
 @app.route('/api/cabinet-deadline', methods=['POST'])
