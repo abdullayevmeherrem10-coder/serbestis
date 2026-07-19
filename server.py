@@ -5,6 +5,7 @@ import hashlib
 import hmac
 import json
 import os
+import re
 import string
 import random
 import secrets
@@ -286,6 +287,21 @@ class Handler(http.server.BaseHTTPRequestHandler):
                 self.send_response(404)
                 self.end_headers()
                 return
+
+            # Kitab səhifələri yalnız daxil olmuş istifadəçilərə (kabinet cookie-si)
+            rel_l = rel.lower()
+            if rel_l == "kitab.html" or rel_l.startswith("kitab/"):
+                cookie = self.headers.get("Cookie", "")
+                cm = re.search(r"(?:^|;\s*)kabinet=([^;]+)", cookie)
+                tok = urllib.parse.unquote(cm.group(1)) if cm else ""
+                if not verify_token(tok):
+                    if rel_l == "kitab.html":
+                        self.send_response(302)
+                        self.send_header("Location", "/")
+                        self.end_headers()
+                    else:
+                        self.send_json({"error": "Giriş tələb olunur."}, 401)
+                    return
 
             if os.path.isfile(file_path):
                 mime, _ = mimetypes.guess_type(file_path)

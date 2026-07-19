@@ -2990,6 +2990,10 @@
                 err.textContent = data.error || 'Giriş alınmadı!';
             } else {
                 session = data;
+                // Kitab səhifələrinə giriş üçün token cookie-si (12 saat etibarlıdır)
+                document.cookie = 'kabinet=' + encodeURIComponent(session.token) +
+                    '; path=/; SameSite=Strict; Max-Age=43200' +
+                    (location.protocol === 'https:' ? '; Secure' : '');
                 idEl.value = ''; passEl.value = '';
                 cabData = null;
                 document.getElementById('cabinetLogin').style.display = 'none';
@@ -3005,6 +3009,7 @@
     function cabinetLogout() {
         session = null;
         cabData = null;
+        document.cookie = 'kabinet=; path=/; Max-Age=0';
         backToSemesters();
     }
 
