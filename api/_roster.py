@@ -37,6 +37,7 @@ def _payload(db):
     return {
         "success": True,
         "teams": db.get("teams", {}),
+        "works": db.get("works", []),
         "work_taken_by": db.get("work_taken_by", {}),
         "selections": db.get("selections", {}),
         "scores": db.get("scores", {}),
@@ -172,6 +173,52 @@ def roster_action(db, body, static_credentials):
             dl = db.setdefault("deleted_names", [])
             if name not in dl:
                 dl.append(name)
+        return True, _payload(db), 200
+
+    if action == "add_work":
+        title = (body.get("title") or "").strip()[:200]
+        if not title:
+            return False, {"error": "İşin adı boş ola bilməz."}, 400
+        works = db.setdefault("works", [])
+        if title in works:
+            return False, {"error": "Bu adda iş artıq var."}, 400
+        works.append(title)
+        return True, _payload(db), 200
+
+    if action == "edit_work":
+        works = db.get("works", [])
+        try:
+            wid = int(body.get("id"))
+        except (TypeError, ValueError):
+            return False, {"error": "İş tapılmadı."}, 400
+        if not (0 <= wid < len(works)):
+            return False, {"error": "İş tapılmadı."}, 404
+        title = (body.get("title") or "").strip()[:200]
+        if not title:
+            return False, {"error": "İşin adı boş ola bilməz."}, 400
+        works[wid] = title
+        return True, _payload(db), 200
+
+    if action == "delete_work":
+        works = db.get("works", [])
+        try:
+            wid = int(body.get("id"))
+        except (TypeError, ValueError):
+            return False, {"error": "İş tapılmadı."}, 400
+        if not (0 <= wid < len(works)):
+            return False, {"error": "İş tapılmadı."}, 404
+        # seçilmiş işi silmək olmaz — əvvəl seçim sıfırlanmalıdır
+        for taken in db.get("work_taken_by", {}).values():
+            if str(wid) in taken:
+                return False, {"error": f"Bu iş {taken[str(wid)]} tərəfindən seçilib — əvvəlcə onun seçimini sıfırlayın."}, 400
+        works.pop(wid)
+        # indekslər sürüşür: bütün istinadlar yenidən hesablanır
+        for name, sel in db.get("selections", {}).items():
+            db["selections"][name] = [i - 1 if i > wid else i for i in sel if i != wid]
+        for team, taken in db.get("work_taken_by", {}).items():
+            db["work_taken_by"][team] = {
+                (str(int(k) - 1) if int(k) > wid else k): v for k, v in taken.items()
+            }
         return True, _payload(db), 200
 
     return False, {"error": "Naməlum əməliyyat."}, 400

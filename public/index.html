@@ -2225,10 +2225,13 @@
 
         <div class="card">
             <div class="card-title"><div class="icon">&#128218;</div> <span>İşlərin bölgüsü — <strong style="color:var(--accent)" id="tpWorksTeam"></strong></span></div>
+            <div class="tp-tools">
+                <button class="btn-mini" onclick="tpAddWork()">&#10133; Yeni iş əlavə et</button>
+            </div>
             <div class="results-table-wrap">
                 <table class="results-table">
                     <thead>
-                        <tr><th class="col-num">&#8470;</th><th>S&#601;rb&#601;st i&#351;in ad&#305;</th><th>G&#246;t&#252;r&#601;n kursant</th></tr>
+                        <tr><th class="col-num">&#8470;</th><th>S&#601;rb&#601;st i&#351;in ad&#305;</th><th>G&#246;t&#252;r&#601;n kursant</th><th class="col-bal">&#399;m&#601;liyyat</th></tr>
                     </thead>
                     <tbody id="tpWorks"></tbody>
                 </table>
@@ -3404,7 +3407,7 @@
         const taken = (cabData.work_taken_by || {})[tpTeam] || {};
         document.getElementById('tpWorks').innerHTML = works.map((w, i) => {
             const owner = taken[String(i)];
-            return `<tr><td class="col-num">${i + 1}</td><td>${w}</td><td>${owner ? `<span class="bal bal-high" style="font-size:0.75rem;">${owner}</span>` : '<span class="bal bal-none">Boş</span>'}</td></tr>`;
+            return `<tr data-id="${i}"><td class="col-num">${i + 1}</td><td>${w} <button class="row-edit" title="Adı dəyiş" onclick="tpEditWork(this)">&#9998;</button></td><td>${owner ? `<span class="bal bal-high" style="font-size:0.75rem;">${owner}</span>` : '<span class="bal bal-none">Boş</span>'}</td><td class="col-bal"><button class="btn-reset" title="İşi sil" onclick="tpDeleteWork(this)">&#128465;</button></td></tr>`;
         }).join('');
     }
 
@@ -3469,6 +3472,45 @@
         renderTeacherTables(cabData.results || {});
         enrichTeacherLive();
         renderTeacherPanel();
+    }
+
+    function applyRoster(d) {
+        ['teams', 'works', 'work_taken_by', 'selections', 'scores', 'deadlines', 'exam_scores'].forEach(k => {
+            if (d[k] !== undefined) cabData[k] = d[k];
+        });
+    }
+
+    async function tpAddWork() {
+        const t = prompt('Yeni sərbəst işin adı:');
+        if (!t || !t.trim()) return;
+        try {
+            applyRoster(await rosterPost({ action: 'add_work', title: t.trim() }));
+            renderTeacherPanel();
+            showToast('İş əlavə edildi', 'success');
+        } catch(e) {}
+    }
+
+    async function tpEditWork(btn) {
+        const id = parseInt(btn.closest('tr').dataset.id);
+        const cur = (cabData.works || [])[id] || '';
+        const t = prompt('İşin yeni adı:', cur);
+        if (!t || !t.trim() || t.trim() === cur) return;
+        try {
+            applyRoster(await rosterPost({ action: 'edit_work', id: id, title: t.trim() }));
+            renderTeacherPanel();
+            showToast('İşin adı yeniləndi', 'success');
+        } catch(e) {}
+    }
+
+    async function tpDeleteWork(btn) {
+        const id = parseInt(btn.closest('tr').dataset.id);
+        const cur = (cabData.works || [])[id] || '';
+        if (!confirm('"' + cur + '" siyahıdan silinsin?')) return;
+        try {
+            applyRoster(await rosterPost({ action: 'delete_work', id: id }));
+            renderTeacherPanel();
+            showToast('İş silindi', 'success');
+        } catch(e) {}
     }
 
     async function tpAddTeam() {
