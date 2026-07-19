@@ -13,7 +13,7 @@ PASS_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
 TEAM_CODES = {"YTF24A1": "Y1", "YTF24A2": "Y2", "HFT24A1": "H1", "HFT24A2": "H2"}
 
 
-def _gen_pass(n=6):
+def _gen_pass(n=10):
     return "".join(secrets.choice(PASS_ALPHABET) for _ in range(n))
 
 
