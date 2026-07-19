@@ -528,6 +528,38 @@ def teacher_from_request():
     return None
 
 
+@app.route('/api/kollok-diag')
+def kollok_diag():
+    if not teacher_from_request():
+        return jsonify({"error": "Yalnız müəllim."}), 401
+    info = {"has_env": bool(os.environ.get('FIREBASE_SERVICE_ACCOUNT', '').strip())}
+    try:
+        import google.auth
+        info["google_auth"] = getattr(google.auth, '__version__', 'var')
+    except Exception as e:
+        info["google_auth"] = f"YOX: {e.__class__.__name__}: {e}"
+    try:
+        import _fbauth
+        creds = _fbauth._load_creds()
+        info["creds_loaded"] = creds is not None
+        try:
+            tok = _fbauth.get_access_token()
+            info["token"] = "var" if tok else "yox"
+        except Exception as e:
+            info["token"] = f"XƏTA: {e.__class__.__name__}: {e}"
+    except Exception as e:
+        info["fbauth"] = f"XƏTA: {e.__class__.__name__}: {e}"
+    # birbaşa yazma sınağı — real xətanı göstər
+    try:
+        url = _fb_url("sessions/DIAG_TEST")
+        req = urlreq.Request(url, data=b'{"t":1}', method='PUT', headers={'Content-Type': 'application/json'})
+        with urlreq.urlopen(req, timeout=10) as resp:
+            info["write"] = resp.status
+    except Exception as e:
+        info["write"] = f"{e.__class__.__name__}: {e}"
+    return jsonify(info)
+
+
 @app.route('/api/kollok-write', methods=['POST'])
 def kollok_write():
     if not teacher_from_request():
