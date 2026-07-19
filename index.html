@@ -1455,27 +1455,37 @@
             text-align: center;
             box-shadow: 0 4px 24px rgba(0,0,0,0.08);
         }
-        .cab-login-chip {
-            display: inline-block;
-            background: linear-gradient(135deg, #455f51, #6b8f7b);
-            color: #fff;
-            padding: 10px 26px;
-            border-radius: 10px;
+        .cab-login-ico {
+            width: 54px; height: 54px;
+            margin: 0 auto 14px;
+            border-radius: 16px;
+            background: rgba(69,95,81,0.08);
+            border: 1.5px solid rgba(69,95,81,0.2);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.3rem;
+            box-shadow: 0 6px 16px rgba(69,95,81,0.12);
+        }
+        .cab-login-title {
+            font-size: 1.65rem;
             font-weight: 800;
-            letter-spacing: 1px;
-            margin-bottom: 8px;
-            position: relative;
-            overflow: hidden;
+            letter-spacing: 0.5px;
+            background: linear-gradient(135deg, #2e4a3e, #455f51, #6b8f7b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 11px;
         }
-        .cab-login-chip::after {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.18), transparent);
-            background-size: 200% 100%;
-            animation: shimmerBtn 3s ease infinite;
-            pointer-events: none;
+        .cab-login-orn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 12px;
+            color: #8fa69b;
         }
+        .cab-login-orn span { width: 48px; height: 1px; background: linear-gradient(90deg, transparent, #8fa69b); }
+        .cab-login-orn span:last-child { background: linear-gradient(90deg, #8fa69b, transparent); }
+        .cab-login-orn i { font-style: normal; font-size: 0.55rem; }
         .cab-login-sub { color: var(--text-muted); font-size: 0.82rem; margin-bottom: 22px; }
         .cab-login-err { color: var(--danger); font-size: 0.8rem; font-weight: 600; min-height: 18px; margin-bottom: 8px; }
         .cab-login-note { color: var(--text-dim); font-size: 0.75rem; margin-top: 14px; }
@@ -1902,7 +1912,9 @@
             <div class="cab-login-box">
                 <div class="cab-login-back"></div>
                 <div class="cab-login-card">
-                    <div class="cab-login-chip">&#128274; Şəxsi Kabinet</div>
+                    <div class="cab-login-ico">&#128274;</div>
+                    <h2 class="cab-login-title">Şəxsi Kabinet</h2>
+                    <div class="cab-login-orn"><span></span><i>&#9670;</i><span></span></div>
                     <p class="cab-login-sub" id="loginSemSub">2025/2026 yaz semestri &#8226; Hərbi Mühəndis Texnikası</p>
                     <div class="input-wrapper" style="text-align:left;">
                         <label>ID</label>
