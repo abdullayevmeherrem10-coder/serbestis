@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from flask import Flask, request, jsonify
-import json, os, sys, string, random, hashlib, hmac, base64, time
+import json, os, re, sys, string, random, hashlib, hmac, base64, time
 import urllib.request as urlreq
 
 # Vercel-də funksiya qovluğu sys.path-da olmur — qonşu modulların importu üçün əlavə edilir
@@ -492,6 +492,49 @@ def cabinet_reset_all():
     db['work_taken_by'] = {t: {} for t in db.get('teams', {})}
     save_db(db)
     return jsonify({"success": True, "selections": {}, "work_taken_by": db['work_taken_by']})
+
+
+# ─── E-Kollokvium Firebase yazma proxy-si ─────────────────
+# Firebase qaydaları yazmanı bağlayır; yazma yalnız buradan, müəllim girişi ilə,
+# gizli açarla (FIREBASE_SECRET env) gedir. Beləcə balları heç kim saxtalaşdıra bilməz.
+FIREBASE_DB_URL = 'https://kollokvium1-default-rtdb.firebaseio.com'
+FIREBASE_SECRET = os.environ.get('FIREBASE_SECRET', '')
+
+
+def teacher_from_request():
+    """Bearer token və ya kabinet cookie-sindən müəllim yoxlanışı."""
+    cid = token_from_request()
+    if not cid:
+        tok = request.cookies.get('kabinet', '')
+        cid = verify_token(tok) if tok else None
+    if cid and CREDENTIALS.get(cid, {}).get('role') == 'teacher':
+        return cid
+    return None
+
+
+@app.route('/api/kollok-write', methods=['POST'])
+def kollok_write():
+    if not teacher_from_request():
+        return jsonify({"error": "Yazmaq üçün əsas saytda müəllim kimi daxil olmalısınız."}), 401
+    body = request.get_json(silent=True) or {}
+    path = (body.get('path') or '').strip()
+    if not re.fullmatch(r'sessions/[A-Za-z0-9_\-/]+', path):
+        return jsonify({"error": "Yol etibarsızdır."}), 400
+    url = f"{FIREBASE_DB_URL}/{path}.json"
+    if FIREBASE_SECRET:
+        url += "?auth=" + FIREBASE_SECRET
+    data = body.get('data', None)
+    try:
+        if data is None:
+            req = urlreq.Request(url, method='DELETE')
+        else:
+            req = urlreq.Request(url, data=json.dumps(data, ensure_ascii=False).encode('utf-8'),
+                                 method='PUT', headers={'Content-Type': 'application/json'})
+        with urlreq.urlopen(req, timeout=10) as resp:
+            resp.read()
+        return jsonify({"success": True})
+    except Exception:
+        return jsonify({"error": "Firebase yazma alınmadı."}), 502
 
 
 @app.route('/api/cabinet-roster', methods=['POST'])

@@ -54,6 +54,15 @@ STATIC_ALLOWED_EXT = {
 }
 STATIC_ALLOWED_FILES = {"ÜZLÜK.docx"}
 
+# E-Kollokvium Firebase yazma proxy-si üçün gizli açar
+FIREBASE_DB_URL = "https://kollokvium1-default-rtdb.firebaseio.com"
+FIREBASE_SECRET = os.environ.get("FIREBASE_SECRET", "")
+if not FIREBASE_SECRET:
+    _fb_file = os.path.join(BASE_DIR, "firebase_secret.txt")
+    if os.path.exists(_fb_file):
+        with open(_fb_file, encoding="utf-8") as f:
+            FIREBASE_SECRET = f.read().strip()
+
 # Kabinet token sistemi (HMAC imzalı, 12 saat etibarlı)
 TOKEN_TTL = 12 * 3600
 CABINET_SECRET = os.environ.get('CABINET_SECRET') or hashlib.sha256(
@@ -326,7 +335,39 @@ class Handler(http.server.BaseHTTPRequestHandler):
         parsed = urllib.parse.urlparse(self.path)
         path = parsed.path
 
-        if path == "/api/cabinet-roster":
+        if path == "/api/kollok-write":
+            # Müəllim yoxlanışı: Bearer token və ya kabinet cookie-si
+            auth = self.headers.get("Authorization", "")
+            cid = verify_token(auth[7:].strip()) if auth.startswith("Bearer ") else None
+            if not cid:
+                cm = re.search(r"(?:^|;\s*)kabinet=([^;]+)", self.headers.get("Cookie", ""))
+                cid = verify_token(urllib.parse.unquote(cm.group(1))) if cm else None
+            if not cid or CREDENTIALS.get(cid, {}).get("role") != "teacher":
+                self.send_json({"error": "Yazmaq üçün əsas saytda müəllim kimi daxil olmalısınız."}, 401)
+                return
+            body = self.read_body()
+            fb_path = (body.get("path") or "").strip()
+            if not re.fullmatch(r"sessions/[A-Za-z0-9_\-/]+", fb_path):
+                self.send_json({"error": "Yol etibarsızdır."}, 400)
+                return
+            url = f"{FIREBASE_DB_URL}/{fb_path}.json"
+            if FIREBASE_SECRET:
+                url += "?auth=" + FIREBASE_SECRET
+            data = body.get("data", None)
+            try:
+                import urllib.request as _urlreq
+                if data is None:
+                    req = _urlreq.Request(url, method="DELETE")
+                else:
+                    req = _urlreq.Request(url, data=json.dumps(data, ensure_ascii=False).encode("utf-8"),
+                                          method="PUT", headers={"Content-Type": "application/json"})
+                with _urlreq.urlopen(req, timeout=10) as resp:
+                    resp.read()
+                self.send_json({"success": True})
+            except Exception:
+                self.send_json({"error": "Firebase yazma alınmadı."}, 502)
+
+        elif path == "/api/cabinet-roster":
             auth = self.headers.get("Authorization", "")
             cid = verify_token(auth[7:].strip()) if auth.startswith("Bearer ") else None
             if not cid or CREDENTIALS.get(cid, {}).get("role") != "teacher":
