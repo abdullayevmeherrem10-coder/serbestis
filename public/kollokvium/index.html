@@ -4060,5 +4060,24 @@ document.addEventListener('keydown', function(e) {
 </script>
 
 
+<script>
+// Fənn adı əsas saytın müəllim panelindən idarə olunur — /api/semester-info
+(function() {
+    var DEFAULT_SUBJECT = 'Hərbi Mühəndis Texnikası';
+    fetch('/api/semester-info').then(function(r) { return r.json(); }).then(function(d) {
+        if (!d || !d.subject || d.subject === DEFAULT_SUBJECT) return;
+        var walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+        var nodes = [];
+        while (walker.nextNode()) nodes.push(walker.currentNode);
+        nodes.forEach(function(n) {
+            if (n.nodeValue && n.nodeValue.indexOf(DEFAULT_SUBJECT) !== -1) {
+                n.nodeValue = n.nodeValue.split(DEFAULT_SUBJECT).join(d.subject);
+            }
+        });
+        var img = document.getElementById('vehicleImg');
+        if (img) img.alt = d.subject;
+    }).catch(function() {});
+})();
+</script>
 </body>
 </html>
