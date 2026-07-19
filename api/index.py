@@ -543,10 +543,11 @@ def kollok_diag():
         creds = _fbauth._load_creds()
         info["creds_loaded"] = creds is not None
         try:
-            tok = _fbauth.get_access_token()
-            info["token"] = "var" if tok else "yox"
+            import google.auth.transport.requests
+            creds.refresh(google.auth.transport.requests.Request())
+            info["token"] = "var" if creds.token else "yox (boş)"
         except Exception as e:
-            info["token"] = f"XƏTA: {e.__class__.__name__}: {e}"
+            info["token"] = f"REFRESH XƏTA: {e.__class__.__name__}: {str(e)[:300]}"
     except Exception as e:
         info["fbauth"] = f"XƏTA: {e.__class__.__name__}: {e}"
     # birbaşa yazma sınağı — real xətanı göstər
