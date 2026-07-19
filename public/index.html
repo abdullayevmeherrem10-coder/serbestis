@@ -2975,6 +2975,35 @@
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
+    // Kitab/kollokvium naviqasiyasına keçəndə qeyd qoyulur ki, geri qayıdanda
+    // kabinet bərpa olunsun (adi refresh-də yenə giriş tələb olunur)
+    document.addEventListener('click', function(e) {
+        const a = e.target.closest && e.target.closest('a');
+        if (!a) return;
+        const href = a.getAttribute('href') || '';
+        if ((href === 'kitab.html' || href === 'kollokvium/') && session && session.token) {
+            try { sessionStorage.setItem('cab_nav', '1'); } catch(err) {}
+        }
+    });
+
+    // Cookie-dəki tokenlə kabineti bərpa et (yalnız kitab/kollokviumdan qayıdanda)
+    async function restoreFromCookie() {
+        const m = document.cookie.match(/(?:^|;\s*)kabinet=([^;]+)/);
+        const tok = m ? decodeURIComponent(m[1]) : '';
+        if (!tok) return false;
+        try {
+            const res = await fetch('/api/cabinet-data', { headers: { 'Authorization': 'Bearer ' + tok } });
+            if (!res.ok) return false;
+            cabData = await res.json();
+            session = { token: tok, role: cabData.role, id: cabData.id, name: cabData.name, team: cabData.team };
+            if (cabData.semester) semInfo.semester = cabData.semester;
+            if (cabData.subject) semInfo.subject = cabData.subject;
+            applySemesterInfo();
+            if (session.role === 'teacher') showTeacherApp(); else showCabinet();
+            return true;
+        } catch(e) { return false; }
+    }
+
     async function cabinetLoginSubmit() {
         const idEl = document.getElementById('cabId');
         const passEl = document.getElementById('cabPass');
@@ -3843,7 +3872,15 @@
     // Start — sayt birbaşa kabinet girişi ilə açılır
     init();
     loadSemesterInfo();
-    routeCabinet();
+    (function() {
+        let navBack = null;
+        try { navBack = sessionStorage.getItem('cab_nav'); sessionStorage.removeItem('cab_nav'); } catch(e) {}
+        if (navBack) {
+            restoreFromCookie().then(function(ok) { if (!ok) routeCabinet(); });
+        } else {
+            routeCabinet();
+        }
+    })();
 </script>
 
 </body>
