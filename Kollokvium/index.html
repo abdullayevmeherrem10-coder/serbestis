@@ -1447,8 +1447,16 @@ var audioCtx = null;
 var soundEnabled = true;
 function getAudioCtx() {
     if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    // Brauzer avtoplay siyasəti: kontekst "suspended" başlayır — davam etdir
+    if (audioCtx.state === 'suspended' && audioCtx.resume) audioCtx.resume();
     return audioCtx;
 }
+// İlk istifadəçi hərəkətində səs kontekstini kilidini aç
+['click', 'keydown', 'touchstart'].forEach(function(ev) {
+    document.addEventListener(ev, function() {
+        if (audioCtx && audioCtx.state === 'suspended' && audioCtx.resume) audioCtx.resume();
+    }, { passive: true });
+});
 function toggleSound() {
     soundEnabled = !soundEnabled;
     var btn = document.getElementById('soundToggleBtn');
