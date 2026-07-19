@@ -350,6 +350,9 @@ class Handler(http.server.BaseHTTPRequestHandler):
                 self.send_response(200)
                 self.send_header("Content-Type", mime)
                 self.send_header("Content-Length", len(content))
+                # Qorunan səhifələr keşlənməsin ki, çıxışdan sonra middleware yenidən yoxlasın
+                if rel_l == "kitab.html" or rel_l.startswith("kitab/") or rel_l.startswith("kollokvium/"):
+                    self.send_header("Cache-Control", "no-store, must-revalidate")
                 if file_path.endswith(".docx"):
                     fname = os.path.basename(file_path)
                     encoded_fname = urllib.parse.quote(fname)

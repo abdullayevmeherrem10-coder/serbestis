@@ -3009,7 +3009,9 @@
     function cabinetLogout() {
         session = null;
         cabData = null;
-        document.cookie = 'kabinet=; path=/; Max-Age=0';
+        // Cookie-ni təyin edərkənki atributlarla silinir ki, brauzer düzgün silsin
+        document.cookie = 'kabinet=; path=/; Max-Age=0; SameSite=Strict' +
+            (location.protocol === 'https:' ? '; Secure' : '');
         backToSemesters();
     }
 
