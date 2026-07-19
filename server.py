@@ -168,13 +168,25 @@ class Handler(http.server.BaseHTTPRequestHandler):
             })
 
         elif path == "/api/teams":
+            # Kursant adları yalnız daxil olmuş istifadəçilərə görünür
+            auth = self.headers.get("Authorization", "")
+            cid = verify_token(auth[7:].strip()) if auth.startswith("Bearer ") else None
             db = load_db()
+            if not cid or not resolve_cred(cid, db):
+                self.send_json({"error": "Giriş tələb olunur."}, 401)
+                return
             self.send_json({"teams": {t: members for t, members in db["teams"].items()}})
 
         elif path == "/api/works":
+            # İşi götürən kursantların adları yalnız daxil olmuş istifadəçilərə görünür
+            auth = self.headers.get("Authorization", "")
+            cid = verify_token(auth[7:].strip()) if auth.startswith("Bearer ") else None
+            db = load_db()
+            if not cid or not resolve_cred(cid, db):
+                self.send_json({"error": "Giriş tələb olunur."}, 401)
+                return
             params = urllib.parse.parse_qs(parsed.query)
             team = params.get("team", [""])[0]
-            db = load_db()
             team_taken = db["work_taken_by"].get(team, {})
             works = []
             for i, w in enumerate(db["works"]):

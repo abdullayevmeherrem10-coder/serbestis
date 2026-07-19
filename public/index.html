@@ -2525,13 +2525,12 @@
     });
 
     async function init() {
+        if (!session || !session.token) return;
         try {
-            const teamsRes = await fetch('/api/teams').then(r => r.json());
+            const teamsRes = await fetch('/api/teams', { headers: { 'Authorization': 'Bearer ' + session.token } }).then(r => r.json());
             teams = teamsRes.teams;
             renderTeams();
-        } catch(e) {
-            showToast('Server ilə əlaqə qurula bilmədi!', 'error');
-        }
+        } catch(e) {}
     }
 
     // Render teams
@@ -2616,7 +2615,7 @@
         // Load works if not loaded yet
         if (!works.length) {
             try {
-                const res = await fetch(`/api/works?team=${encodeURIComponent(selectedTeam)}`).then(r => r.json());
+                const res = await fetch(`/api/works?team=${encodeURIComponent(selectedTeam)}`, { headers: { 'Authorization': 'Bearer ' + session.token } }).then(r => r.json());
                 works = res.works;
             } catch(e) {}
         }
@@ -2635,7 +2634,7 @@
     async function renderWorks() {
         // Refresh works data
         try {
-            const res = await fetch(`/api/works?team=${encodeURIComponent(selectedTeam)}`).then(r => r.json());
+            const res = await fetch(`/api/works?team=${encodeURIComponent(selectedTeam)}`, { headers: { 'Authorization': 'Bearer ' + session.token } }).then(r => r.json());
             works = res.works;
         } catch(e) {}
 
@@ -3178,7 +3177,7 @@
             el.innerHTML = '<span class="spinner"></span>';
             let titles = sel.map(i => `Sərbəst iş #${i + 1}`);
             try {
-                const wres = await fetch(`/api/works?team=${encodeURIComponent(cabData.team)}`).then(r => r.json());
+                const wres = await fetch(`/api/works?team=${encodeURIComponent(cabData.team)}`, { headers: { 'Authorization': 'Bearer ' + session.token } }).then(r => r.json());
                 titles = sel.map(i => wres.works[i] ? wres.works[i].title : `Sərbəst iş #${i + 1}`);
             } catch(e) {}
             el.innerHTML = '<ul class="cab-sel-list">' + titles.map((t, i) =>

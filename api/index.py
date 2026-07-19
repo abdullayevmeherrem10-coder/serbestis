@@ -362,7 +362,11 @@ def admin_guard():
 
 @app.route('/api/teams')
 def get_teams():
+    # Kursant adları yalnız daxil olmuş istifadəçilərə görünür
     db = load_db()
+    cid = token_from_request()
+    if not cid or not resolve_cred(cid, db):
+        return jsonify({"error": "Giriş tələb olunur."}), 401
     return jsonify({"teams": db["teams"]})
 
 
@@ -588,8 +592,12 @@ def cabinet_scores():
 
 @app.route('/api/works')
 def get_works():
-    team = request.args.get('team', '')
+    # İşi götürən kursantların adları yalnız daxil olmuş istifadəçilərə görünür
     db = load_db()
+    cid = token_from_request()
+    if not cid or not resolve_cred(cid, db):
+        return jsonify({"error": "Giriş tələb olunur."}), 401
+    team = request.args.get('team', '')
     team_taken = db["work_taken_by"].get(team, {})
     works = []
     for i, w in enumerate(db["works"]):
