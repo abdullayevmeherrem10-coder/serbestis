@@ -3895,7 +3895,7 @@
             const d = document.getElementById('upDel-' + k);
             if (!st) return;
             if (meta) {
-                st.innerHTML = `<span class="up-ok">&#10003;</span> ${esc(meta.fname || '')} <small>(${fmtSize(meta.size || 0)} &#8226; ${esc(meta.ts || '')})</small>${vtBadge(meta.vt)}`;
+                st.innerHTML = `<span class="up-ok">&#10003;</span> ${esc(meta.fname || '')} <small>(${fmtSize(meta.size || 0)} &#8226; ${esc(meta.ts || '')})</small>`;
                 btn.innerHTML = '&#8635; Dəyiş';
                 v.style.display = '';
                 d.style.display = '';
@@ -3906,49 +3906,6 @@
                 d.style.display = 'none';
             }
         });
-    }
-
-    function vtBadge(vt) {
-        if (!vt) return '';
-        if (vt.status === 'pending') return ' <span class="vt vt-pending">&#8987; virus yoxlanışında...</span>';
-        if (vt.status === 'clean') return ' <span class="vt vt-ok">&#128737; təmiz</span>';
-        if (vt.status === 'flagged') return ' <span class="vt vt-bad">&#9888; şübhəli!</span>';
-        return '';
-    }
-
-    async function vtStart(kind) {
-        try {
-            const r = await fetch('/api/vt-check', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.token },
-                body: JSON.stringify({ kind: kind })
-            });
-            const d = await r.json();
-            if (r.ok && cabData.uploads && cabData.uploads[kind]) {
-                cabData.uploads[kind].vt = d.vt;
-                renderUploads();
-                vtPoll(kind, 0);
-            }
-        } catch (e) {}
-    }
-
-    function vtPoll(kind, n) {
-        if (n > 8) return;
-        setTimeout(async () => {
-            try {
-                const r = await fetch('/api/vt-status', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.token },
-                    body: JSON.stringify({ kind: kind })
-                });
-                const d = await r.json();
-                if (r.ok && cabData.uploads && cabData.uploads[kind]) {
-                    cabData.uploads[kind].vt = d.vt;
-                    renderUploads();
-                    if (d.vt && d.vt.status === 'pending') vtPoll(kind, n + 1);
-                }
-            } catch (e) {}
-        }, 20000);
     }
 
     function upPick(kind) { document.getElementById('upFile-' + kind).click(); }
@@ -3998,7 +3955,6 @@
             if (!r2.ok) throw d2.error || 0;
             cabData.uploads = d2.uploads || {};
             showToast('Fayl yükləndi — müəllim artıq görə bilər', 'success');
-            vtStart(kind);
         } catch (e) {
             showToast(typeof e === 'string' ? e : 'Yükləmə alınmadı — yenidən cəhd edin!', 'error');
         } finally {

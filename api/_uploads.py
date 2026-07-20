@@ -123,15 +123,17 @@ def upload_link_action(db, body, role, requester_name):
 
 
 def vt_check_action(db, body, role, requester_name):
-    """Faylı VirusTotal-a göndərir (kursant öz faylını, müəllim istənilənini)."""
+    """Faylı VirusTotal-a göndərir — yalnız müəllim, öz panelindən."""
+    if role != "teacher":
+        return False, {"error": "İcazə yoxdur."}, 403
     if not _vt.is_configured():
         return False, {"error": "Virus yoxlanışı konfiqurasiya olunmayıb."}, 503
     kind = body.get("kind") or ""
     if kind not in KINDS:
         return False, {"error": "Fayl növü yanlışdır."}, 400
-    name = (body.get("name") or "").strip() or requester_name
-    if role != "teacher" and name != requester_name:
-        return False, {"error": "İcazə yoxdur."}, 403
+    name = (body.get("name") or "").strip()
+    if not name:
+        return False, {"error": "Kursant adı göstərilməyib."}, 400
     meta = db.get("uploads", {}).get(name, {}).get(kind)
     if not meta:
         return False, {"error": "Fayl hələ yüklənməyib."}, 404
@@ -147,13 +149,15 @@ def vt_check_action(db, body, role, requester_name):
 
 
 def vt_status_action(db, body, role, requester_name):
-    """VT nəticəsini soruşur; hazırdırsa metadata-da saxlayır."""
+    """VT nəticəsini soruşur; hazırdırsa metadata-da saxlayır — yalnız müəllim."""
+    if role != "teacher":
+        return False, {"error": "İcazə yoxdur."}, 403
     kind = body.get("kind") or ""
     if kind not in KINDS:
         return False, {"error": "Fayl növü yanlışdır."}, 400
-    name = (body.get("name") or "").strip() or requester_name
-    if role != "teacher" and name != requester_name:
-        return False, {"error": "İcazə yoxdur."}, 403
+    name = (body.get("name") or "").strip()
+    if not name:
+        return False, {"error": "Kursant adı göstərilməyib."}, 400
     meta = db.get("uploads", {}).get(name, {}).get(kind)
     if not meta:
         return False, {"error": "Fayl tapılmadı."}, 404
