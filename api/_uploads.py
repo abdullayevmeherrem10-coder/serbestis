@@ -36,7 +36,7 @@ def _key_for(db, name, kind):
     if existing and existing.get("key"):
         return existing["key"]
     h = hashlib.sha256(name.encode("utf-8")).hexdigest()[:16]
-    return f"uploads/{h}-{kind}{KINDS[kind]['ext']}"
+    return f"{_b2.key_prefix()}uploads/{h}-{kind}{KINDS[kind]['ext']}"
 
 
 def _student_in_teams(db, name):

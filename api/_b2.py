@@ -37,6 +37,16 @@ def is_configured():
     return _config() is not None
 
 
+def key_prefix():
+    """Mühit prefiksi — lokal dev açarları canlıdan ayırır (b2_config.json-da
+    "prefix": "dev/" və ya B2_PREFIX env). Canlıda boşdur."""
+    p = os.environ.get("B2_PREFIX")
+    if p is None:
+        cfg = _config() or {}
+        p = cfg.get("prefix", "")
+    return p
+
+
 def _region(endpoint):
     # s3.us-west-004.backblazeb2.com → us-west-004
     parts = endpoint.split(".")
