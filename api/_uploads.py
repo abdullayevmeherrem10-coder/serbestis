@@ -13,6 +13,7 @@ import hashlib
 import time
 
 import _b2
+import _vt
 
 KINDS = {
     "docx": {
@@ -119,6 +120,59 @@ def upload_link_action(db, body, role, requester_name):
         inline=inline,
     )
     return False, {"url": url, "fname": meta.get("fname"), "size": meta.get("size")}, 200
+
+
+def vt_check_action(db, body, role, requester_name):
+    """Faylı VirusTotal-a göndərir (kursant öz faylını, müəllim istənilənini)."""
+    if not _vt.is_configured():
+        return False, {"error": "Virus yoxlanışı konfiqurasiya olunmayıb."}, 503
+    kind = body.get("kind") or ""
+    if kind not in KINDS:
+        return False, {"error": "Fayl növü yanlışdır."}, 400
+    name = (body.get("name") or "").strip() or requester_name
+    if role != "teacher" and name != requester_name:
+        return False, {"error": "İcazə yoxdur."}, 403
+    meta = db.get("uploads", {}).get(name, {}).get(kind)
+    if not meta:
+        return False, {"error": "Fayl hələ yüklənməyib."}, 404
+    data = _b2.read_object(meta["key"])
+    if data is None:
+        return False, {"error": "Fayl anbardan oxuna bilmədi."}, 502
+    aid = _vt.scan_bytes(data, meta.get("fname") or f"file{KINDS[kind]['ext']}")
+    if not aid:
+        # VT limiti/xətası — statusu dəyişmirik, sonra yenidən cəhd etmək olar
+        return False, {"error": "VirusTotal hazırda qəbul etmir — bir azdan yenidən cəhd edin."}, 502
+    meta["vt"] = {"id": aid, "status": "pending"}
+    return True, {"success": True, "vt": meta["vt"]}, 200
+
+
+def vt_status_action(db, body, role, requester_name):
+    """VT nəticəsini soruşur; hazırdırsa metadata-da saxlayır."""
+    kind = body.get("kind") or ""
+    if kind not in KINDS:
+        return False, {"error": "Fayl növü yanlışdır."}, 400
+    name = (body.get("name") or "").strip() or requester_name
+    if role != "teacher" and name != requester_name:
+        return False, {"error": "İcazə yoxdur."}, 403
+    meta = db.get("uploads", {}).get(name, {}).get(kind)
+    if not meta:
+        return False, {"error": "Fayl tapılmadı."}, 404
+    vt = meta.get("vt")
+    if not vt:
+        return False, {"vt": None}, 200
+    if vt.get("status") != "pending":
+        return False, {"vt": vt}, 200
+    res = _vt.get_analysis(vt.get("id"))
+    if not res or res.get("status") != "completed":
+        return False, {"vt": vt}, 200
+    flagged = (res["malicious"] + res["suspicious"]) > 0
+    vt.update({
+        "status": "flagged" if flagged else "clean",
+        "malicious": res["malicious"],
+        "suspicious": res["suspicious"],
+        "ts": time.strftime("%d.%m.%Y %H:%M"),
+    })
+    return True, {"vt": vt}, 200
 
 
 def upload_delete_action(db, body, role, requester_name):

@@ -1836,8 +1836,16 @@
         .up-status small { color: var(--text-dim); }
         .up-actions { display: flex; gap: 6px; }
         .up-docs { display: flex; flex-direction: column; gap: 4px; align-items: center; }
-        .up-doc { display: flex; gap: 4px; }
+        .up-doc { display: flex; gap: 4px; align-items: center; }
         .up-doc-none { color: var(--text-dim); font-size: 0.8rem; white-space: nowrap; }
+        .vt { font-size: 0.78rem; font-weight: 700; white-space: nowrap; }
+        .vt-ok { color: var(--success); }
+        .vt-bad { color: var(--danger); animation: vtPulse 1.2s ease-in-out infinite; }
+        @keyframes vtPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }
+        .vt-pending { color: var(--text-dim); }
+        button.vt { border: 1px solid var(--border); background: none; border-radius: 8px; padding: 3px 7px; cursor: pointer; }
+        button.vt:hover { border-color: var(--accent-ink); }
+        button.vt-ask { color: var(--text-dim); }
         .viewer-modal { display: none; position: fixed; inset: 0; background: rgba(15,30,24,0.65); z-index: 4000; padding: 16px; }
         .viewer-modal.active { display: flex; align-items: center; justify-content: center; }
         .viewer-box {
@@ -3618,8 +3626,15 @@
                 ? '<ol class="tp-sel">' + sel.map(id => `<li>${esc(works[id] || ('Sərbəst iş #' + (id + 1)))}</li>`).join('') + '</ol>'
                 : '<span class="bal bal-none">Seçməyib</span>';
             const up = (cabData.uploads || {})[name] || {};
+            const tpVt = kind => {
+                const vt = (up[kind] || {}).vt;
+                if (!vt) return `<button class="vt vt-ask" title="Virus yoxlanışına göndər" onclick="tpVtCheck('${kind}', this)">&#128737;?</button>`;
+                if (vt.status === 'pending') return `<button class="vt vt-pending" title="Yoxlanılır — kliklə yenilə" onclick="tpVtRefresh('${kind}', this)">&#8987;</button>`;
+                if (vt.status === 'clean') return `<span class="vt vt-ok" title="VirusTotal: təmiz">&#128737;</span>`;
+                return `<span class="vt vt-bad" title="VirusTotal: ${vt.malicious || 0} zərərli, ${vt.suspicious || 0} şübhəli — EHTİYATLI OL!">&#9888;</span>`;
+            };
             const docBtns = (kind, ico) => up[kind]
-                ? `<span class="up-doc"><button class="btn-mini" title="${esc(up[kind].fname || '')} — saytda bax" onclick="tpViewUpload('${kind}', this)">${ico} Bax</button><button class="btn-mini" title="Endir" onclick="tpDownloadUpload('${kind}', this)">&#11015;</button></span>`
+                ? `<span class="up-doc"><button class="btn-mini" title="${esc(up[kind].fname || '')} — saytda bax" onclick="tpViewUpload('${kind}', this)">${ico} Bax</button><button class="btn-mini" title="Endir" onclick="tpDownloadUpload('${kind}', this)">&#11015;</button>${tpVt(kind)}</span>`
                 : `<span class="up-doc up-doc-none">${ico} &#8212;</span>`;
             const docsHtml = docBtns('docx', '&#128196;') + docBtns('pptx', '&#128202;');
             tb.insertAdjacentHTML('beforeend', `<tr data-name="${esc(name)}">
@@ -3880,7 +3895,7 @@
             const d = document.getElementById('upDel-' + k);
             if (!st) return;
             if (meta) {
-                st.innerHTML = `<span class="up-ok">&#10003;</span> ${esc(meta.fname || '')} <small>(${fmtSize(meta.size || 0)} &#8226; ${esc(meta.ts || '')})</small>`;
+                st.innerHTML = `<span class="up-ok">&#10003;</span> ${esc(meta.fname || '')} <small>(${fmtSize(meta.size || 0)} &#8226; ${esc(meta.ts || '')})</small>${vtBadge(meta.vt)}`;
                 btn.innerHTML = '&#8635; Dəyiş';
                 v.style.display = '';
                 d.style.display = '';
@@ -3891,6 +3906,49 @@
                 d.style.display = 'none';
             }
         });
+    }
+
+    function vtBadge(vt) {
+        if (!vt) return '';
+        if (vt.status === 'pending') return ' <span class="vt vt-pending">&#8987; virus yoxlanışında...</span>';
+        if (vt.status === 'clean') return ' <span class="vt vt-ok">&#128737; təmiz</span>';
+        if (vt.status === 'flagged') return ' <span class="vt vt-bad">&#9888; şübhəli!</span>';
+        return '';
+    }
+
+    async function vtStart(kind) {
+        try {
+            const r = await fetch('/api/vt-check', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.token },
+                body: JSON.stringify({ kind: kind })
+            });
+            const d = await r.json();
+            if (r.ok && cabData.uploads && cabData.uploads[kind]) {
+                cabData.uploads[kind].vt = d.vt;
+                renderUploads();
+                vtPoll(kind, 0);
+            }
+        } catch (e) {}
+    }
+
+    function vtPoll(kind, n) {
+        if (n > 8) return;
+        setTimeout(async () => {
+            try {
+                const r = await fetch('/api/vt-status', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.token },
+                    body: JSON.stringify({ kind: kind })
+                });
+                const d = await r.json();
+                if (r.ok && cabData.uploads && cabData.uploads[kind]) {
+                    cabData.uploads[kind].vt = d.vt;
+                    renderUploads();
+                    if (d.vt && d.vt.status === 'pending') vtPoll(kind, n + 1);
+                }
+            } catch (e) {}
+        }, 20000);
     }
 
     function upPick(kind) { document.getElementById('upFile-' + kind).click(); }
@@ -3940,6 +3998,7 @@
             if (!r2.ok) throw d2.error || 0;
             cabData.uploads = d2.uploads || {};
             showToast('Fayl yükləndi — müəllim artıq görə bilər', 'success');
+            vtStart(kind);
         } catch (e) {
             showToast(typeof e === 'string' ? e : 'Yükləmə alınmadı — yenidən cəhd edin!', 'error');
         } finally {
@@ -4000,6 +4059,43 @@
         cabData.uploads = d.uploads || {};
         renderUploads();
         showToast('Fayl silindi', 'success');
+    }
+
+    async function tpVtCheck(kind, btn) {
+        const name = btn.closest('tr').dataset.name;
+        btn.disabled = true;
+        btn.innerHTML = '&#8987;';
+        try {
+            const r = await fetch('/api/vt-check', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.token },
+                body: JSON.stringify({ name: name, kind: kind })
+            });
+            const d = await r.json();
+            if (!r.ok) { showToast(d.error || 'Yoxlanış alınmadı!', 'error'); return; }
+            ((cabData.uploads || {})[name] || {})[kind].vt = d.vt;
+            showToast('VirusTotal yoxlanışına göndərildi — nəticə 1-2 dəqiqəyə hazır olur', 'success');
+        } catch (e) {
+            showToast('Yoxlanış alınmadı!', 'error');
+        } finally {
+            renderTpStudents();
+        }
+    }
+
+    async function tpVtRefresh(kind, btn) {
+        const name = btn.closest('tr').dataset.name;
+        try {
+            const r = await fetch('/api/vt-status', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.token },
+                body: JSON.stringify({ name: name, kind: kind })
+            });
+            const d = await r.json();
+            if (!r.ok) return;
+            ((cabData.uploads || {})[name] || {})[kind].vt = d.vt;
+            renderTpStudents();
+            if (d.vt && d.vt.status === 'pending') showToast('Hələ yoxlanılır — bir azdan yenidən klikləyin', 'success');
+        } catch (e) {}
     }
 
     async function tpViewUpload(kind, btn) {

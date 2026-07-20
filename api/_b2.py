@@ -184,6 +184,15 @@ def read_head_bytes(key, n=4):
         return None
 
 
+def read_object(key, timeout=45):
+    """Faylın tam məzmunu (virus yoxlanışı üçün); alınmasa None."""
+    try:
+        with _signed_request("GET", key, timeout=timeout) as r:
+            return r.read()
+    except Exception:
+        return None
+
+
 def delete_object(key):
     try:
         with _signed_request("DELETE", key) as r:

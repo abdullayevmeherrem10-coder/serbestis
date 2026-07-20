@@ -12,7 +12,8 @@ from _credentials import CREDENTIALS
 from _results import RESULTS
 from _roster import roster_action
 from _uploads import (upload_url_action, upload_confirm_action,
-                      upload_link_action, upload_delete_action)
+                      upload_link_action, upload_delete_action,
+                      vt_check_action, vt_status_action)
 
 app = Flask(__name__)
 
@@ -625,6 +626,31 @@ def upload_delete():
     if not cred:
         return jsonify({"error": "Giriş tələb olunur."}), 401
     changed, resp, code = upload_delete_action(
+        db, request.get_json(silent=True) or {}, cred.get('role'), cred.get('name'))
+    if changed:
+        save_db(db)
+    return jsonify(resp), code
+
+
+@app.route('/api/vt-check', methods=['POST'])
+def vt_check():
+    """Yüklənmiş faylı VirusTotal yoxlanışına göndərir."""
+    db, cred = _upload_auth()
+    if not cred:
+        return jsonify({"error": "Giriş tələb olunur."}), 401
+    changed, resp, code = vt_check_action(
+        db, request.get_json(silent=True) or {}, cred.get('role'), cred.get('name'))
+    if changed:
+        save_db(db)
+    return jsonify(resp), code
+
+
+@app.route('/api/vt-status', methods=['POST'])
+def vt_status():
+    db, cred = _upload_auth()
+    if not cred:
+        return jsonify({"error": "Giriş tələb olunur."}), 401
+    changed, resp, code = vt_status_action(
         db, request.get_json(silent=True) or {}, cred.get('role'), cred.get('name'))
     if changed:
         save_db(db)

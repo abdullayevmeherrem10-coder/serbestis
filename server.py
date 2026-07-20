@@ -23,7 +23,8 @@ from _credentials import CREDENTIALS
 from _results import RESULTS
 from _roster import roster_action
 from _uploads import (upload_url_action, upload_confirm_action,
-                      upload_link_action, upload_delete_action)
+                      upload_link_action, upload_delete_action,
+                      vt_check_action, vt_status_action)
 
 # Admin şifrəsi koda yazılmır: əvvəlcə ENV dəyişəni, sonra gitignore-lanmış
 # admin_secret.txt faylı oxunur. Heç biri yoxdursa təsadüfi (bilinməyən)
@@ -414,7 +415,8 @@ class Handler(http.server.BaseHTTPRequestHandler):
                 save_db(db)
             self.send_json(resp, code)
 
-        elif path in ("/api/upload-url", "/api/upload-confirm", "/api/upload-link", "/api/upload-delete"):
+        elif path in ("/api/upload-url", "/api/upload-confirm", "/api/upload-link",
+                      "/api/upload-delete", "/api/vt-check", "/api/vt-status"):
             auth = self.headers.get("Authorization", "")
             cid = verify_token(auth[7:].strip()) if auth.startswith("Bearer ") else None
             db = load_db()
@@ -430,7 +432,12 @@ class Handler(http.server.BaseHTTPRequestHandler):
                 action = upload_url_action if path == "/api/upload-url" else upload_confirm_action
                 changed, resp, code = action(db, body, cred["name"])
             else:
-                action = upload_link_action if path == "/api/upload-link" else upload_delete_action
+                action = {
+                    "/api/upload-link": upload_link_action,
+                    "/api/upload-delete": upload_delete_action,
+                    "/api/vt-check": vt_check_action,
+                    "/api/vt-status": vt_status_action,
+                }[path]
                 changed, resp, code = action(db, body, cred.get("role"), cred.get("name"))
             if changed:
                 save_db(db)
