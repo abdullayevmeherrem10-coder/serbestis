@@ -2143,17 +2143,6 @@
         <span class="ek-arrow">&#8594;</span>
     </a>
 
-    <!-- Dəftər mövzuları (müəllim, hər kollokvium üçün) -->
-    <div class="card" id="topicsCard">
-        <div class="card-title"><div class="icon">&#128211;</div> Dəftər mövzuları</div>
-        <p class="cab-scale" style="margin:-8px 0 14px;">Hər kollokvium üçün dəftər mövzularının siyahısı — imtahanda "yarımçıq mövzular" bu siyahıdan seçilir.</p>
-        <div class="topics-rows">
-            <div class="topics-row"><span class="topics-k">Kollokvium 1</span><span class="topics-list" id="topicsList1">&#8212;</span><button class="btn-mini" onclick="editKollokTopics(1)">&#9998; Redaktə</button></div>
-            <div class="topics-row"><span class="topics-k">Kollokvium 2</span><span class="topics-list" id="topicsList2">&#8212;</span><button class="btn-mini" onclick="editKollokTopics(2)">&#9998; Redaktə</button></div>
-            <div class="topics-row"><span class="topics-k">Kollokvium 3</span><span class="topics-list" id="topicsList3">&#8212;</span><button class="btn-mini" onclick="editKollokTopics(3)">&#9998; Redaktə</button></div>
-        </div>
-    </div>
-
     <!-- ===================== TAB: Sərbəst işlər ===================== -->
     <div class="tab-panel active" id="tab-serbest">
     <p class="tab-subtitle">Sərbəst İşini Özün Seç</p>
@@ -2347,6 +2336,17 @@
 
     <!-- ===================== TAB: Kollokvium nəticələri ===================== -->
     <div class="tab-panel" id="tab-kollokvium">
+        <!-- Dəftər mövzuları (müəllim, hər kollokvium üçün) -->
+        <div class="card" id="topicsCard">
+            <div class="card-title"><div class="icon">&#128211;</div> Dəftər mövzuları</div>
+            <p class="cab-scale" style="margin:-8px 0 14px;">Hər kollokvium üçün dəftər mövzularının siyahısı — imtahanda "yarımçıq mövzular" bu siyahıdan seçilir.</p>
+            <div class="topics-rows">
+                <div class="topics-row"><span class="topics-k">Kollokvium 1</span><span class="topics-list" id="topicsList1">&#8212;</span><button class="btn-mini" onclick="editKollokTopics(1)">&#9998; Redaktə</button></div>
+                <div class="topics-row"><span class="topics-k">Kollokvium 2</span><span class="topics-list" id="topicsList2">&#8212;</span><button class="btn-mini" onclick="editKollokTopics(2)">&#9998; Redaktə</button></div>
+                <div class="topics-row"><span class="topics-k">Kollokvium 3</span><span class="topics-list" id="topicsList3">&#8212;</span><button class="btn-mini" onclick="editKollokTopics(3)">&#9998; Redaktə</button></div>
+            </div>
+        </div>
+
         <div class="subtab-nav">
             <button class="subtab-btn active" onclick="switchKollok('a1', this)">YT 24A1</button>
             <button class="subtab-btn" onclick="switchKollok('a2', this)">YT 24A2</button>
