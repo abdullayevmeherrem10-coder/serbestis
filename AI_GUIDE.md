@@ -32,7 +32,11 @@ Dil: **Azərbaycan dili** (bütün UI və kod şərhləri AZ dilindədir).
 | Verilənlər (canlı) | **Upstash Redis** (REST API ilə) |
 | Verilənlər (lokal) | `database.json` faylı |
 | Kollokvium DB | **Firebase Realtime Database** (ayrı, `kollokvium1` layihəsi) |
+| Fayl anbarı | **Backblaze B2** (S3-uyğun; bucket: `sapyor-serbest-isler`, private) |
+| Virus yoxlanışı | **VirusTotal v3 API** (pulsuz plan: 4 sorğu/dəq, 500/gün) |
+| Sənəd baxışı | **Microsoft Office Online viewer** (iframe embed) |
 | Hostinq | **Vercel** (Hobby plan), `main` budağından avtomatik deploy |
+| Cron | Vercel Cron: hər gecə 01:00 UTC → `/api/backup` |
 | Reverse proxy / gate | Vercel Edge **`middleware.js`** |
 
 ---
@@ -50,8 +54,13 @@ Dil: **Azərbaycan dili** (bütün UI və kod şərhləri AZ dilindədir).
 ├── api/index.py            # Flask backend — BÜTÜN API endpointləri (canlı)
 ├── api/_credentials.py     # Kabinet girişləri: {ID: {hash, name, team|role}} (SHA-256 hash)
 ├── api/_results.py         # Statik kollokvium/mənimsəmə/imtahan nəticələri (2 YT qrupu)
-├── api/_roster.py          # Taqım/kursant idarəetmə məntiqi (əlavə/redaktə/sil)
+├── api/_roster.py          # Taqım/kursant idarəetmə məntiqi (əlavə/redaktə/sil/şifrə yeniləmə)
 ├── api/_fbauth.py          # Firebase service-account OAuth token generatoru
+├── api/_b2.py              # Backblaze B2 SigV4 imzalama (stdlib, boto3 YOX): presign PUT/GET,
+│                           #   server-side HEAD/GET/PUT/DELETE, key_prefix() (dev/canlı ayrımı)
+├── api/_uploads.py         # Fayl yükləmə əməliyyatları: url/confirm/link/delete/review + VT
+├── api/_vt.py              # VirusTotal v3 API (multipart upload + analysis sorğusu)
+├── api/_backup.py          # Bazanın gündəlik B2 nüsxəsi (run_backup/read_backup/save_prerestore)
 │
 ├── server.py               # Lokal dev server (api/index.py-ın sadələşmiş ekvivalenti)
 ├── database.json           # Lokal verilənlər (canlıda Upstash Redis-dədir)
@@ -65,8 +74,11 @@ Dil: **Azərbaycan dili** (bütün UI və kod şərhləri AZ dilindədir).
 ```
 
 ### Gitignore-lanan (repo-da OLMAYAN) fayllar
-- `kabinet_girisleri.txt` — açıq şifrələrin paylama siyahısı (yalnız sahibin kompüterində)
+- `kabinet_girisleri.txt` — açıq şifrələrin paylama siyahısı (yalnız sahibin kompüterində).
+  **Qeyd:** müəllim paneldən şifrə yeniləyəndən sonra bu fayl köhnəlir — əsl mənbə bazadır.
 - `admin_secret.txt`, `firebase_secret.txt`, `firebase_service_account.json` — sirlər
+- `b2_config.json` — Backblaze açarları + lokal `"prefix": "dev/"` (lokal server bunu oxuyur)
+- `vt_secret.txt` — VirusTotal API açarı (lokal)
 - Bunlar heç vaxt commit edilməməlidir.
 
 ---
@@ -90,6 +102,16 @@ Dil: **Azərbaycan dili** (bütün UI və kod şərhləri AZ dilindədir).
 
 5. **Backend dəyişikliyi = həm `api/index.py`, həm `server.py`:** yeni endpoint əlavə
    edəndə hər ikisinə eyni məntiqi yaz (biri canlı, biri lokal).
+
+6. **LOKAL VƏ CANLI EYNİ B2 BUCKET-İ PAYLAŞIR:** fayl açarları deterministikdir
+   (kursant adının hash-i), ona görə lokal test yükləmələri canlı faylların üstünə yaza
+   bilər. Qoruma: lokal `b2_config.json`-da `"prefix": "dev/"` var → `_b2.key_prefix()`
+   lokal açarlara `dev/` əlavə edir; canlıda (Vercel env) prefix boşdur.
+   **Lokal test təmizliyi yalnız `dev/` açarlarına toxunmalıdır!** (2026-07-20-də bu
+   qayda olmadığı üçün canlı fayllar təsadüfən silinmişdi — B2 versiyalarından bərpa olundu.)
+
+7. **B2 lifecycle:** silinmiş/üstünə yazılmış faylların köhnə versiyaları 7 gün saxlanılır
+   (təsadüfi silinmə bərpaolunandır — `b2_copy_file` köhnə versiyadan), sonra avtomatik təmizlənir.
 
 ---
 
@@ -147,12 +169,26 @@ Dil: **Azərbaycan dili** (bütün UI və kod şərhləri AZ dilindədir).
 ### Müəllim əməliyyatları (hamısı `role != teacher → 401`)
 - `POST /api/cabinet-scores` `{name, serbest, defter}` → mənimsəmə bal komponentləri (0-10).
 - `POST /api/cabinet-exam` `{name, bal}` → imtahan balı (0-100); qiymət avtomatik hesablanır.
+- `POST /api/cabinet-kollok` `{name, k: 1|2|3, bal: 0-10|null}` → kollokvium balının manual
+  düzəlişi. `null`/boş → manual bal silinir, avtomatik (canlı/statik) bala qayıdır.
+  Saxlanma: `db["kollok_scores"][ad]["1|2|3"]`. UI-də manual ballar MAVİ göstərilir.
 - `POST /api/cabinet-deadline` `{name, deadline}` → fərdi son tarix (boş = silmə).
 - `POST /api/cabinet-semester` `{semester, subject}` → semestr/fənn adı.
 - `POST /api/cabinet-reset` `{name}` → bir kursantın seçimini sıfırla.
 - `POST /api/cabinet-reset-all` → bütün seçimləri sıfırla.
 - `POST /api/cabinet-roster` `{action, ...}` → taqım/kursant/iş idarəetmə (bax §9).
 - `POST /api/kollok-write` `{path, data}` → Firebase-ə yazma proxy-si (bax §10).
+- `POST /api/upload-review` `{name, kind, status: accepted|revise|"", note}` → fayl rəyi (bax §18).
+- `POST /api/vt-check` `{name, kind}` / `POST /api/vt-status` `{name, kind}` → VirusTotal (bax §18).
+- `GET|POST /api/backup` → əl ilə ehtiyat nüsxə (cron da bunu çağırır — `vercel-cron` UA ilə).
+- `POST /api/backup-restore` `{date: "YYYY-MM-DD"}` → nüsxədən bərpa (bax §19).
+
+### Fayl yükləmə (kursant, bax §18)
+- `POST /api/upload-url` `{kind: docx|pptx, fname, size}` → presigned PUT URL (kursant-only).
+- `POST /api/upload-confirm` `{kind, fname}` → yükləmədən sonra yoxlama + metadata (kursant-only).
+- `POST /api/upload-link` `{name?, kind, mode: view|download}` → presigned GET URL
+  (kursant yalnız özününkü; müəllim hamısını).
+- `POST /api/upload-delete` `{name?, kind}` → fayl silmə (kursant özününkü; müəllim hamısını).
 
 ### Köhnə admin endpointləri (hələ mövcud, `ADMIN_PASSWORD` ilə qorunur)
 - `/api/status`, `/api/admin/*` — köhnə admin panel üçün idi (`admin.html` silinib),
@@ -176,7 +212,19 @@ Dil: **Azərbaycan dili** (bütün UI və kod şərhləri AZ dilindədir).
   "subject": "Hərbi Mühəndis Texnikası",
   "credentials_dyn": { "Y1-25": {hash, name, team} },  // müəllimin əlavə etdiyi kursantlar
   "renames": { "Köhnə Ad": "Yeni Ad" },        // statik nəticələri yeni adla uyğunlaşdırır
-  "team_renames": { "Köhnə Taqım": "Yeni Taqım" }
+  "team_renames": { "Köhnə Taqım": "Yeni Taqım" },
+  "kollok_scores": { "Ad Soyad": {"1": 9, "3": 7} },   // müəllimin MANUAL kollokvium balları (mavi)
+  "cred_overrides": { "Y1-02": "sha256hash" },  // şifrə yeniləməsi: statik hesabın yeni hash-i
+                                                // (raw_cred() bunu CREDENTIALS-dan üstün tutur)
+  "uploads": {                                  // kursant faylları (fayl özü B2-dədir!)
+    "Ad Soyad": {
+      "docx": { "key": "uploads/<hash16>-docx.docx", "fname": "orijinal ad.docx",
+                "size": 123456, "ts": "20.07.2026 09:00",
+                "vt": { "id": "...", "status": "pending|clean|flagged", "malicious": 0, "suspicious": 0 },
+                "review": { "status": "accepted|revise", "note": "qısa rəy", "ts": "..." } },
+      "pptx": { ... }
+    }
+  }
 }
 ```
 
@@ -195,8 +243,10 @@ Dil: **Azərbaycan dili** (bütün UI və kod şərhləri AZ dilindədir).
 
 **Mənimsəmə = Kollokvium cəmi (maks 30) + Sərbəst iş (maks 10) + Dəftər/İntizam (maks 10) = maks 50**
 
-- **Kollokvium cəmi** = K1+K2+K3 (hərəsi maks 10). Bu ballar E-Kollokvium sistemindən
-  (Firebase) canlı gəlir; statik `_results.py` fallback-dır. Canlı bal statiki üstələyir.
+- **Kollokvium cəmi** = K1+K2+K3 (hərəsi maks 10). Bal mənbələrinin PRİORİTETİ:
+  **manual (`kollok_scores`, mavi) > canlı E-Kollokvium (Firebase) > statik `_results.py`**.
+  Frontend-də `mergedKollokFor()` bu qaydanı tətbiq edir; müəllim cədvəlində ballar redaktə
+  olunan inputlardır (`saveKollokScore`). Manual bal Firebase-dəki orijinala TOXUNMUR.
 - **Sərbəst iş** və **Dəftər/İntizam** — müəllim `cabinet-scores` ilə əl ilə yazır.
 - Kursant kabinetində bölgü + cəm avtomatik göstərilir. Müəllimin bal yazması dərhal əks olunur.
 
@@ -211,11 +261,18 @@ Dil: **Azərbaycan dili** (bütün UI və kod şərhləri AZ dilindədir).
 `{action}` dəyərləri:
 - `add_team` `{team}` — yeni boş taqım.
 - `rename_team` `{team, new}` — bütün istinadlar + statik nəticələr yenilənir.
+- `delete_team` `{team}` — taqımı kursantları, balları və B2 faylları ilə birlikdə silir.
+  **Əsas 4 qrup (statik girişli) silinə BİLMƏZ** — server rədd edir.
 - `add_student` `{team, name}` — yeni kursant; **avtomatik ID+şifrə+açar** yaradılır,
   cavabda `{id, password}` bir dəfə qaytarılır (şifrə yalnız hash saxlanılır).
 - `rename_student` `{name, new}` — bütün strukturlarda (ballar, seçimlər, tarixlər,
-  girişlər, statik nəticələr) yayılır, heç nə itmir.
-- `delete_student` `{name}` — məlumatları təmizlənir, girişi deaktiv olunur.
+  girişlər, statik nəticələr, fayllar, manual kollok balları) yayılır, heç nə itmir.
+- `delete_student` `{name}` — məlumatları + B2 faylları təmizlənir, girişi deaktiv olunur.
+- `reset_password` `{name}` — YALNIZ bu kursanta yeni şifrə; cavabda `{id, password}` bir dəfə.
+  Dinamik hesabda hash yerində yenilənir; statik hesab üçün `db["cred_overrides"]`-ə yazılır
+  (`raw_cred()` override-ı `_credentials.py`-dakı hash-dən üstün tutur).
+- `reset_all_passwords` `{team}` — taqımın BÜTÜN kursantlarına yeni şifrələr; cavabda
+  `creds: [{name, id, password}]` (UI bunu txt fayl kimi endirir).
 - `add_work` / `edit_work` / `delete_work` — iş siyahısı idarəsi.
   - Seçilmiş işi silmək **bloklanır** (əvvəl seçim sıfırlanmalı).
   - İş silinəndə bütün seçim indeksləri avtomatik yenidən hesablanır.
@@ -243,14 +300,20 @@ Dil: **Azərbaycan dili** (bütün UI və kod şərhləri AZ dilindədir).
 
 1. **Giriş ekranı** (`#cabinetLogin`) — sayt açılanda birbaşa bura düşür (semestr seçimi yoxdur).
 2. **Kursant kabineti** (`#cabinetView`) — hero panel, KPI kartları, nəticə kartları,
-   fərdi deadline banneri, "Sərbəst işlərim", sənəd düymələri.
+   fərdi deadline banneri (+geri sayım, §20), "Sərbəst işlərim",
+   "Sərbəst işimi təhvil ver" (fayl yükləmə + müəllim rəyi, §18), sənəd düymələri.
    - Sərbəst iş seçmək üçün `startSerbestFlow()` → `#appView` (student-mode).
 3. **Müəllim paneli** (`#appView.teacher-mode`) — tab naviqasiya + E-Kollokvium banneri:
-   - **Sərbəst işlər tab:** idarəetmə paneli (xülasə, kursant cədvəli + fərdi tarixlər +
-     sıfırla/redaktə/sil, işlərin bölgüsü, semestr/fənn kartı, "hamısını sıfırla").
-   - **Kollokvium/Mənimsəmə/İmtahan tabları:** redaktə olunan cədvəllər (bal inputları).
+   - **Sərbəst işlər tab:** idarəetmə paneli (xülasə, kursant cədvəli: seçimlər + Sənədlər
+     sütunu [Bax/Endir/VT/rəy/sil] + fərdi tarixlər + sıfırla/🔑şifrə/sil; taqım düymələri:
+     ad dəyiş/sil/yeni/şifrələri yenilə; işlərin bölgüsü, semestr/fənn, Ehtiyat nüsxə kartı,
+     "hamısını sıfırla").
+   - **Kollokvium tabı:** Dəftər mövzuları kartı (yalnız bu tabda) + redaktə olunan bal
+     inputları (manual=mavi, §8). **Mənimsəmə/İmtahan tabları:** redaktə olunan cədvəllər.
 - Əsas render funksiyaları: `showCabinet()`, `showTeacherApp()`, `buildPersonalCards()`,
-  `renderTeacherPanel()`, `renderMenimsemeTable()`, `renderImtahanTable()`, `renderTpStudents()`.
+  `renderTeacherPanel()`, `renderMenimsemeTable()`, `renderImtahanTable()`, `renderTpStudents()`,
+  `applyLiveToKollokTable()`, `renderUploads()`.
+- Tema keçidi: `toggleTheme()` / `updateThemeIcon()` (bax §16).
 - İstifadəçi mətni HTML-ə qoyulanda `esc()`-dən keçir (XSS qoruması).
 
 ---
@@ -283,6 +346,11 @@ Dil: **Azərbaycan dili** (bütün UI və kod şərhləri AZ dilindədir).
 | `FIREBASE_SERVICE_ACCOUNT` | Firebase yazma üçün service-account JSON (tam mətn) |
 | `ADMIN_PASSWORD` | Köhnə admin endpointləri üçün |
 | `FIREBASE_SECRET` | (Köhnə/ehtiyat — database secret; adətən istifadə olunmur) |
+| `B2_KEY_ID` / `B2_APP_KEY` | Backblaze B2 API açarları (bucket-scoped) |
+| `B2_BUCKET` | `sapyor-serbest-isler` |
+| `B2_ENDPOINT` | `s3.us-west-004.backblazeb2.com` |
+| `B2_PREFIX` | (adətən təyin OLUNMUR — canlıda boş; lokalda `b2_config.json`-dan `dev/` gəlir) |
+| `VT_API_KEY` | VirusTotal API açarı |
 
 - Bu dəyişənlərdən biri dəyişsə, Vercel-də **Redeploy** lazımdır.
 - `CABINET_SECRET` dəyişsə bütün mövcud tokenlər keçərsizləşir (hamı yenidən girir).
@@ -309,8 +377,11 @@ python server.py
 - **Yeni endpoint:** həm `api/index.py`, həm `server.py`-a əlavə et; müəllim əməliyyatıdırsa
   `role != teacher → 401` yoxlaması qoy.
 - **UI dəyişikliyi:** `public/index.html`-i dəyiş, sonra `cp public/index.html index.html`.
-- **Şifrələri yeniləmək:** `gen_creds` tipli skript `api/_credentials.py` + `kabinet_girisleri.txt`
-  yaradır (ID-lər sabit qalır, şifrələr yenilənir). Köhnə şifrələr keçərsiz olur.
+- **Şifrə yeniləmək (NORMAL YOL):** müəllim panelindən — kursant sətrində 🔑 (fərdi) və ya
+  taqım panelində "🔑 Taqımın şifrələrini yenilə" (kütləvi, txt endirilir). Bazada
+  `cred_overrides`-ə yazılır, `_credentials.py`-a toxunulmur. `kabinet_girisleri.txt` köhnəlir.
+- **Bütün sistemi sıfırdan şifrələmək (nadir):** `gen_creds` tipli skript `api/_credentials.py`
+  + `kabinet_girisleri.txt` yaradır — amma sonra `cred_overrides`-i də təmizləmək lazımdır.
 - **Deploy:** `git add ... && git commit && git push origin main` → Vercel avtomatik deploy.
   Yoxlama: ~1-2 dəqiqə sonra sapyor.com.
 
@@ -322,6 +393,17 @@ python server.py
 - İmza elementlər: ofset "back-box" kölgələr, shimmer düymələr, hissəcik (particle) fon animasiyası.
 - Şrift: Inter (+ bəzi başlıqlarda Playfair Display).
 - Bütün sayt + kitab + kollokvium eyni dizayn dilindədir.
+
+### Light/Dark tema
+- **Default LIGHT**; sağ yuxarıdakı düymə (🌙/☀️) dark moda keçirir; seçim `localStorage.theme`-də.
+- Mexanizm: `html[data-theme="dark"]` CSS dəyişənləri override edir; `<head>`-dəki kiçik
+  skript yaddaşdakı temanı render-dən əvvəl tətbiq edir (ağ parıltı olmasın).
+- **Yeni komponent yazanda hardcoded ağ/tünd rəng İSTİFADƏ ETMƏ** — mövcud dəyişənləri işlət:
+  `--surface-85..97`, `--surface-solid`, `--text`, `--text-muted`, `--text-dim`,
+  `--accent-ink` (mətn üçün yaşıl), `--input-border`, `--card-border`, `--table-head`, `--bg-body`.
+- Hissəcik animasiyası tema-həssasdır (dark-da açıq yaşıl palitra).
+- Manual kollokvium balları MAVİ: `.score-inp.manual-edit` / `.bal.bal-manual`
+  (light: `#1565c0`, dark: `#64b5f6`).
 
 ---
 
@@ -335,4 +417,79 @@ python server.py
    müvafiq mənbəni əlavə et, yoxsa brauzer bloklayar.
 6. Sirləri (şifrə, açar, JSON) heç vaxt commit etmə — `.gitignore`-a əlavə et.
 7. Real məlumat dəyişikliyi sapyor.com-da edilir (lokal baza ayrıdır).
+8. Lokal fayl testlərindən sonra B2 təmizliyi YALNIZ `dev/` açarlarına toxunmalıdır (bax §4.6).
+
+---
+
+## 18. Fayl təhvili sistemi (Backblaze B2 + Office viewer + VirusTotal)
+
+### Memarlıq — fayllar bizim serverdən KEÇMİR
+Vercel serverless funksiyaları maks ~4.5 MB sorğu qəbul edir, ona görə axın belədir:
+
+1. Kursant kabinetində "Sərbəst işimi təhvil ver" kartından fayl seçir
+   (**yalnız `.docx` ≤10MB və `.pptx` ≤25MB** — client + server yoxlayır).
+2. Brauzer `POST /api/upload-url` → server presigned PUT URL verir (15 dəq etibarlı).
+3. Brauzer faylı **birbaşa B2-yə** PUT edir (XHR, faiz göstəricisi ilə).
+4. Brauzer `POST /api/upload-confirm` → server B2-də HEAD (ölçü) + ilk 2 bayt yoxlayır
+   (`PK` = həqiqi Office/ZIP; deyilsə fayl B2-dən silinir və rədd olunur) →
+   metadata `db["uploads"]`-a yazılır.
+5. Baxış/endirmə: `POST /api/upload-link` → presigned GET (1 saat).
+   - **Baxış:** Office Online viewer modalda —
+     `https://view.officeapps.live.com/op/embed.aspx?src=<encoded presigned url>`.
+     18.6MB pptx problemsiz göstərir. Müəllim faylı ENDİRMƏDƏN baxır (virus riski sıfır).
+   - **Endirmə:** `response-content-disposition: attachment` ilə.
+
+### Açar sxemi
+- `{prefix}uploads/{sha256(ad)[:16]}-{docx|pptx}.{ext}` — deterministik, təkrar yükləmə
+  üstünə yazır. Prefix: canlıda boş, lokalda `dev/` (bax §4.6).
+- Mövcud metadata varsa, açar oradan götürülür (`_key_for`), ona görə ad dəyişəndə köhnə açar işlək qalır.
+
+### Təhlükəsizlik qatları
+1. Yalnız `.docx`/`.pptx` — bu formatlarda makro İŞLƏYƏ BİLMİR (makrolular `.docm`/`.pptm`).
+2. ZIP magic (`PK`) yoxlanışı — adı dəyişdirilmiş `.exe` və s. rədd olunur.
+3. Baxış saytdaca (endirmədən) — icra riski yoxdur.
+4. **VirusTotal** (yalnız müəllim, avtomatik DEYİL): cədvəldə 🛡? düyməsi → server faylı
+   B2-dən endirir → VT-yə göndərir (`_vt.scan_bytes`) → `vt.status: pending` →
+   ⏳ düyməsi ilə nəticə sorğulanır → `clean` (yaşıl 🛡) / `flagged` (qırmızı ⚠, hover-də
+   neçə mühərrikin həyəcan verdiyi). Nəticə metadata-da saxlanılır, təkrar yoxlanmır.
+   Yeni fayl yüklənəndə metadata (VT + rəy) sıfırlanır.
+
+### Fayl rəyi (müəllim → kursant)
+- Müəllim cədvəlində hər faylın yanında **✓** (qəbul et) və **✏** (düzəliş istə + qeyd prompt-u).
+- Aktiv düyməyə təkrar klik rəyi ləğv edir. Endpoint: `/api/upload-review`.
+- Kursant öz kabinetində görür: "⌛ Müəllim hələ baxmayıb" / "✅ Qəbul edildi" /
+  "✏️ Düzəliş lazımdır — <qeyd>".
+- Müəllim ✕ düyməsi ilə faylı silə də bilir (kursant yenidən yükləyə bilər).
+
+### CORS / CSP
+- B2 bucket CORS: `https://sapyor.com`, `https://*.vercel.app`, `http://localhost:8080`
+  üçün `s3_put/s3_get/s3_head` (bir dəfə b2_update_bucket ilə qurulub).
+- `vercel.json` CSP: `connect-src`-də `https://*.backblazeb2.com`,
+  `frame-src`-də `https://view.officeapps.live.com`.
+
+### Tutum
+- Pulsuz plan 10 GB. 200 kursant × ~20 MB ≈ 4 GB. Semestr sonunda köhnə faylları silmək olar.
+
+---
+
+## 19. Ehtiyat nüsxə (backup) sistemi
+
+- **Avtomatik:** Vercel Cron hər gecə 01:00 UTC → `GET /api/backup`
+  (cron istəyi `User-Agent: vercel-cron/*` ilə tanınır; əl ilə çağırışda müəllim tokeni lazımdır).
+- Nüsxə: bütün db JSON kimi → B2 `{prefix}backups/db-YYYY-MM-DD.json`.
+  31 gün əvvəlki nüsxə hər dəfə avtomatik silinir (yer: ~200KB × 31 ≈ 6MB — cüzi).
+- **Yalnız bazanı nüsxələyir** — kursant faylları onsuz da B2-dədir, təkrarlanmır.
+- **Bərpa:** müəllim panelində "Ehtiyat nüsxə" kartı → tarix seç → "Bu tarixə qayıt"
+  (ikiqat təsdiq). Bərpadan ƏVVƏL cari vəziyyət `backups/pre-restore-<ts>.json`-a yazılır —
+  yəni bərpanın özü də geri qaytarıla biləndir.
+- Kod: `api/_backup.py` (`run_backup`, `read_backup`, `save_prerestore`).
+
+---
+
+## 20. Son tarix geri sayımı
+
+- Kursant kabinetindəki deadline bannerində tarixin yanında nişan: `deadlineCountdown()`
+  mətndən `DD.MM.YYYY` çıxarır → "N gün qaldı".
+- Rənglər: >7 gün yaşıl, 3-7 narıncı, ≤3 qırmızı (yanıb-sönən), "bu gün son gündür!",
+  keçibsə "vaxt keçib". Tarix parse olunmasa nişan sadəcə göstərilmir (banner qalır).
 ```
