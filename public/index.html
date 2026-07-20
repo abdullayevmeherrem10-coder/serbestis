@@ -1881,6 +1881,7 @@
             font-size: 0.78rem;
             font-weight: 800;
             white-space: nowrap;
+            vertical-align: middle;
         }
         .dl-count-green { background: rgba(46,125,50,0.15); color: var(--success); border: 1px solid rgba(46,125,50,0.35); }
         .dl-count-orange { background: rgba(224,138,0,0.15); color: #e08a00; border: 1px solid rgba(224,138,0,0.4); }
@@ -2190,7 +2191,7 @@
             <span class="dl-icon">&#9888;</span>
             <span class="dl-text">
                 <strong>Diqqət!</strong> Sərbəst işinizin son təhvil verilmə və müdafiə tarixi:
-                <span class="dl-date" id="cabDlDate"></span>
+                <span class="dl-date" id="cabDlDate"></span><span id="cabDlCount"></span>
             </span>
         </div>
 
@@ -3621,7 +3622,9 @@
         if (!banner) return;
         if (d) {
             const cd = document.getElementById('cabDlDate');
-            if (cd) cd.innerHTML = esc(d) + deadlineCountdown(d);
+            if (cd) cd.textContent = d;
+            const cc = document.getElementById('cabDlCount');
+            if (cc) cc.innerHTML = deadlineCountdown(d);
             banner.style.display = '';
         } else {
             banner.style.display = 'none';
