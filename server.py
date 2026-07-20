@@ -22,6 +22,8 @@ sys.path.insert(0, os.path.join(BASE_DIR, "api"))
 from _credentials import CREDENTIALS
 from _results import RESULTS
 from _roster import roster_action
+from _uploads import (upload_url_action, upload_confirm_action,
+                      upload_link_action, upload_delete_action)
 
 # Admin şifrəsi koda yazılmır: əvvəlcə ENV dəyişəni, sonra gitignore-lanmış
 # admin_secret.txt faylı oxunur. Heç biri yoxdursa təsadüfi (bilinməyən)
@@ -252,6 +254,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
                     "semester": db.get("semester", "2025/2026 yaz semestri"),
                     "subject": db.get("subject", "Hərbi Mühəndis Texnikası"),
                     "exam_scores": db.get("exam_scores", {}),
+                    "uploads": db.get("uploads", {}),
                 })
                 return
             name = cred["name"]
@@ -267,6 +270,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
                 "deadline": db.get("deadlines", {}).get(name),
                 "semester": db.get("semester", "2025/2026 yaz semestri"),
                 "subject": db.get("subject", "Hərbi Mühəndis Texnikası"),
+                "uploads": db.get("uploads", {}).get(name, {}),
             })
 
         elif path == "/api/student-status":
@@ -406,6 +410,28 @@ class Handler(http.server.BaseHTTPRequestHandler):
             body = self.read_body()
             db = load_db()
             changed, resp, code = roster_action(db, body, CREDENTIALS)
+            if changed:
+                save_db(db)
+            self.send_json(resp, code)
+
+        elif path in ("/api/upload-url", "/api/upload-confirm", "/api/upload-link", "/api/upload-delete"):
+            auth = self.headers.get("Authorization", "")
+            cid = verify_token(auth[7:].strip()) if auth.startswith("Bearer ") else None
+            db = load_db()
+            cred = resolve_cred(cid, db) if cid else None
+            if not cred:
+                self.send_json({"error": "Giriş tələb olunur."}, 401)
+                return
+            body = self.read_body()
+            if path in ("/api/upload-url", "/api/upload-confirm"):
+                if cred.get("role") != "student":
+                    self.send_json({"error": "Giriş tələb olunur."}, 401)
+                    return
+                action = upload_url_action if path == "/api/upload-url" else upload_confirm_action
+                changed, resp, code = action(db, body, cred["name"])
+            else:
+                action = upload_link_action if path == "/api/upload-link" else upload_delete_action
+                changed, resp, code = action(db, body, cred.get("role"), cred.get("name"))
             if changed:
                 save_db(db)
             self.send_json(resp, code)

@@ -9,6 +9,18 @@ import hashlib
 import secrets
 import string
 
+try:
+    import _b2
+except Exception:
+    _b2 = None
+
+
+def _delete_student_files(db, name):
+    """Kursantın B2-dəki fayllarını silir (best-effort)."""
+    for meta in db.get("uploads", {}).get(name, {}).values():
+        if _b2 and meta.get("key"):
+            _b2.delete_object(meta["key"])
+
 PASS_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
 TEAM_CODES = {"YTF24A1": "Y1", "YTF24A2": "Y2", "HFT24A1": "H1", "HFT24A2": "H2"}
 
@@ -98,7 +110,8 @@ def roster_action(db, body, static_credentials):
         if team in static_teams or any(c == team for c in tr.values()):
             return False, {"error": "Əsas qruplar silinə bilməz — yalnız sonradan yaradılmış taqımlar silinir."}, 400
         for name in list(teams.get(team, [])):
-            for m in ("keys", "selections", "scores", "deadlines", "exam_scores"):
+            _delete_student_files(db, name)
+            for m in ("keys", "selections", "scores", "deadlines", "exam_scores", "uploads"):
                 db.get(m, {}).pop(name, None)
             dyn = db.get("credentials_dyn", {})
             for cid in [c for c, cred in dyn.items() if cred.get("name") == name]:
@@ -148,7 +161,7 @@ def roster_action(db, body, static_credentials):
             for i, n in enumerate(members):
                 if n == old:
                     members[i] = new
-        for m in ("keys", "selections", "scores", "deadlines", "exam_scores"):
+        for m in ("keys", "selections", "scores", "deadlines", "exam_scores", "uploads"):
             if old in db.get(m, {}):
                 db[m][new] = db[m].pop(old)
         for taken in db.get("work_taken_by", {}).values():
@@ -173,10 +186,11 @@ def roster_action(db, body, static_credentials):
         name = (body.get("name") or "").strip()
         if name not in _all_names(db):
             return False, {"error": "Kursant tapılmadı."}, 404
+        _delete_student_files(db, name)
         for members in teams.values():
             if name in members:
                 members.remove(name)
-        for m in ("keys", "selections", "scores", "deadlines", "exam_scores"):
+        for m in ("keys", "selections", "scores", "deadlines", "exam_scores", "uploads"):
             db.get(m, {}).pop(name, None)
         for taken in db.get("work_taken_by", {}).values():
             for wid, n in list(taken.items()):

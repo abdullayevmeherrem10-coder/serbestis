@@ -11,6 +11,8 @@ if _HERE not in sys.path:
 from _credentials import CREDENTIALS
 from _results import RESULTS
 from _roster import roster_action
+from _uploads import (upload_url_action, upload_confirm_action,
+                      upload_link_action, upload_delete_action)
 
 app = Flask(__name__)
 
@@ -423,6 +425,7 @@ def cabinet_data():
             "semester": db.get('semester', '2025/2026 yaz semestri'),
             "subject": db.get('subject', 'Hərbi Mühəndis Texnikası'),
             "exam_scores": db.get('exam_scores', {}),
+            "uploads": db.get('uploads', {}),
         })
     name = cred['name']
     return jsonify({
@@ -437,6 +440,7 @@ def cabinet_data():
         "deadline": db.get('deadlines', {}).get(name),
         "semester": db.get('semester', '2025/2026 yaz semestri'),
         "subject": db.get('subject', 'Hərbi Mühəndis Texnikası'),
+        "uploads": db.get('uploads', {}).get(name, {}),
     })
 
 
@@ -565,6 +569,63 @@ def cabinet_roster():
     body = request.get_json(silent=True) or {}
     db = load_db()
     changed, resp, code = roster_action(db, body, CREDENTIALS)
+    if changed:
+        save_db(db)
+    return jsonify(resp), code
+
+
+def _upload_auth():
+    """(db, cred) — daxil olmuş istifadəçi; yoxdursa (None, None)."""
+    cid = token_from_request()
+    if not cid:
+        return None, None
+    db = load_db()
+    cred = resolve_cred(cid, db)
+    return (db, cred) if cred else (None, None)
+
+
+@app.route('/api/upload-url', methods=['POST'])
+def upload_url():
+    """Kursant öz sərbəst iş faylı üçün birbaşa B2-yə yükləmə linki alır."""
+    db, cred = _upload_auth()
+    if not cred or cred.get('role') != 'student':
+        return jsonify({"error": "Giriş tələb olunur."}), 401
+    changed, resp, code = upload_url_action(db, request.get_json(silent=True) or {}, cred['name'])
+    if changed:
+        save_db(db)
+    return jsonify(resp), code
+
+
+@app.route('/api/upload-confirm', methods=['POST'])
+def upload_confirm():
+    db, cred = _upload_auth()
+    if not cred or cred.get('role') != 'student':
+        return jsonify({"error": "Giriş tələb olunur."}), 401
+    changed, resp, code = upload_confirm_action(db, request.get_json(silent=True) or {}, cred['name'])
+    if changed:
+        save_db(db)
+    return jsonify(resp), code
+
+
+@app.route('/api/upload-link', methods=['POST'])
+def upload_link():
+    db, cred = _upload_auth()
+    if not cred:
+        return jsonify({"error": "Giriş tələb olunur."}), 401
+    changed, resp, code = upload_link_action(
+        db, request.get_json(silent=True) or {}, cred.get('role'), cred.get('name'))
+    if changed:
+        save_db(db)
+    return jsonify(resp), code
+
+
+@app.route('/api/upload-delete', methods=['POST'])
+def upload_delete():
+    db, cred = _upload_auth()
+    if not cred:
+        return jsonify({"error": "Giriş tələb olunur."}), 401
+    changed, resp, code = upload_delete_action(
+        db, request.get_json(silent=True) or {}, cred.get('role'), cred.get('name'))
     if changed:
         save_db(db)
     return jsonify(resp), code

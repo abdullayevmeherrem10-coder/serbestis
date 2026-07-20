@@ -1817,6 +1817,52 @@
         .btn-mini:hover { background: rgba(69,95,81,0.08); border-color: var(--accent-ink); transform: translateY(-1px); }
         .btn-mini-danger { color: var(--danger); border-color: rgba(198,40,40,0.3); }
         .btn-mini-danger:hover { background: var(--danger-bg); border-color: var(--danger); }
+
+        /* Sərbəst iş faylları (yükləmə + baxış) */
+        .up-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            padding: 12px 14px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            background: var(--surface-90);
+            margin-bottom: 10px;
+        }
+        .up-kind { font-weight: 800; min-width: 140px; color: var(--accent-ink); font-size: 0.9rem; }
+        .up-status { flex: 1; min-width: 160px; font-size: 0.84rem; color: var(--text-muted); }
+        .up-status .up-ok { color: var(--success); font-weight: 800; }
+        .up-status small { color: var(--text-dim); }
+        .up-actions { display: flex; gap: 6px; }
+        .up-docs { display: flex; flex-direction: column; gap: 4px; align-items: center; }
+        .up-doc { display: flex; gap: 4px; }
+        .up-doc-none { color: var(--text-dim); font-size: 0.8rem; white-space: nowrap; }
+        .viewer-modal { display: none; position: fixed; inset: 0; background: rgba(15,30,24,0.65); z-index: 4000; padding: 16px; }
+        .viewer-modal.active { display: flex; align-items: center; justify-content: center; }
+        .viewer-box {
+            width: min(1100px, 96vw);
+            height: min(850px, 92vh);
+            background: var(--surface-solid);
+            border-radius: var(--radius-sm);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+        }
+        .viewer-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 10px 16px;
+            border-bottom: 1px solid var(--border);
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+        .viewer-close { border: none; background: none; cursor: pointer; font-size: 1.1rem; color: var(--text-muted); padding: 4px 8px; }
+        .viewer-close:hover { color: var(--danger); }
+        #viewerFrame { border: 0; flex: 1; width: 100%; }
         .row-edit {
             border: none;
             background: none;
@@ -2096,6 +2142,31 @@
             <div id="cabSerbest"><span class="spinner"></span></div>
         </div>
 
+        <div class="card" id="uploadCard">
+            <div class="card-title"><div class="icon">&#128228;</div> Sərbəst işimi təhvil ver</div>
+            <p class="cab-scale" style="margin:-8px 0 14px;">Hazır sərbəst işinizi Word (.docx, maks 10 MB) və təqdimatınızı PowerPoint (.pptx, maks 20 səhifə, maks 25 MB) formatında yükləyin — müəllim onları saytdaca görəcək.</p>
+            <div class="up-row" id="upRow-docx">
+                <span class="up-kind">&#128196; Word</span>
+                <span class="up-status" id="upStatus-docx">Yüklənməyib</span>
+                <span class="up-actions">
+                    <button class="btn-mini" onclick="upPick('docx')" id="upBtn-docx">&#11014; Yüklə</button>
+                    <button class="btn-mini" onclick="upOpen('docx', 'view')" id="upView-docx" style="display:none">&#128065; Bax</button>
+                    <button class="btn-mini btn-mini-danger" onclick="upDelete('docx')" id="upDel-docx" style="display:none">&#128465;</button>
+                </span>
+            </div>
+            <div class="up-row" id="upRow-pptx">
+                <span class="up-kind">&#128202; PowerPoint</span>
+                <span class="up-status" id="upStatus-pptx">Yüklənməyib</span>
+                <span class="up-actions">
+                    <button class="btn-mini" onclick="upPick('pptx')" id="upBtn-pptx">&#11014; Yüklə</button>
+                    <button class="btn-mini" onclick="upOpen('pptx', 'view')" id="upView-pptx" style="display:none">&#128065; Bax</button>
+                    <button class="btn-mini btn-mini-danger" onclick="upDelete('pptx')" id="upDel-pptx" style="display:none">&#128465;</button>
+                </span>
+            </div>
+            <input type="file" id="upFile-docx" accept=".docx" style="display:none" onchange="upSelected('docx', this)">
+            <input type="file" id="upFile-pptx" accept=".pptx" style="display:none" onchange="upSelected('pptx', this)">
+        </div>
+
         <div class="download-section" style="display:flex;gap:14px;flex-wrap:wrap;justify-content:center;">
             <div style="flex:1;min-width:250px;">
                 <p>Sərbəst iş üzlüyü sənədini yükləyin</p>
@@ -2304,7 +2375,7 @@
             <div class="results-table-wrap">
                 <table class="results-table">
                     <thead>
-                        <tr><th class="col-num">&#8470;</th><th>Kursant&#305;n ad&#305;</th><th>Se&#231;diyi i&#351;l&#601;r</th><th class="col-bal">Son tarix<small>f&#601;rdi</small></th><th class="col-bal">&#399;m&#601;liyyat</th></tr>
+                        <tr><th class="col-num">&#8470;</th><th>Kursant&#305;n ad&#305;</th><th>Se&#231;diyi i&#351;l&#601;r</th><th class="col-bal">S&#601;n&#601;dl&#601;r</th><th class="col-bal">Son tarix<small>f&#601;rdi</small></th><th class="col-bal">&#399;m&#601;liyyat</th></tr>
                     </thead>
                     <tbody id="tpStudents"></tbody>
                 </table>
@@ -2530,6 +2601,17 @@
 </div>
 
 <!-- Rules Modal -->
+<!-- Sənəd baxış modalı (Office Online viewer) -->
+<div class="viewer-modal" id="viewerModal" onclick="if(event.target===this)closeViewer()">
+    <div class="viewer-box">
+        <div class="viewer-head">
+            <span id="viewerTitle">Sənəd</span>
+            <button class="viewer-close" onclick="closeViewer()" title="Bağla">&#10005;</button>
+        </div>
+        <iframe id="viewerFrame" allowfullscreen></iframe>
+    </div>
+</div>
+
 <div class="rules-modal" id="rulesModal" onclick="if(event.target===this)this.classList.remove('active')">
     <div class="rules-content">
         <h2>&#128220; Sərbəst İşin Hazırlanma Qaydası</h2>
@@ -3183,6 +3265,7 @@
         try { liveK = await fetchLiveKollok(cabData.team, name); } catch(e) {}
         buildPersonalCards(cabData.results || {}, liveK);
         renderCabSerbest();
+        renderUploads();
         setDeadlineText(cabData.deadline);
         document.getElementById('cabinetView').style.display = '';
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -3534,10 +3617,16 @@
             const selHtml = sel.length
                 ? '<ol class="tp-sel">' + sel.map(id => `<li>${esc(works[id] || ('Sərbəst iş #' + (id + 1)))}</li>`).join('') + '</ol>'
                 : '<span class="bal bal-none">Seçməyib</span>';
+            const up = (cabData.uploads || {})[name] || {};
+            const docBtns = (kind, ico) => up[kind]
+                ? `<span class="up-doc"><button class="btn-mini" title="${esc(up[kind].fname || '')} — saytda bax" onclick="tpViewUpload('${kind}', this)">${ico} Bax</button><button class="btn-mini" title="Endir" onclick="tpDownloadUpload('${kind}', this)">&#11015;</button></span>`
+                : `<span class="up-doc up-doc-none">${ico} &#8212;</span>`;
+            const docsHtml = docBtns('docx', '&#128196;') + docBtns('pptx', '&#128202;');
             tb.insertAdjacentHTML('beforeend', `<tr data-name="${esc(name)}">
                 <td class="col-num">${i + 1}</td>
                 <td>${esc(name)} <button class="row-edit" title="Adı dəyiş" onclick="tpRenameStudent(this)">&#9998;</button></td>
                 <td>${selHtml}</td>
+                <td class="col-bal"><div class="up-docs">${docsHtml}</div></td>
                 <td class="col-bal"><input type="text" class="dl-input dl-inp-cell" value="${esc(dls[name] || '')}" placeholder="&#8212;" maxlength="40" onchange="saveStudentDeadline(this)"></td>
                 <td class="col-bal"><div class="tp-actions">${sel.length ? '<button class="btn-reset" onclick="tpResetStudent(this)">Sıfırla</button>' : ''}<button class="btn-reset" title="Kursantı sil" onclick="tpDeleteStudent(this)">&#128465;</button></div></td>
             </tr>`);
@@ -3772,6 +3861,157 @@
             await tpRefreshAll();
             showToast('Kursant silindi', 'success');
         } catch(e) {}
+    }
+
+    // ===== Sərbəst iş fayllarının yüklənməsi və baxışı (Backblaze B2) =====
+    const UP_LIMITS = { docx: 10 * 1024 * 1024, pptx: 25 * 1024 * 1024 };
+
+    function fmtSize(n) {
+        return n >= 1048576 ? (n / 1048576).toFixed(1) + ' MB' : Math.max(1, Math.round(n / 1024)) + ' KB';
+    }
+
+    function renderUploads() {
+        if (!cabData || cabData.role !== 'student') return;
+        ['docx', 'pptx'].forEach(k => {
+            const meta = (cabData.uploads || {})[k];
+            const st = document.getElementById('upStatus-' + k);
+            const btn = document.getElementById('upBtn-' + k);
+            const v = document.getElementById('upView-' + k);
+            const d = document.getElementById('upDel-' + k);
+            if (!st) return;
+            if (meta) {
+                st.innerHTML = `<span class="up-ok">&#10003;</span> ${esc(meta.fname || '')} <small>(${fmtSize(meta.size || 0)} &#8226; ${esc(meta.ts || '')})</small>`;
+                btn.innerHTML = '&#8635; Dəyiş';
+                v.style.display = '';
+                d.style.display = '';
+            } else {
+                st.textContent = 'Yüklənməyib';
+                btn.innerHTML = '&#11014; Yüklə';
+                v.style.display = 'none';
+                d.style.display = 'none';
+            }
+        });
+    }
+
+    function upPick(kind) { document.getElementById('upFile-' + kind).click(); }
+
+    async function upSelected(kind, input) {
+        const f = input.files[0];
+        input.value = '';
+        if (!f) return;
+        if (!f.name.toLowerCase().endsWith('.' + kind)) {
+            showToast('Yalnız .' + kind + ' faylı qəbul edilir!', 'error');
+            return;
+        }
+        if (f.size > UP_LIMITS[kind]) {
+            showToast('Fayl ' + (UP_LIMITS[kind] / 1048576) + ' MB limitindən böyükdür!', 'error');
+            return;
+        }
+        const st = document.getElementById('upStatus-' + kind);
+        const btn = document.getElementById('upBtn-' + kind);
+        btn.disabled = true;
+        try {
+            st.textContent = 'Hazırlanır...';
+            const r1 = await fetch('/api/upload-url', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.token },
+                body: JSON.stringify({ kind: kind, fname: f.name, size: f.size })
+            });
+            if (r1.status === 401) { cabinetLogout(); showToast('Sessiya bitib — yenidən daxil olun.', 'error'); return; }
+            const d1 = await r1.json();
+            if (!r1.ok) throw d1.error || 0;
+            await new Promise((resolve, reject) => {
+                const xhr = new XMLHttpRequest();
+                xhr.open('PUT', d1.url);
+                xhr.upload.onprogress = e => {
+                    if (e.lengthComputable) st.textContent = 'Yüklənir... ' + Math.round(e.loaded / e.total * 100) + '%';
+                };
+                xhr.onload = () => (xhr.status >= 200 && xhr.status < 300) ? resolve() : reject(0);
+                xhr.onerror = () => reject(0);
+                xhr.send(f);
+            });
+            st.textContent = 'Yoxlanılır...';
+            const r2 = await fetch('/api/upload-confirm', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.token },
+                body: JSON.stringify({ kind: kind, fname: f.name })
+            });
+            const d2 = await r2.json();
+            if (!r2.ok) throw d2.error || 0;
+            cabData.uploads = d2.uploads || {};
+            showToast('Fayl yükləndi — müəllim artıq görə bilər', 'success');
+        } catch (e) {
+            showToast(typeof e === 'string' ? e : 'Yükləmə alınmadı — yenidən cəhd edin!', 'error');
+        } finally {
+            btn.disabled = false;
+            renderUploads();
+        }
+    }
+
+    async function fetchUploadLink(name, kind, mode) {
+        const res = await fetch('/api/upload-link', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.token },
+            body: JSON.stringify({ name: name, kind: kind, mode: mode })
+        });
+        if (res.status === 401) { cabinetLogout(); showToast('Sessiya bitib — yenidən daxil olun.', 'error'); return null; }
+        const d = await res.json();
+        if (!res.ok) { showToast(d.error || 'Link alına bilmədi!', 'error'); return null; }
+        return d;
+    }
+
+    function openViewer(url, title) {
+        document.getElementById('viewerTitle').textContent = title || 'Sənəd';
+        document.getElementById('viewerFrame').src =
+            'https://view.officeapps.live.com/op/embed.aspx?src=' + encodeURIComponent(url);
+        document.getElementById('viewerModal').classList.add('active');
+    }
+
+    function closeViewer() {
+        document.getElementById('viewerModal').classList.remove('active');
+        document.getElementById('viewerFrame').src = 'about:blank';
+    }
+
+    function triggerDownload(url) {
+        const a = document.createElement('a');
+        a.href = url;
+        a.rel = 'noopener';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+    }
+
+    async function upOpen(kind, mode) {
+        const d = await fetchUploadLink('', kind, mode);
+        if (!d) return;
+        if (mode === 'view') openViewer(d.url, d.fname);
+        else triggerDownload(d.url);
+    }
+
+    async function upDelete(kind) {
+        if (!confirm('Yüklədiyiniz fayl silinsin?')) return;
+        const res = await fetch('/api/upload-delete', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.token },
+            body: JSON.stringify({ kind: kind })
+        });
+        const d = await res.json();
+        if (!res.ok) { showToast(d.error || 'Silinmədi!', 'error'); return; }
+        cabData.uploads = d.uploads || {};
+        renderUploads();
+        showToast('Fayl silindi', 'success');
+    }
+
+    async function tpViewUpload(kind, btn) {
+        const name = btn.closest('tr').dataset.name;
+        const d = await fetchUploadLink(name, kind, 'view');
+        if (d) openViewer(d.url, name + ' — ' + (d.fname || kind));
+    }
+
+    async function tpDownloadUpload(kind, btn) {
+        const name = btn.closest('tr').dataset.name;
+        const d = await fetchUploadLink(name, kind, 'download');
+        if (d) triggerDownload(d.url);
     }
 
     // ===== Müəllim: canlı kollokvium balları + mənimsəmə qiymətləndirməsi =====
