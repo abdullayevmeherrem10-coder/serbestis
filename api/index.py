@@ -426,6 +426,7 @@ def cabinet_data():
             "semester": db.get('semester', '2025/2026 yaz semestri'),
             "subject": db.get('subject', 'Hərbi Mühəndis Texnikası'),
             "exam_scores": db.get('exam_scores', {}),
+            "kollok_scores": db.get('kollok_scores', {}),
             "uploads": db.get('uploads', {}),
         })
     name = cred['name']
@@ -442,6 +443,7 @@ def cabinet_data():
         "semester": db.get('semester', '2025/2026 yaz semestri'),
         "subject": db.get('subject', 'Hərbi Mühəndis Texnikası'),
         "uploads": db.get('uploads', {}).get(name, {}),
+        "kollok_manual": db.get('kollok_scores', {}).get(name, {}),
     })
 
 
@@ -655,6 +657,44 @@ def vt_status():
     if changed:
         save_db(db)
     return jsonify(resp), code
+
+
+@app.route('/api/cabinet-kollok', methods=['POST'])
+def cabinet_kollok():
+    """Müəllim kollokvium balını (1-3, 0-10) manual yazır; boş → canlı/statik bala qayıdır."""
+    cid = token_from_request()
+    if not cid or CREDENTIALS.get(cid, {}).get('role') != 'teacher':
+        return jsonify({"error": "İcazə yoxdur."}), 401
+    body = request.get_json(silent=True) or {}
+    name = (body.get('name') or '').strip()
+    if not name:
+        return jsonify({"error": "Kursant adı göstərilməyib."}), 400
+    try:
+        k = int(body.get('k'))
+    except (TypeError, ValueError):
+        k = 0
+    if k not in (1, 2, 3):
+        return jsonify({"error": "Kollokvium nömrəsi 1-3 olmalıdır."}), 400
+    db = load_db()
+    if not any(name in members for members in db.get('teams', {}).values()):
+        return jsonify({"error": "Kursant tapılmadı."}), 404
+    ks = db.setdefault('kollok_scores', {})
+    bal = body.get('bal')
+    if bal is None or bal == '':
+        ks.get(name, {}).pop(str(k), None)
+        if name in ks and not ks[name]:
+            del ks[name]
+        save_db(db)
+        return jsonify({"success": True, "name": name, "k": k, "bal": None,
+                        "kollok_scores": db.get('kollok_scores', {})})
+    try:
+        bal = max(0, min(10, int(bal)))
+    except (TypeError, ValueError):
+        return jsonify({"error": "Bal 0-10 arası rəqəm olmalıdır."}), 400
+    ks.setdefault(name, {})[str(k)] = bal
+    save_db(db)
+    return jsonify({"success": True, "name": name, "k": k, "bal": bal,
+                    "kollok_scores": db.get('kollok_scores', {})})
 
 
 @app.route('/api/cabinet-exam', methods=['POST'])

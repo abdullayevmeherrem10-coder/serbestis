@@ -111,7 +111,7 @@ def roster_action(db, body, static_credentials):
             return False, {"error": "Əsas qruplar silinə bilməz — yalnız sonradan yaradılmış taqımlar silinir."}, 400
         for name in list(teams.get(team, [])):
             _delete_student_files(db, name)
-            for m in ("keys", "selections", "scores", "deadlines", "exam_scores", "uploads"):
+            for m in ("keys", "selections", "scores", "deadlines", "exam_scores", "uploads", "kollok_scores"):
                 db.get(m, {}).pop(name, None)
             dyn = db.get("credentials_dyn", {})
             for cid in [c for c, cred in dyn.items() if cred.get("name") == name]:
@@ -161,7 +161,7 @@ def roster_action(db, body, static_credentials):
             for i, n in enumerate(members):
                 if n == old:
                     members[i] = new
-        for m in ("keys", "selections", "scores", "deadlines", "exam_scores", "uploads"):
+        for m in ("keys", "selections", "scores", "deadlines", "exam_scores", "uploads", "kollok_scores"):
             if old in db.get(m, {}):
                 db[m][new] = db[m].pop(old)
         for taken in db.get("work_taken_by", {}).values():
@@ -190,7 +190,7 @@ def roster_action(db, body, static_credentials):
         for members in teams.values():
             if name in members:
                 members.remove(name)
-        for m in ("keys", "selections", "scores", "deadlines", "exam_scores", "uploads"):
+        for m in ("keys", "selections", "scores", "deadlines", "exam_scores", "uploads", "kollok_scores"):
             db.get(m, {}).pop(name, None)
         for taken in db.get("work_taken_by", {}).values():
             for wid, n in list(taken.items()):

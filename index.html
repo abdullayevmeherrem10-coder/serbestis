@@ -1838,6 +1838,21 @@
         .up-docs { display: flex; flex-direction: column; gap: 4px; align-items: center; }
         .up-doc { display: flex; gap: 4px; align-items: center; }
         .up-doc-none { color: var(--text-dim); font-size: 0.8rem; white-space: nowrap; }
+        /* Müəllimin manual düzəltdiyi kollokvium balları — mavi */
+        .score-inp.manual-edit {
+            color: #1565c0;
+            border-color: #5c8fd6;
+            background: rgba(21,101,192,0.07);
+            font-weight: 800;
+        }
+        .bal.bal-manual { color: #1565c0; border-color: rgba(21,101,192,0.4); background: rgba(21,101,192,0.1); }
+        html[data-theme="dark"] .score-inp.manual-edit {
+            color: #64b5f6;
+            border-color: #4a7ab8;
+            background: rgba(100,181,246,0.12);
+        }
+        html[data-theme="dark"] .bal.bal-manual { color: #64b5f6; border-color: rgba(100,181,246,0.4); background: rgba(100,181,246,0.12); }
+
         .vt { font-size: 0.78rem; font-weight: 700; white-space: nowrap; }
         .vt-ok { color: var(--success); }
         .vt-bad { color: var(--danger); animation: vtPulse 1.2s ease-in-out infinite; }
@@ -3316,14 +3331,17 @@
         liveK = liveK || [null, null, null];
         const empty = '<p class="cab-empty">Nəticələr hələ yerləşdirilməyib</p>';
 
-        // Statik ballarla E-Kollokvium canlı ballarının birləşməsi — canlı bal üstündür
+        // Balların birləşməsi: müəllimin manual balı > canlı (E-Kollokvium) > statik
+        const kman = cabData.kollok_manual || {};
         const kmerged = [0, 1, 2].map(i => {
+            const mv = kman[String(i + 1)];
+            if (mv != null) return { val: String(mv), n: mv, live: null, absent: false };
             const lv = liveK[i];
             if (lv) return { val: lv.absent ? null : String(lv.total), n: lv.absent ? NaN : lv.total, live: lv, absent: lv.absent };
             const sv = r.kollok ? r.kollok[i] : null;
             return { val: sv, n: parseInt(sv), live: null, absent: false };
         });
-        const hasKollok = !!r.kollok || liveK.some(v => v);
+        const hasKollok = !!r.kollok || liveK.some(v => v) || Object.keys(kman).length > 0;
 
         // KPI statistika kartları
         const kvals = kmerged.map(x => x.n).filter(n => !isNaN(n));
@@ -3482,18 +3500,7 @@
         for (const [group, kolId, menId, imtId] of groups) {
             const g = results[group];
             if (!g) continue;
-            const kb = document.getElementById(kolId);
-            if (kb) {
-                kb.innerHTML = '';
-                let i = 1, sums = [0, 0, 0], cnts = [0, 0, 0];
-                for (const name of teamRoster(g)) {
-                    const vals = (g.kollok && g.kollok[name]) || [null, null, null];
-                    kb.insertAdjacentHTML('beforeend', `<tr data-name="${esc(name)}"><td class="col-num">${i++}</td><td>${esc(name)}</td>` +
-                        vals.map(v => `<td class="col-bal">${balSpanHtml(v, balCls(v))}</td>`).join('') + '</tr>');
-                    vals.forEach((v, j) => { const n = parseInt(v); if (!isNaN(n)) { sums[j] += n; cnts[j]++; } });
-                }
-                updateSummary(kb, [i - 1, ...sums.map((s, j) => cnts[j] ? (s / cnts[j]).toFixed(1) : '—')]);
-            }
+            applyLiveToKollokTable(kolId, g, teacherLive[group] || null);
             renderMenimsemeTable(group, menId, g, teacherLive[group] || null);
             renderImtahanTable(imtId, g);
         }
@@ -4115,14 +4122,21 @@
         return (cabData.teams || {})[g.team] || Object.keys(g.kollok || {});
     }
 
-    function mergedKollokFor(name, g, live) {
-        // Canlı bal statik baldan üstündür; [k1,k2,k3], null = bal yoxdur
+    function autoKollokFor(name, g, live) {
+        // Avtomatik ballar: canlı (Firebase) statik baldan üstündür; [k1,k2,k3]
         const stat = (g.kollok && g.kollok[name]) || [null, null, null];
         return [0, 1, 2].map(i => {
             if (live && live[i] && live[i][name] != null) return live[i][name];
             const n = parseInt(stat[i]);
             return isNaN(n) ? null : n;
         });
+    }
+
+    function mergedKollokFor(name, g, live) {
+        // Müəllimin manual balı hamısından üstündür: manual > canlı > statik
+        const man = (cabData.kollok_scores || {})[name] || {};
+        const auto = autoKollokFor(name, g, live);
+        return [0, 1, 2].map(i => man[String(i + 1)] != null ? man[String(i + 1)] : auto[i]);
     }
 
     function renderMenimsemeTable(group, menId, g, live) {
@@ -4133,13 +4147,14 @@
         let i = 1;
         for (const name of teamRoster(g)) {
             const ks = mergedKollokFor(name, g, live);
+            const man = (cabData.kollok_scores || {})[name] || {};
             const ksum = ks.reduce((a, v) => a + (v || 0), 0);
             const sc = scores[name] || {};
             const sv = sc.serbest != null ? sc.serbest : '';
             const dv = sc.defter != null ? sc.defter : '';
             mb.insertAdjacentHTML('beforeend',
                 `<tr data-name="${esc(name)}" data-ksum="${ksum}"><td class="col-num">${i++}</td><td>${esc(name)}</td>` +
-                ks.map(v => `<td class="col-bal">${balSpanHtml(v, balCls(v))}</td>`).join('') +
+                ks.map((v, j) => `<td class="col-bal">${balSpanHtml(v, balCls(v) + (man[String(j + 1)] != null ? ' bal-manual' : ''))}</td>`).join('') +
                 `<td class="col-bal"><span class="bal ${ksum >= 24 ? 'bal-high' : ksum >= 18 ? 'bal-mid' : 'bal-low'}">${ksum}</span></td>` +
                 `<td class="col-bal"><input type="number" class="score-inp" data-field="serbest" min="0" max="10" value="${sv}" onchange="saveScore(this)"></td>` +
                 `<td class="col-bal"><input type="number" class="score-inp" data-field="defter" min="0" max="10" value="${dv}" onchange="saveScore(this)"></td>` +
@@ -4195,17 +4210,58 @@
 
     function applyLiveToKollokTable(kolId, g, live) {
         const kb = document.getElementById(kolId);
-        if (!kb || !live) return;
+        if (!kb) return;
+        const manAll = cabData.kollok_scores || {};
         kb.innerHTML = '';
         let i = 1;
         const sums = [0, 0, 0], cnts = [0, 0, 0];
         for (const name of teamRoster(g)) {
-            const ks = mergedKollokFor(name, g, live);
-            kb.insertAdjacentHTML('beforeend', `<tr data-name="${esc(name)}"><td class="col-num">${i++}</td><td>${esc(name)}</td>` +
-                ks.map(v => `<td class="col-bal">${balSpanHtml(v, balCls(v))}</td>`).join('') + '</tr>');
-            ks.forEach((v, j) => { if (v != null) { sums[j] += v; cnts[j]++; } });
+            const man = manAll[name] || {};
+            const auto = autoKollokFor(name, g, live);
+            const cells = [0, 1, 2].map(j => {
+                const isMan = man[String(j + 1)] != null;
+                const v = isMan ? man[String(j + 1)] : auto[j];
+                return `<td class="col-bal"><input type="number" class="score-inp${isMan ? ' manual-edit' : ''}" data-k="${j + 1}" data-auto="${auto[j] != null ? auto[j] : ''}" min="0" max="10" value="${v != null ? v : ''}" title="${isMan ? 'Manual bal — silsəniz avtomatik bala qayıdır' : 'Avtomatik bal — dəyişsəniz manual olur'}" onchange="saveKollokScore(this)"></td>`;
+            }).join('');
+            kb.insertAdjacentHTML('beforeend', `<tr data-name="${esc(name)}"><td class="col-num">${i++}</td><td>${esc(name)}</td>${cells}</tr>`);
+            mergedKollokFor(name, g, live).forEach((v, j) => { if (v != null) { sums[j] += v; cnts[j]++; } });
         }
         updateSummary(kb, [i - 1, ...sums.map((s, j) => cnts[j] ? (s / cnts[j]).toFixed(1) : '—')]);
+    }
+
+    const KOLLOK_GROUPS = { kollokBody: ['YT 24A1', 'menimseme1Body'], kollok2Body: ['YT 24A2', 'menimseme2Body'] };
+
+    async function saveKollokScore(inp) {
+        const tr = inp.closest('tr');
+        const name = tr.dataset.name;
+        const k = parseInt(inp.dataset.k);
+        let bal = inp.value === '' ? null : Math.max(0, Math.min(10, parseInt(inp.value) || 0));
+        if (bal != null) inp.value = bal;
+        // Avtomatik balla eyni dəyər yazılıbsa, manual kimi saxlamağa ehtiyac yoxdur
+        if (bal != null && inp.dataset.auto !== '' && bal === parseInt(inp.dataset.auto)) bal = null;
+        try {
+            const res = await fetch('/api/cabinet-kollok', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.token },
+                body: JSON.stringify({ name: name, k: k, bal: bal })
+            });
+            if (res.status === 401) { cabinetLogout(); showToast('Sessiya bitib — yenidən daxil olun.', 'error'); return; }
+            const d = await res.json();
+            if (!res.ok) { showToast(d.error || 'Xəta!', 'error'); return; }
+            cabData.kollok_scores = d.kollok_scores || {};
+            // Kollokvium və mənimsəmə cədvəllərini yenilə (kollok cəmi dəyişir)
+            const tbId = tr.closest('tbody').id;
+            const [group, menId] = KOLLOK_GROUPS[tbId] || [];
+            const g = (cabData.results || {})[group];
+            if (g) {
+                applyLiveToKollokTable(tbId, g, teacherLive[group] || null);
+                renderMenimsemeTable(group, menId, g, teacherLive[group] || null);
+                const row = document.querySelector(`#${tbId} tr[data-name="${CSS.escape(name)}"]`);
+                if (row) { row.style.background = 'rgba(21,101,192,0.08)'; setTimeout(() => { row.style.background = ''; }, 700); }
+            }
+        } catch (e) {
+            showToast('Bal yadda saxlanıla bilmədi!', 'error');
+        }
     }
 
     async function enrichTeacherLive() {

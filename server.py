@@ -255,6 +255,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
                     "semester": db.get("semester", "2025/2026 yaz semestri"),
                     "subject": db.get("subject", "Hərbi Mühəndis Texnikası"),
                     "exam_scores": db.get("exam_scores", {}),
+                    "kollok_scores": db.get("kollok_scores", {}),
                     "uploads": db.get("uploads", {}),
                 })
                 return
@@ -272,6 +273,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
                 "semester": db.get("semester", "2025/2026 yaz semestri"),
                 "subject": db.get("subject", "Hərbi Mühəndis Texnikası"),
                 "uploads": db.get("uploads", {}).get(name, {}),
+                "kollok_manual": db.get("kollok_scores", {}).get(name, {}),
             })
 
         elif path == "/api/student-status":
@@ -442,6 +444,48 @@ class Handler(http.server.BaseHTTPRequestHandler):
             if changed:
                 save_db(db)
             self.send_json(resp, code)
+
+        elif path == "/api/cabinet-kollok":
+            auth = self.headers.get("Authorization", "")
+            cid = verify_token(auth[7:].strip()) if auth.startswith("Bearer ") else None
+            if not cid or CREDENTIALS.get(cid, {}).get("role") != "teacher":
+                self.send_json({"error": "İcazə yoxdur."}, 401)
+                return
+            body = self.read_body()
+            name = (body.get("name") or "").strip()
+            if not name:
+                self.send_json({"error": "Kursant adı göstərilməyib."}, 400)
+                return
+            try:
+                k = int(body.get("k"))
+            except (TypeError, ValueError):
+                k = 0
+            if k not in (1, 2, 3):
+                self.send_json({"error": "Kollokvium nömrəsi 1-3 olmalıdır."}, 400)
+                return
+            db = load_db()
+            if not any(name in members for members in db.get("teams", {}).values()):
+                self.send_json({"error": "Kursant tapılmadı."}, 404)
+                return
+            ks = db.setdefault("kollok_scores", {})
+            bal = body.get("bal")
+            if bal is None or bal == "":
+                ks.get(name, {}).pop(str(k), None)
+                if name in ks and not ks[name]:
+                    del ks[name]
+                save_db(db)
+                self.send_json({"success": True, "name": name, "k": k, "bal": None,
+                                "kollok_scores": db.get("kollok_scores", {})})
+                return
+            try:
+                bal = max(0, min(10, int(bal)))
+            except (TypeError, ValueError):
+                self.send_json({"error": "Bal 0-10 arası rəqəm olmalıdır."}, 400)
+                return
+            ks.setdefault(name, {})[str(k)] = bal
+            save_db(db)
+            self.send_json({"success": True, "name": name, "k": k, "bal": bal,
+                            "kollok_scores": db.get("kollok_scores", {})})
 
         elif path == "/api/cabinet-exam":
             auth = self.headers.get("Authorization", "")
