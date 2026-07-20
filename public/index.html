@@ -3634,7 +3634,7 @@
                 return `<span class="vt vt-bad" title="VirusTotal: ${vt.malicious || 0} zərərli, ${vt.suspicious || 0} şübhəli — EHTİYATLI OL!">&#9888;</span>`;
             };
             const docBtns = (kind, ico) => up[kind]
-                ? `<span class="up-doc"><button class="btn-mini" title="${esc(up[kind].fname || '')} — saytda bax" onclick="tpViewUpload('${kind}', this)">${ico} Bax</button><button class="btn-mini" title="Endir" onclick="tpDownloadUpload('${kind}', this)">&#11015;</button>${tpVt(kind)}</span>`
+                ? `<span class="up-doc"><button class="btn-mini" title="${esc(up[kind].fname || '')} — saytda bax" onclick="tpViewUpload('${kind}', this)">${ico} Bax</button><button class="btn-mini" title="Endir" onclick="tpDownloadUpload('${kind}', this)">&#11015;</button>${tpVt(kind)}<button class="btn-mini btn-mini-danger" title="Faylı sil" onclick="tpDeleteUpload('${kind}', this)">&#10005;</button></span>`
                 : `<span class="up-doc up-doc-none">${ico} &#8212;</span>`;
             const docsHtml = docBtns('docx', '&#128196;') + docBtns('pptx', '&#128202;');
             tb.insertAdjacentHTML('beforeend', `<tr data-name="${esc(name)}">
@@ -4052,6 +4052,28 @@
             renderTpStudents();
             if (d.vt && d.vt.status === 'pending') showToast('Hələ yoxlanılır — bir azdan yenidən klikləyin', 'success');
         } catch (e) {}
+    }
+
+    async function tpDeleteUpload(kind, btn) {
+        const name = btn.closest('tr').dataset.name;
+        const meta = ((cabData.uploads || {})[name] || {})[kind] || {};
+        if (!confirm(name + ' — "' + (meta.fname || kind) + '" faylı silinsin? Kursant yenidən yükləyə biləcək.')) return;
+        try {
+            const res = await fetch('/api/upload-delete', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.token },
+                body: JSON.stringify({ name: name, kind: kind })
+            });
+            if (res.status === 401) { cabinetLogout(); showToast('Sessiya bitib — yenidən daxil olun.', 'error'); return; }
+            const d = await res.json();
+            if (!res.ok) { showToast(d.error || 'Silinmədi!', 'error'); return; }
+            if (Object.keys(d.uploads || {}).length) cabData.uploads[name] = d.uploads;
+            else delete (cabData.uploads || {})[name];
+            renderTpStudents();
+            showToast('Fayl silindi', 'success');
+        } catch (e) {
+            showToast('Silinmədi!', 'error');
+        }
     }
 
     async function tpViewUpload(kind, btn) {
