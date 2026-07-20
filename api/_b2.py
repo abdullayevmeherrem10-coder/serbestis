@@ -136,8 +136,8 @@ def presign_get(key, expires=3600, filename=None, content_type=None, inline=Fals
     return presign("GET", key, expires, extra)
 
 
-def _signed_request(method, key, range_header=None, timeout=15):
-    """Server tərəfdən imzalı sorğu (HEAD/GET/DELETE) — header-based SigV4."""
+def _signed_request(method, key, range_header=None, timeout=15, data=None):
+    """Server tərəfdən imzalı sorğu (HEAD/GET/PUT/DELETE) — header-based SigV4."""
     cfg = _config()
     if not cfg:
         return None
@@ -172,7 +172,7 @@ def _signed_request(method, key, range_header=None, timeout=15):
         f"SignedHeaders={signed_names}, Signature={sig}"
     )
     req_headers = {k: v for k, v in headers.items() if k != "host"}
-    req = urlreq.Request(f"https://{host}{uri}", method=method, headers=req_headers)
+    req = urlreq.Request(f"https://{host}{uri}", method=method, headers=req_headers, data=data)
     return urlreq.urlopen(req, timeout=timeout)
 
 
@@ -192,6 +192,16 @@ def read_head_bytes(key, n=4):
             return r.read(n)
     except Exception:
         return None
+
+
+def put_object(key, data, timeout=45):
+    """Server tərəfdən fayl yazır (backup üçün); uğur/uğursuzluq qaytarır."""
+    try:
+        with _signed_request("PUT", key, timeout=timeout, data=data) as r:
+            r.read()
+        return True
+    except Exception:
+        return False
 
 
 def read_object(key, timeout=45):

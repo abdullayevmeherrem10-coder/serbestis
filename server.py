@@ -24,7 +24,8 @@ from _results import RESULTS
 from _roster import roster_action
 from _uploads import (upload_url_action, upload_confirm_action,
                       upload_link_action, upload_delete_action,
-                      vt_check_action, vt_status_action)
+                      upload_review_action, vt_check_action, vt_status_action)
+from _backup import run_backup, read_backup, save_prerestore
 
 # Admin şifrəsi koda yazılmır: əvvəlcə ENV dəyişəni, sonra gitignore-lanmış
 # admin_secret.txt faylı oxunur. Heç biri yoxdursa təsadüfi (bilinməyən)
@@ -150,8 +151,13 @@ def student_results(name, team, db):
     return out
 
 def raw_cred(cid, db):
-    """Statik və ya dinamik (müəllimin əlavə etdiyi) hesab."""
-    return CREDENTIALS.get(cid) or db.get("credentials_dyn", {}).get(cid)
+    """Statik və ya dinamik (müəllimin əlavə etdiyi) hesab.
+    Müəllim şifrəni yeniləyibsə, statik hash db["cred_overrides"] ilə əvəzlənir."""
+    cred = CREDENTIALS.get(cid)
+    if cred:
+        ov = db.get("cred_overrides", {}).get(cid)
+        return {**cred, "hash": ov} if ov else cred
+    return db.get("credentials_dyn", {}).get(cid)
 
 def resolve_cred(cid, db):
     """ID → aktual hesab (ad/taqım dəyişmələri tətbiq edilmiş); silinibsə None."""
@@ -417,8 +423,28 @@ class Handler(http.server.BaseHTTPRequestHandler):
                 save_db(db)
             self.send_json(resp, code)
 
+        elif path in ("/api/backup", "/api/backup-restore"):
+            auth = self.headers.get("Authorization", "")
+            cid = verify_token(auth[7:].strip()) if auth.startswith("Bearer ") else None
+            if not cid or CREDENTIALS.get(cid, {}).get("role") != "teacher":
+                self.send_json({"error": "İcazə yoxdur."}, 401)
+                return
+            if path == "/api/backup":
+                ok, info = run_backup(load_db())
+                self.send_json({"success": True, "key": info} if ok else {"error": info}, 200 if ok else 502)
+                return
+            body = self.read_body()
+            date = (body.get("date") or "").strip()
+            snap = read_backup(date)
+            if snap is None:
+                self.send_json({"error": f"{date} tarixli nüsxə tapılmadı."}, 404)
+                return
+            save_prerestore(load_db())
+            save_db(snap)
+            self.send_json({"success": True, "date": date})
+
         elif path in ("/api/upload-url", "/api/upload-confirm", "/api/upload-link",
-                      "/api/upload-delete", "/api/vt-check", "/api/vt-status"):
+                      "/api/upload-delete", "/api/upload-review", "/api/vt-check", "/api/vt-status"):
             auth = self.headers.get("Authorization", "")
             cid = verify_token(auth[7:].strip()) if auth.startswith("Bearer ") else None
             db = load_db()
@@ -437,6 +463,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
                 action = {
                     "/api/upload-link": upload_link_action,
                     "/api/upload-delete": upload_delete_action,
+                    "/api/upload-review": upload_review_action,
                     "/api/vt-check": vt_check_action,
                     "/api/vt-status": vt_status_action,
                 }[path]

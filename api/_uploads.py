@@ -179,6 +179,33 @@ def vt_status_action(db, body, role, requester_name):
     return True, {"vt": vt}, 200
 
 
+def upload_review_action(db, body, role, requester_name):
+    """Müəllim fayla rəy qoyur: accepted / revise (+qısa qeyd); boş status rəyi silir."""
+    if role != "teacher":
+        return False, {"error": "İcazə yoxdur."}, 403
+    kind = body.get("kind") or ""
+    if kind not in KINDS:
+        return False, {"error": "Fayl növü yanlışdır."}, 400
+    name = (body.get("name") or "").strip()
+    if not name:
+        return False, {"error": "Kursant adı göstərilməyib."}, 400
+    meta = db.get("uploads", {}).get(name, {}).get(kind)
+    if not meta:
+        return False, {"error": "Fayl tapılmadı."}, 404
+    status = body.get("status") or ""
+    if status and status not in ("accepted", "revise"):
+        return False, {"error": "Status yanlışdır."}, 400
+    if not status:
+        meta.pop("review", None)
+    else:
+        meta["review"] = {
+            "status": status,
+            "note": (body.get("note") or "").strip()[:300],
+            "ts": time.strftime("%d.%m.%Y %H:%M"),
+        }
+    return True, {"success": True, "review": meta.get("review")}, 200
+
+
 def upload_delete_action(db, body, role, requester_name):
     """Kursant öz faylını, müəllim istənilən faylı silir."""
     kind = body.get("kind") or ""

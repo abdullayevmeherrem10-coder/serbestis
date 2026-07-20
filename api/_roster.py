@@ -21,6 +21,28 @@ def _delete_student_files(db, name):
         if _b2 and meta.get("key"):
             _b2.delete_object(meta["key"])
 
+
+def _cid_for(db, name, static_credentials):
+    """Cari ada görə giriş ID-si (ad dəyişmələri nəzərə alınmaqla)."""
+    for cid, cred in db.get("credentials_dyn", {}).items():
+        if cred.get("name") == name:
+            return cid
+    rn = db.get("renames", {})
+    for cid, cred in static_credentials.items():
+        if cred.get("team") and rn.get(cred["name"], cred["name"]) == name:
+            return cid
+    return None
+
+
+def _apply_password(db, cid, password):
+    """Yeni şifrənin hash-i: dinamik hesabda yerində, statikdə override qatında."""
+    h = _cred_hash(cid, password)
+    dyn = db.get("credentials_dyn", {})
+    if cid in dyn:
+        dyn[cid]["hash"] = h
+    else:
+        db.setdefault("cred_overrides", {})[cid] = h
+
 PASS_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
 TEAM_CODES = {"YTF24A1": "Y1", "YTF24A2": "Y2", "HFT24A1": "H1", "HFT24A2": "H2"}
 
@@ -252,5 +274,30 @@ def roster_action(db, body, static_credentials):
                 (str(int(k) - 1) if int(k) > wid else k): v for k, v in taken.items()
             }
         return True, _payload(db), 200
+
+    if action == "reset_password":
+        name = (body.get("name") or "").strip()
+        if name not in _all_names(db):
+            return False, {"error": "Kursant tapılmadı."}, 404
+        cid = _cid_for(db, name, static_credentials)
+        if not cid:
+            return False, {"error": "Bu kursant üçün giriş hesabı tapılmadı."}, 404
+        password = _gen_pass()
+        _apply_password(db, cid, password)
+        return True, {"success": True, "name": name, "id": cid, "password": password}, 200
+
+    if action == "reset_all_passwords":
+        team = (body.get("team") or "").strip()
+        if team not in teams:
+            return False, {"error": "Taqım tapılmadı."}, 404
+        creds = []
+        for name in teams[team]:
+            cid = _cid_for(db, name, static_credentials)
+            if not cid:
+                continue
+            password = _gen_pass()
+            _apply_password(db, cid, password)
+            creds.append({"name": name, "id": cid, "password": password})
+        return True, {"success": True, "team": team, "creds": creds}, 200
 
     return False, {"error": "Naməlum əməliyyat."}, 400

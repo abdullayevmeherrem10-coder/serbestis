@@ -13,7 +13,8 @@ from _results import RESULTS
 from _roster import roster_action
 from _uploads import (upload_url_action, upload_confirm_action,
                       upload_link_action, upload_delete_action,
-                      vt_check_action, vt_status_action)
+                      upload_review_action, vt_check_action, vt_status_action)
+from _backup import run_backup, read_backup, save_prerestore
 
 app = Flask(__name__)
 
@@ -331,8 +332,13 @@ def student_results(name, team, db):
 
 
 def raw_cred(cid, db):
-    """Statik və ya dinamik (müəllimin əlavə etdiyi) hesab."""
-    return CREDENTIALS.get(cid) or db.get("credentials_dyn", {}).get(cid)
+    """Statik və ya dinamik (müəllimin əlavə etdiyi) hesab.
+    Müəllim şifrəni yeniləyibsə, statik hash db["cred_overrides"] ilə əvəzlənir."""
+    cred = CREDENTIALS.get(cid)
+    if cred:
+        ov = db.get("cred_overrides", {}).get(cid)
+        return {**cred, "hash": ov} if ov else cred
+    return db.get("credentials_dyn", {}).get(cid)
 
 
 def resolve_cred(cid, db):
@@ -632,6 +638,46 @@ def upload_delete():
     if changed:
         save_db(db)
     return jsonify(resp), code
+
+
+@app.route('/api/upload-review', methods=['POST'])
+def upload_review():
+    """Müəllim fayla rəy qoyur (qəbul edildi / düzəliş lazımdır)."""
+    db, cred = _upload_auth()
+    if not cred:
+        return jsonify({"error": "Giriş tələb olunur."}), 401
+    changed, resp, code = upload_review_action(
+        db, request.get_json(silent=True) or {}, cred.get('role'), cred.get('name'))
+    if changed:
+        save_db(db)
+    return jsonify(resp), code
+
+
+@app.route('/api/backup', methods=['GET', 'POST'])
+def backup():
+    """Gündəlik ehtiyat nüsxə — Vercel cron və ya müəllim əl ilə."""
+    is_cron = request.headers.get('User-Agent', '').startswith('vercel-cron')
+    if not is_cron and not teacher_from_request():
+        return jsonify({"error": "İcazə yoxdur."}), 401
+    ok, info = run_backup(load_db())
+    if not ok:
+        return jsonify({"error": info}), 502
+    return jsonify({"success": True, "key": info})
+
+
+@app.route('/api/backup-restore', methods=['POST'])
+def backup_restore():
+    """Müəllim göstərilən tarixin nüsxəsindən bazanı bərpa edir."""
+    if not teacher_from_request():
+        return jsonify({"error": "İcazə yoxdur."}), 401
+    body = request.get_json(silent=True) or {}
+    date = (body.get('date') or '').strip()
+    snap = read_backup(date)
+    if snap is None:
+        return jsonify({"error": f"{date} tarixli nüsxə tapılmadı."}), 404
+    save_prerestore(load_db())
+    save_db(snap)
+    return jsonify({"success": True, "date": date})
 
 
 @app.route('/api/vt-check', methods=['POST'])

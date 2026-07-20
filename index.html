@@ -1853,6 +1853,40 @@
         }
         html[data-theme="dark"] .bal.bal-manual { color: #64b5f6; border-color: rgba(100,181,246,0.4); background: rgba(100,181,246,0.12); }
 
+        /* Fayl rəyi (müəllim düymələri + kursant statusu) */
+        button.rv {
+            border: 1px solid var(--border);
+            background: none;
+            border-radius: 8px;
+            padding: 3px 7px;
+            cursor: pointer;
+            font-size: 0.78rem;
+            font-weight: 800;
+            color: var(--text-dim);
+        }
+        button.rv:hover { border-color: var(--accent-ink); }
+        button.rv.rv-acc { color: #fff; background: var(--success); border-color: var(--success); }
+        button.rv.rv-rev { color: #fff; background: #e08a00; border-color: #e08a00; }
+        .up-review { display: block; margin-top: 5px; font-size: 0.8rem; font-weight: 700; }
+        .up-rv-wait { color: var(--text-dim); }
+        .up-rv-acc { color: var(--success); }
+        .up-rv-rev { color: #e08a00; }
+
+        /* Son tarix geri sayımı */
+        .dl-count {
+            display: inline-block;
+            margin-left: 8px;
+            padding: 2px 10px;
+            border-radius: 999px;
+            font-size: 0.78rem;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+        .dl-count-green { background: rgba(46,125,50,0.15); color: var(--success); border: 1px solid rgba(46,125,50,0.35); }
+        .dl-count-orange { background: rgba(224,138,0,0.15); color: #e08a00; border: 1px solid rgba(224,138,0,0.4); }
+        .dl-count-red { background: rgba(198,40,40,0.15); color: var(--danger); border: 1px solid rgba(198,40,40,0.4); animation: vtPulse 1.2s ease-in-out infinite; }
+        .dl-count-over { background: rgba(198,40,40,0.2); color: var(--danger); border: 1px solid var(--danger); }
+
         .vt { font-size: 0.78rem; font-weight: 700; white-space: nowrap; }
         .vt-ok { color: var(--success); }
         .vt-bad { color: var(--danger); animation: vtPulse 1.2s ease-in-out infinite; }
@@ -2394,6 +2428,7 @@
                 <button class="btn-mini" onclick="tpRenameTeam()">&#9998; Taqım adını dəyiş</button>
                 <button class="btn-mini btn-mini-danger" onclick="tpDeleteTeam()">&#128465; Taqımı sil</button>
                 <button class="btn-mini" onclick="tpAddTeam()">&#10133; Yeni taqım</button>
+                <button class="btn-mini" onclick="tpResetAllPasswords()">&#128273; Taqımın şifrələrini yenilə</button>
             </div>
             <div class="results-table-wrap">
                 <table class="results-table">
@@ -2417,6 +2452,16 @@
                     </thead>
                     <tbody id="tpWorks"></tbody>
                 </table>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title"><div class="icon">&#128190;</div> Ehtiyat nüsxə</div>
+            <p class="cab-scale" style="margin:-6px 0 12px;">Baza (ballar, seçimlər, rəylər) hər gecə avtomatik nüsxələnir və 31 gün saxlanılır. İstəsəniz indi əl ilə nüsxə alın və ya köhnə tarixə qayıdın.</p>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+                <button class="btn-mini" onclick="tpBackupNow(this)">&#128190; İndi nüsxə al</button>
+                <input type="date" class="dl-input dl-inp-cell" id="tpRestoreDate" style="width:150px;">
+                <button class="btn-mini btn-mini-danger" onclick="tpRestoreBackup()">&#9100; Bu tarixə qayıt</button>
             </div>
         </div>
 
@@ -3558,12 +3603,25 @@
     }
 
     // ===== Fərdi son təhvil tarixi =====
+    function deadlineCountdown(d) {
+        // "21.02.2026" tipli tarixdən qalan günləri hesabla; tapılmasa boş
+        const m = (d || '').match(/(\d{1,2})\.(\d{1,2})\.(\d{4})/);
+        if (!m) return '';
+        const target = new Date(+m[3], +m[2] - 1, +m[1], 23, 59, 59);
+        if (isNaN(target)) return '';
+        const days = Math.ceil((target - new Date()) / 86400000);
+        if (days < 0) return ' <span class="dl-count dl-count-over">vaxt keçib</span>';
+        if (days === 0) return ' <span class="dl-count dl-count-red">bu gün son gündür!</span>';
+        const cls = days <= 3 ? 'dl-count-red' : days <= 7 ? 'dl-count-orange' : 'dl-count-green';
+        return ` <span class="dl-count ${cls}">${days} gün qaldı</span>`;
+    }
+
     function setDeadlineText(d) {
         const banner = document.getElementById('cabDeadlineBanner');
         if (!banner) return;
         if (d) {
             const cd = document.getElementById('cabDlDate');
-            if (cd) cd.textContent = d;
+            if (cd) cd.innerHTML = esc(d) + deadlineCountdown(d);
             banner.style.display = '';
         } else {
             banner.style.display = 'none';
@@ -3640,8 +3698,16 @@
                 if (vt.status === 'clean') return `<span class="vt vt-ok" title="VirusTotal: təmiz">&#128737;</span>`;
                 return `<span class="vt vt-bad" title="VirusTotal: ${vt.malicious || 0} zərərli, ${vt.suspicious || 0} şübhəli — EHTİYATLI OL!">&#9888;</span>`;
             };
+            const tpRv = kind => {
+                const rv = (up[kind] || {}).review;
+                const acc = rv && rv.status === 'accepted';
+                const rev = rv && rv.status === 'revise';
+                const note = rv && rv.note ? ': ' + esc(rv.note) : '';
+                return `<button class="rv${acc ? ' rv-acc' : ''}" title="${acc ? 'Qəbul edilib' + note + ' — ləğv üçün klik' : 'Qəbul et'}" onclick="tpReview('${kind}', 'accepted', this)">&#10003;</button>`
+                     + `<button class="rv${rev ? ' rv-rev' : ''}" title="${rev ? 'Düzəliş istənilib' + note + ' — dəyişmək üçün klik' : 'Düzəliş istə (rəy yaz)'}" onclick="tpReview('${kind}', 'revise', this)">&#9998;</button>`;
+            };
             const docBtns = (kind, ico) => up[kind]
-                ? `<span class="up-doc"><button class="btn-mini" title="${esc(up[kind].fname || '')} — saytda bax" onclick="tpViewUpload('${kind}', this)">${ico} Bax</button><button class="btn-mini" title="Endir" onclick="tpDownloadUpload('${kind}', this)">&#11015;</button>${tpVt(kind)}<button class="btn-mini btn-mini-danger" title="Faylı sil" onclick="tpDeleteUpload('${kind}', this)">&#10005;</button></span>`
+                ? `<span class="up-doc"><button class="btn-mini" title="${esc(up[kind].fname || '')} — saytda bax" onclick="tpViewUpload('${kind}', this)">${ico} Bax</button><button class="btn-mini" title="Endir" onclick="tpDownloadUpload('${kind}', this)">&#11015;</button>${tpVt(kind)}${tpRv(kind)}<button class="btn-mini btn-mini-danger" title="Faylı sil" onclick="tpDeleteUpload('${kind}', this)">&#10005;</button></span>`
                 : `<span class="up-doc up-doc-none">${ico} &#8212;</span>`;
             const docsHtml = docBtns('docx', '&#128196;') + docBtns('pptx', '&#128202;');
             tb.insertAdjacentHTML('beforeend', `<tr data-name="${esc(name)}">
@@ -3650,7 +3716,7 @@
                 <td>${selHtml}</td>
                 <td class="col-bal"><div class="up-docs">${docsHtml}</div></td>
                 <td class="col-bal"><input type="text" class="dl-input dl-inp-cell" value="${esc(dls[name] || '')}" placeholder="&#8212;" maxlength="40" onchange="saveStudentDeadline(this)"></td>
-                <td class="col-bal"><div class="tp-actions">${sel.length ? '<button class="btn-reset" onclick="tpResetStudent(this)">Sıfırla</button>' : ''}<button class="btn-reset" title="Kursantı sil" onclick="tpDeleteStudent(this)">&#128465;</button></div></td>
+                <td class="col-bal"><div class="tp-actions">${sel.length ? '<button class="btn-reset" onclick="tpResetStudent(this)">Sıfırla</button>' : ''}<button class="btn-reset" title="Yeni şifrə yarat" onclick="tpResetPassword(this)">&#128273;</button><button class="btn-reset" title="Kursantı sil" onclick="tpDeleteStudent(this)">&#128465;</button></div></td>
             </tr>`);
         });
     }
@@ -3854,6 +3920,70 @@
         } catch(e) {}
     }
 
+    async function tpBackupNow(btn) {
+        btn.disabled = true;
+        try {
+            const res = await fetch('/api/backup', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.token },
+                body: '{}'
+            });
+            const d = await res.json();
+            if (!res.ok) { showToast(d.error || 'Nüsxə alına bilmədi!', 'error'); return; }
+            showToast('Ehtiyat nüsxə alındı', 'success');
+        } catch (e) {
+            showToast('Nüsxə alına bilmədi!', 'error');
+        } finally {
+            btn.disabled = false;
+        }
+    }
+
+    async function tpRestoreBackup() {
+        const date = document.getElementById('tpRestoreDate').value;
+        if (!date) { showToast('Əvvəlcə tarix seçin!', 'error'); return; }
+        if (!confirm('DİQQƏT! Baza ' + date + ' tarixli nüsxəyə qaytarılacaq — o gündən sonrakı bütün dəyişikliklər itəcək.')) return;
+        if (!confirm('Son təsdiq: bərpadan əvvəl cari vəziyyətin qoruyucu nüsxəsi alınacaq. Davam edilsin?')) return;
+        try {
+            const res = await fetch('/api/backup-restore', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.token },
+                body: JSON.stringify({ date: date })
+            });
+            const d = await res.json();
+            if (!res.ok) { showToast(d.error || 'Bərpa alınmadı!', 'error'); return; }
+            showToast(date + ' tarixli nüsxə bərpa olundu', 'success');
+            await tpRefreshAll();
+        } catch (e) {
+            showToast('Bərpa alınmadı!', 'error');
+        }
+    }
+
+    async function tpResetPassword(btn) {
+        const name = btn.closest('tr').dataset.name;
+        if (!confirm(name + ' üçün yeni şifrə yaradılsın?\n\nKöhnə şifrə dərhal ləğv olunacaq, digər kursantlara toxunulmur.')) return;
+        try {
+            const d = await rosterPost({ action: 'reset_password', name: name });
+            alert('Yeni giriş məlumatları:\n\nID: ' + d.id + '\nŞifrə: ' + d.password + '\n\nBu şifrə yalnız indi göstərilir — kursanta verin!');
+        } catch(e) {}
+    }
+
+    async function tpResetAllPasswords() {
+        if (!confirm('"' + tpTeam + '" taqımındakı BÜTÜN kursantların şifrələri yenilənsin? Köhnə şifrələr dərhal ləğv olunacaq.')) return;
+        if (!confirm('Son təsdiq: taqımın hamısı yeni şifrə alacaq. Davam edilsin?')) return;
+        try {
+            const d = await rosterPost({ action: 'reset_all_passwords', team: tpTeam });
+            const rows = (d.creds || []).map(c => c.id + '\t' + c.password + '\t' + c.name).join('\n');
+            const blob = new Blob(['ID\tŞifrə\tAd\n' + rows], { type: 'text/plain;charset=utf-8' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = tpTeam + '-yeni-sifreler.txt';
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            alert((d.creds || []).length + ' kursantın şifrəsi yeniləndi.\n\nYeni şifrələr fayl kimi endirildi ("' + tpTeam + '-yeni-sifreler.txt") — kursantlara paylayın. Şifrələr bir daha göstərilməyəcək!');
+        } catch(e) {}
+    }
+
     async function tpAddStudent() {
         const n = prompt('"' + tpTeam + '" taqımına yeni kursantın tam adı:');
         if (!n || !n.trim()) return;
@@ -3902,7 +4032,12 @@
             const d = document.getElementById('upDel-' + k);
             if (!st) return;
             if (meta) {
-                st.innerHTML = `<span class="up-ok">&#10003;</span> ${esc(meta.fname || '')} <small>(${fmtSize(meta.size || 0)} &#8226; ${esc(meta.ts || '')})</small>`;
+                const rv = meta.review;
+                const rvHtml = !rv ? '<span class="up-review up-rv-wait">&#8987; Müəllim hələ baxmayıb</span>'
+                    : rv.status === 'accepted'
+                        ? `<span class="up-review up-rv-acc">&#9989; Qəbul edildi${rv.note ? ' — ' + esc(rv.note) : ''}</span>`
+                        : `<span class="up-review up-rv-rev">&#9999;&#65039; Düzəliş lazımdır${rv.note ? ' — ' + esc(rv.note) : ''}</span>`;
+                st.innerHTML = `<span class="up-ok">&#10003;</span> ${esc(meta.fname || '')} <small>(${fmtSize(meta.size || 0)} &#8226; ${esc(meta.ts || '')})</small>${rvHtml}`;
                 btn.innerHTML = '&#8635; Dəyiş';
                 v.style.display = '';
                 d.style.display = '';
@@ -4059,6 +4194,35 @@
             renderTpStudents();
             if (d.vt && d.vt.status === 'pending') showToast('Hələ yoxlanılır — bir azdan yenidən klikləyin', 'success');
         } catch (e) {}
+    }
+
+    async function tpReview(kind, status, btn) {
+        const name = btn.closest('tr').dataset.name;
+        const meta = ((cabData.uploads || {})[name] || {})[kind] || {};
+        const cur = meta.review;
+        let note = '';
+        if (cur && cur.status === status) {
+            status = '';         // eyni düyməyə təkrar klik — rəyi ləğv et
+        } else if (status === 'revise') {
+            note = prompt('Kursant üçün qısa rəy (nəyi düzəltsin?):', cur && cur.note ? cur.note : '');
+            if (note === null) return;
+            note = note.trim();
+        }
+        try {
+            const res = await fetch('/api/upload-review', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.token },
+                body: JSON.stringify({ name: name, kind: kind, status: status, note: note })
+            });
+            if (res.status === 401) { cabinetLogout(); showToast('Sessiya bitib — yenidən daxil olun.', 'error'); return; }
+            const d = await res.json();
+            if (!res.ok) { showToast(d.error || 'Xəta!', 'error'); return; }
+            if (d.review) meta.review = d.review; else delete meta.review;
+            renderTpStudents();
+            showToast(status === 'accepted' ? 'Fayl qəbul edildi' : status === 'revise' ? 'Düzəliş rəyi göndərildi' : 'Rəy ləğv edildi', 'success');
+        } catch (e) {
+            showToast('Rəy yadda saxlanıla bilmədi!', 'error');
+        }
     }
 
     async function tpDeleteUpload(kind, btn) {
