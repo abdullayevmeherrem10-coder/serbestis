@@ -89,6 +89,24 @@ def roster_action(db, body, static_credentials):
                 tr[orig] = new
         return True, _payload(db), 200
 
+    if action == "delete_team":
+        team = (body.get("team") or "").strip()
+        if team not in teams:
+            return False, {"error": "Taqım tapılmadı."}, 404
+        # Əsas qruplar (statik girişli) silinə bilməz — yalnız sonradan yaradılanlar
+        tr = db.get("team_renames", {})
+        if team in static_teams or any(c == team for c in tr.values()):
+            return False, {"error": "Əsas qruplar silinə bilməz — yalnız sonradan yaradılmış taqımlar silinir."}, 400
+        for name in list(teams.get(team, [])):
+            for m in ("keys", "selections", "scores", "deadlines", "exam_scores"):
+                db.get(m, {}).pop(name, None)
+            dyn = db.get("credentials_dyn", {})
+            for cid in [c for c, cred in dyn.items() if cred.get("name") == name]:
+                del dyn[cid]
+        teams.pop(team)
+        db.get("work_taken_by", {}).pop(team, None)
+        return True, _payload(db), 200
+
     if action == "add_student":
         team = (body.get("team") or "").strip()
         name = (body.get("name") or "").strip()[:70]

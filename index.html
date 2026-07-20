@@ -1815,6 +1815,8 @@
             transition: all 0.25s ease;
         }
         .btn-mini:hover { background: rgba(69,95,81,0.08); border-color: var(--accent-ink); transform: translateY(-1px); }
+        .btn-mini-danger { color: var(--danger); border-color: rgba(198,40,40,0.3); }
+        .btn-mini-danger:hover { background: var(--danger-bg); border-color: var(--danger); }
         .row-edit {
             border: none;
             background: none;
@@ -2307,6 +2309,7 @@
             <div class="tp-tools">
                 <button class="btn-mini" onclick="tpAddStudent()">&#10133; Kursant əlavə et</button>
                 <button class="btn-mini" onclick="tpRenameTeam()">&#9998; Taqım adını dəyiş</button>
+                <button class="btn-mini btn-mini-danger" onclick="tpDeleteTeam()">&#128465; Taqımı sil</button>
                 <button class="btn-mini" onclick="tpAddTeam()">&#10133; Yeni taqım</button>
             </div>
             <div class="results-table-wrap">
@@ -3496,6 +3499,7 @@
     function renderTeacherPanel() {
         const teams = cabData.teams || {};
         const sels = cabData.selections || {};
+        if (!(tpTeam in teams)) tpTeam = Object.keys(teams)[0] || '';
         document.getElementById('tpStats').innerHTML = Object.entries(teams).map(([team, members]) => {
             const done = members.filter(n => (sels[n] || []).length >= 2).length;
             const pct = members.length ? Math.round(done / members.length * 100) : 0;
@@ -3722,6 +3726,20 @@
             tpTeam = nv.trim();
             await tpRefreshAll();
             showToast('Taqım adı dəyişdirildi', 'success');
+        } catch(e) {}
+    }
+
+    async function tpDeleteTeam() {
+        const members = (cabData.teams || {})[tpTeam] || [];
+        const warn = members.length
+            ? '\n\nDiqqət: taqımdakı ' + members.length + ' kursant, onların balları və girişləri də silinəcək!'
+            : '';
+        if (!confirm('"' + tpTeam + '" taqımı silinsin?' + warn)) return;
+        try {
+            await rosterPost({ action: 'delete_team', team: tpTeam });
+            tpTeam = '';
+            await tpRefreshAll();
+            showToast('Taqım silindi', 'success');
         } catch(e) {}
     }
 
