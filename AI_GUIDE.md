@@ -231,14 +231,13 @@ Dil: **Azərbaycan dili** (bütün UI və kod şərhləri AZ dilindədir).
 
 ### §7.1 Qəbul ili köçürməsi (`roster_version`)
 - `api/index.py`-da `ROSTER_VERSION` sabiti var (hazırda `"2023-qebul"`). Canlıda `load_db()`
-  bazadakı `roster_version` ilə müqayisə edir: uyğun gəlmirsə köhnə baza olduğu kimi
-  `serbestis_db_arxiv_2024` Redis açarına köçürülür (yalnız bir dəfə), sonra `DEFAULT_DB`-dən
-  təzə baza yaradılır (semester/subject köhnədən saxlanılır).
-- Yəni yeni qəbul deploy olunan kimi canlı sistem avtomatik təmiz bazaya keçir — əl ilə
-  Redis əməliyyatı lazım deyil. Lokal analoji arxiv: `database_2024_arxiv.json` (gitignore-a
-  düşmür, amma repo-ya əlavə etməyə də ehtiyac yoxdur).
-- 2024 kursantlarının B2-dəki faylları (`uploads/...`) və Firebase-dəki köhnə sessiyalar
-  (`K*_YT_24A1` və s.) yerində qalır — yeni qəbul fərqli açarlar istifadə etdiyi üçün toqquşmur.
+  bazadakı `roster_version` ilə müqayisə edir: uyğun gəlmirsə köhnə baza əvəzlənir —
+  `DEFAULT_DB`-dən təzə baza yaradılır (yalnız semester/subject köhnədən saxlanılır).
+- 2024 qəbulun məlumatları sahibin istəyi ilə TAM silinib (Redis arxiv açarı, B2 uploads,
+  köhnə gecə nüsxələri). Saxlanan yeganə şey: **`arxiv/imtahan_2024.json`** — 2024 qəbulun
+  imtahan nəticələri (repo-da).
+- Firebase-dəki köhnə kollokvium sessiyaları (`K*_YT_24A1` və s.) yerində qalır —
+  yeni qəbul fərqli qrup açarları (`K*_YT_23A1`) istifadə etdiyi üçün toqquşmur.
 
 ### Statik nəticələr (`api/_results.py`)
 - 2 qrup: `"YT 23A1"`, `"YT 23A2"` (hər biri `team`, `kollok`, `menimseme`, `imtahan`).

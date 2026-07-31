@@ -26,7 +26,8 @@ RATE_KEY = 'serbestis_rate'
 MAX_ATTEMPTS = 7
 BLOCK_MINUTES = 15
 
-# Roster versiyası: dəyişəndə canlı bazadakı köhnə qəbul arxiv açarına köçürülür
+# Roster versiyası: dəyişəndə canlı bazadakı köhnə qəbul silinib təzə baza yaradılır
+# (2024 imtahan nəticələri repo-da arxiv/imtahan_2024.json-dadır — başqa heç nə saxlanmır)
 ROSTER_VERSION = "2023-qebul"
 ARCHIVE_KEY = 'serbestis_db_arxiv_2024'
 
@@ -283,10 +284,8 @@ def load_db():
     raw = redis_execute(['GET', DB_KEY])
     if raw:
         db = json.loads(raw)
-        # Qəbul ili dəyişib: 2024 bazası arxiv açarına köçürülür, 2023 təzə başlayır
+        # Qəbul ili dəyişib: köhnə baza əvəzlənir, 2023 təzə başlayır
         if db.get("roster_version") != ROSTER_VERSION:
-            if not redis_execute(['GET', ARCHIVE_KEY]):
-                redis_execute(['SET', ARCHIVE_KEY, raw])
             new_db = json.loads(json.dumps(DEFAULT_DB))
             # cari semestr/fənn adı saxlanılır (müəllim paneldən dəyişə bilir)
             for k in ("semester", "subject"):
@@ -294,6 +293,14 @@ def load_db():
                     new_db[k] = db[k]
             save_db(new_db)
             return new_db
+        # 2024 arxiv açarı sahibin istəyi ilə lazımsızdır — bir dəfə təmizlənir
+        if not db.get("arxiv_2024_silindi"):
+            try:
+                redis_execute(['DEL', ARCHIVE_KEY])
+                db["arxiv_2024_silindi"] = True
+                save_db(db)
+            except Exception:
+                pass
         # Migrate old flat work_taken_by to per-team structure
         if db.get("work_taken_by") and not any(isinstance(v, dict) for v in db["work_taken_by"].values()):
             old = db["work_taken_by"]
