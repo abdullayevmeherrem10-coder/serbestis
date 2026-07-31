@@ -119,7 +119,7 @@ Dil: **Azərbaycan dili** (bütün UI və kod şərhləri AZ dilindədir).
 
 ### Giriş məlumatları
 - Hər istifadəçinin **ID**-si var (kursant: `Y1-01`, `Y2-05`, `H1-03`, `H2-07`; müəllim: `MUELLIM`).
-  - `Y1`=YTF24A1, `Y2`=YTF24A2, `H1`=HFT24A1, `H2`=HFT24A2.
+  - `Y1`=YT23A1, `Y2`=YT23A2, `H1`=HFT23A1, `H2`=HFT23A2 (2023 qəbul; 2024 qəbul arxivləşdirilib).
 - Şifrələr **yalnız SHA-256 hash** kimi saxlanılır (`api/_credentials.py`).
   - Hash formatı: `sha256(f"{ID_UPPERCASE}:{password}")`.
   - Açıq şifrələr heç yerdə (nə kodda, nə bazada) yoxdur — yalnız gitignore-lanmış
@@ -200,11 +200,12 @@ Dil: **Azərbaycan dili** (bütün UI və kod şərhləri AZ dilindədir).
 
 ```jsonc
 {
-  "teams": { "YTF24A1": ["Ad Soyad oğlu", ...], "YTF24A2": [...], "HFT24A1": [...], "HFT24A2": [...] },
+  "roster_version": "2023-qebul",              // qəbul ili markeri (bax §7.1)
+  "teams": { "YT23A1": ["Ad Soyad oğlu", ...], "YT23A2": [...], "HFT23A1": [...], "HFT23A2": [...] },
   "works": ["Sərbəst iş adı 1", ...],          // 50 iş
   "keys":  { "Ad Soyad": "ACAR6" },            // sərbəst iş təsdiq açarları
   "selections": { "Ad Soyad": [4, 7] },        // seçdiyi 2 işin indeksi
-  "work_taken_by": { "YTF24A1": { "4": "Ad Soyad" } },  // taqım→{işİndeks: kursant}
+  "work_taken_by": { "YT23A1": { "4": "Ad Soyad" } },  // taqım→{işİndeks: kursant}
   "scores": { "Ad Soyad": { "serbest": 8, "defter": 9 } },  // mənimsəmə komponentləri
   "exam_scores": { "Ad Soyad": 74 },           // müəllimin manual imtahan balı
   "deadlines": { "Ad Soyad": "20 may 2026" },  // fərdi son tarix
@@ -228,8 +229,20 @@ Dil: **Azərbaycan dili** (bütün UI və kod şərhləri AZ dilindədir).
 }
 ```
 
+### §7.1 Qəbul ili köçürməsi (`roster_version`)
+- `api/index.py`-da `ROSTER_VERSION` sabiti var (hazırda `"2023-qebul"`). Canlıda `load_db()`
+  bazadakı `roster_version` ilə müqayisə edir: uyğun gəlmirsə köhnə baza olduğu kimi
+  `serbestis_db_arxiv_2024` Redis açarına köçürülür (yalnız bir dəfə), sonra `DEFAULT_DB`-dən
+  təzə baza yaradılır (semester/subject köhnədən saxlanılır).
+- Yəni yeni qəbul deploy olunan kimi canlı sistem avtomatik təmiz bazaya keçir — əl ilə
+  Redis əməliyyatı lazım deyil. Lokal analoji arxiv: `database_2024_arxiv.json` (gitignore-a
+  düşmür, amma repo-ya əlavə etməyə də ehtiyac yoxdur).
+- 2024 kursantlarının B2-dəki faylları (`uploads/...`) və Firebase-dəki köhnə sessiyalar
+  (`K*_YT_24A1` və s.) yerində qalır — yeni qəbul fərqli açarlar istifadə etdiyi üçün toqquşmur.
+
 ### Statik nəticələr (`api/_results.py`)
-- 2 qrup: `"YT 24A1"`, `"YT 24A2"` (hər biri `team`, `kollok`, `menimseme`, `imtahan`).
+- 2 qrup: `"YT 23A1"`, `"YT 23A2"` (hər biri `team`, `kollok`, `menimseme`, `imtahan`).
+  2023 qəbul üçün xəritələr hələ BOŞDUR — semestr nəticələri hazır olanda doldurulur.
 - `kollok`: `{ad: ["5","6","5"]}` (K1,K2,K3 balları, 0-10).
 - `imtahan`: `{ad: ["74", "C “Yaxşı”"]}` (bal, qiymət).
 - **Vacib:** HTML-də cədvəllər BOŞDUR — nəticələr bu fayldan API ilə gəlir.
@@ -282,7 +295,7 @@ Dil: **Azərbaycan dili** (bütün UI və kod şərhləri AZ dilindədir).
 ## 10. Elektron Kollokvium ↔ Firebase inteqrasiyası
 
 - Kollokvium tətbiqi (`public/kollokvium/index.html`) imtahan nəticələrini
-  **Firebase Realtime DB**-yə yazır. Yol formatı: `sessions/K{1|2|3}_{QRUP}` (məs. `K1_YT_24A1`).
+  **Firebase Realtime DB**-yə yazır. Yol formatı: `sessions/K{1|2|3}_{QRUP}` (məs. `K1_YT_23A1`).
 - **Firebase qaydaları:** `.read: true, .write: false` — heç kim birbaşa yaza bilmir.
 - Yazma yalnız **`/api/kollok-write` proxy-si** üzərindən gedir:
   - `fbWrite(path, data)` funksiyası tətbiqdə (data=null → silmə).

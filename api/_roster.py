@@ -44,7 +44,7 @@ def _apply_password(db, cid, password):
         db.setdefault("cred_overrides", {})[cid] = h
 
 PASS_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
-TEAM_CODES = {"YTF24A1": "Y1", "YTF24A2": "Y2", "HFT24A1": "H1", "HFT24A2": "H2"}
+TEAM_CODES = {"YT23A1": "Y1", "YT23A2": "Y2", "HFT23A1": "H1", "HFT23A2": "H2"}
 
 
 def _gen_pass(n=10):

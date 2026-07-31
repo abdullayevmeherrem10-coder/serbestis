@@ -518,7 +518,7 @@
 
             const teamsRes = await fetch('/api/teams').then(r => r.json());
             teams = teamsRes.teams;
-            const worksRes = await fetch('/api/works?team=YTF24A1').then(r => r.json());
+            const worksRes = await fetch('/api/works?team=YT23A1').then(r => r.json());
             works = worksRes.works;
 
             document.getElementById('loginCard').classList.add('hidden');
@@ -771,7 +771,7 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ password: adminPass })
             }).then(r => r.json()),
-            fetch('/api/works?team=YTF24A1').then(r => r.json())
+            fetch('/api/works?team=YT23A1').then(r => r.json())
         ]);
         selections = statusRes.selections;
         workTakenBy = statusRes.work_taken_by;

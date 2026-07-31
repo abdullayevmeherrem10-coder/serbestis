@@ -8,6 +8,7 @@ node_modules/
 admin_secret.txt
 
 kabinet_girisleri.txt
+database_2024_arxiv.json
 firebase_secret.txt
 firebase_service_account.json
 b2_config.json
