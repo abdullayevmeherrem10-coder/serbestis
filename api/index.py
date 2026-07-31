@@ -10,6 +10,7 @@ if _HERE not in sys.path:
 
 from _credentials import CREDENTIALS
 from _results import RESULTS
+from _arxiv import ARXIV_IMTAHAN
 from _roster import roster_action
 from _uploads import (upload_url_action, upload_confirm_action,
                       upload_link_action, upload_delete_action,
@@ -777,6 +778,14 @@ def upload_review():
     if changed:
         save_db(db)
     return jsonify(resp), code
+
+
+@app.route('/api/arxiv-imtahan', methods=['GET'])
+def arxiv_imtahan():
+    """Köhnə qəbulların arxivlənmiş imtahan nəticələri — yalnız müəllim."""
+    if not teacher_from_request():
+        return jsonify({"error": "İcazə yoxdur."}), 401
+    return jsonify(ARXIV_IMTAHAN)
 
 
 @app.route('/api/backup', methods=['GET', 'POST'])

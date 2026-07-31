@@ -180,6 +180,8 @@ Dil: **Azərbaycan dili** (bütün UI və kod şərhləri AZ dilindədir).
 - `POST /api/kollok-write` `{path, data}` → Firebase-ə yazma proxy-si (bax §10).
 - `POST /api/upload-review` `{name, kind, status: accepted|revise|"", note}` → fayl rəyi (bax §18).
 - `POST /api/vt-check` `{name, kind}` / `POST /api/vt-status` `{name, kind}` → VirusTotal (bax §18).
+- `GET /api/arxiv-imtahan` → köhnə qəbulların arxivlənmiş imtahan nəticələri
+  (`api/_arxiv.py`; UI: İmtahan tabının altındakı kompakt "Arxiv" kartı).
 - `GET|POST /api/backup` → əl ilə ehtiyat nüsxə (cron da bunu çağırır — `vercel-cron` UA ilə).
 - `POST /api/backup-restore` `{date: "YYYY-MM-DD"}` → nüsxədən bərpa (bax §19).
 

@@ -21,6 +21,7 @@ DB_FILE = os.path.join(BASE_DIR, "database.json")
 sys.path.insert(0, os.path.join(BASE_DIR, "api"))
 from _credentials import CREDENTIALS
 from _results import RESULTS
+from _arxiv import ARXIV_IMTAHAN
 from _roster import roster_action
 from _uploads import (upload_url_action, upload_confirm_action,
                       upload_link_action, upload_delete_action,
@@ -235,6 +236,15 @@ class Handler(http.server.BaseHTTPRequestHandler):
                     "taken_by": taken_by
                 })
             self.send_json({"works": works})
+
+        elif path == "/api/arxiv-imtahan":
+            # Köhnə qəbulların arxivlənmiş imtahan nəticələri — yalnız müəllim
+            auth = self.headers.get("Authorization", "")
+            cid = verify_token(auth[7:].strip()) if auth.startswith("Bearer ") else None
+            if not cid or CREDENTIALS.get(cid, {}).get("role") != "teacher":
+                self.send_json({"error": "İcazə yoxdur."}, 401)
+                return
+            self.send_json(ARXIV_IMTAHAN)
 
         elif path == "/api/cabinet-data":
             auth = self.headers.get("Authorization", "")
