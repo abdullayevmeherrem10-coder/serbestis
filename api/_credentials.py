@@ -2,7 +2,7 @@
 """Kabinet giriş məlumatları (SHA-256 hash). Açıq şifrələr kabinet_girisleri.txt-dədir (repo-ya daxil deyil)."""
 
 CREDENTIALS = {
-    "MUELLIM": {"hash": "eada65c7cbacd25c3eb4447b4e7f4bb955493b298bc583debaaad6386c5e8799", "role": "teacher", "name": "Müəllim"},
+    "MUELLIM": {"hash": "e783bc072cac0a36c0386323d951f6ed121aceecfcf4137bc9cce8907f1f20d6", "role": "teacher", "name": "Müəllim"},
     "Y1-01": {"hash": "3cf1eaddd039e63d7dc92345e04c49e7fe93f5767edccd8db0e1d64f1c5c80fc", "name": "Abbasov Ramal Ramil oğlu", "team": "YTF24A1"},
     "Y1-02": {"hash": "466a469a048e6f7bd747250a6218788b05c75490b9f8283b4e706c4b14d6ffb8", "name": "Ağabalayev Oktay Mahmud oğlu", "team": "YTF24A1"},
     "Y1-03": {"hash": "87472ca1d966e5a39eefe5e75b404a744ffa463ec823317af915ad3f0f69fa08", "name": "Axundzadə Onur Zəki oğlu", "team": "YTF24A1"},

@@ -1781,6 +1781,71 @@
         .topics-list { flex: 1; min-width: 160px; font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; }
         #teacherPanel { display: none; }
         .teacher-mode #teacherPanel { display: block; }
+        /* Müəllim paneli: alt-görünüşlər */
+        .tp-nav {
+            display: flex; gap: 6px; flex-wrap: wrap;
+            margin-bottom: 18px; padding: 6px;
+            background: var(--surface-90);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+        }
+        .tp-nav-btn {
+            flex: 1; min-width: 140px;
+            padding: 10px 16px;
+            border-radius: 10px; border: none;
+            background: transparent;
+            color: var(--text-muted);
+            font-family: inherit; font-size: 0.85rem; font-weight: 700;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            white-space: nowrap;
+        }
+        .tp-nav-btn:hover { color: var(--text); background: rgba(69,95,81,0.06); }
+        .tp-nav-btn.active {
+            background: linear-gradient(135deg, #455f51, #6b8f7b);
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(69,95,81,0.3);
+        }
+        .tp-view { display: none; }
+        .tp-view.active { display: block; animation: fadeSlideIn 0.4s cubic-bezier(0.4,0,0.2,1); }
+        /* Kompakt taqım statistikası (çiplər) */
+        .tp-chips { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
+        .tp-chip {
+            flex: 1; min-width: 210px;
+            display: flex; align-items: center; gap: 10px;
+            padding: 9px 14px;
+            background: var(--surface-90);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+        }
+        .tp-chip-team { font-weight: 800; font-size: 0.82rem; color: var(--accent-dark); white-space: nowrap; }
+        .tp-chip-val { font-size: 0.78rem; font-weight: 700; color: var(--text-muted); white-space: nowrap; }
+        .tp-chip-bar { flex: 1; min-width: 50px; height: 6px; border-radius: 99px; background: rgba(69,95,81,0.12); overflow: hidden; }
+        .tp-chip-bar i { display: block; height: 100%; width: 0; border-radius: 99px; transition: width 0.8s cubic-bezier(0.4,0,0.2,1); }
+        /* Taqım əməliyyatları menyusu */
+        .tp-menu-wrap { position: relative; display: inline-block; }
+        .tp-menu {
+            display: none; position: absolute; top: calc(100% + 6px); left: 0; z-index: 40;
+            min-width: 230px;
+            background: var(--surface-solid);
+            border: 1px solid var(--border-strong);
+            border-radius: 12px;
+            box-shadow: 0 12px 30px rgba(0,0,0,0.18);
+            padding: 6px;
+        }
+        .tp-menu.open { display: block; }
+        .tp-menu button {
+            display: block; width: 100%; text-align: left;
+            padding: 9px 12px;
+            border: none; border-radius: 8px;
+            background: transparent;
+            color: var(--text);
+            font-family: inherit; font-size: 0.8rem; font-weight: 600;
+            cursor: pointer;
+        }
+        .tp-menu button:hover { background: rgba(69,95,81,0.08); }
+        .tp-menu button.tp-menu-danger { color: var(--danger); }
+        .tp-menu button.tp-menu-danger:hover { background: var(--danger-bg); }
         .teacher-mode .steps,
         .teacher-mode .tab-subtitle,
         .teacher-mode #sec-team,
@@ -2404,8 +2469,63 @@
     </div>
     <!-- ===================== MÜƏLLİM: idarəetmə paneli ===================== -->
     <div id="teacherPanel">
-        <div class="cab-stats" id="tpStats"></div>
+        <div class="tp-nav">
+            <button class="tp-nav-btn active" onclick="tpSwitchView('students', this)">&#128101; Kursantlar</button>
+            <button class="tp-nav-btn" onclick="tpSwitchView('works', this)">&#128218; İşlərin bölgüsü</button>
+            <button class="tp-nav-btn" onclick="tpSwitchView('settings', this)">&#9881; Parametrlər</button>
+        </div>
 
+        <!-- Alt-görünüş: Kursantlar -->
+        <div class="tp-view active" id="tpView-students">
+        <div class="tp-chips" id="tpStats"></div>
+
+        <div class="card">
+            <div class="card-title"><div class="icon">&#128203;</div> Sərbəst iş seçimləri və son tarixlər</div>
+            <div class="subtab-nav" id="tpTeamTabs"></div>
+            <div class="tp-tools">
+                <button class="btn-mini" onclick="tpAddStudent()">&#10133; Kursant əlavə et</button>
+                <div class="tp-menu-wrap">
+                    <button class="btn-mini" onclick="tpToggleMenu(event)">&#9881; Taqım əməliyyatları &#9662;</button>
+                    <div class="tp-menu" id="tpTeamMenu">
+                        <button onclick="tpCloseMenu();tpRenameTeam()">&#9998; Taqım adını dəyiş</button>
+                        <button onclick="tpCloseMenu();tpAddTeam()">&#10133; Yeni taqım</button>
+                        <button onclick="tpCloseMenu();tpResetAllPasswords()">&#128273; Taqımın şifrələrini yenilə</button>
+                        <button class="tp-menu-danger" onclick="tpCloseMenu();tpDeleteTeam()">&#128465; Taqımı sil</button>
+                    </div>
+                </div>
+            </div>
+            <div class="results-table-wrap">
+                <table class="results-table">
+                    <thead>
+                        <tr><th class="col-num">&#8470;</th><th>Kursant&#305;n ad&#305;</th><th>Se&#231;diyi i&#351;l&#601;r</th><th class="col-bal">S&#601;n&#601;dl&#601;r</th><th class="col-bal">Son tarix<small>f&#601;rdi</small></th><th class="col-bal">&#399;m&#601;liyyat</th></tr>
+                    </thead>
+                    <tbody id="tpStudents"></tbody>
+                </table>
+            </div>
+        </div>
+        </div><!-- /tpView-students -->
+
+        <!-- Alt-görünüş: İşlərin bölgüsü -->
+        <div class="tp-view" id="tpView-works">
+        <div class="card">
+            <div class="card-title"><div class="icon">&#128218;</div> <span>İşlərin bölgüsü — <strong style="color:var(--accent)" id="tpWorksTeam"></strong></span></div>
+            <div class="subtab-nav" id="tpTeamTabs2"></div>
+            <div class="tp-tools">
+                <button class="btn-mini" onclick="tpAddWork()">&#10133; Yeni iş əlavə et</button>
+            </div>
+            <div class="results-table-wrap">
+                <table class="results-table">
+                    <thead>
+                        <tr><th class="col-num">&#8470;</th><th>S&#601;rb&#601;st i&#351;in ad&#305;</th><th>G&#246;t&#252;r&#601;n kursant</th><th class="col-bal">&#399;m&#601;liyyat</th></tr>
+                    </thead>
+                    <tbody id="tpWorks"></tbody>
+                </table>
+            </div>
+        </div>
+        </div><!-- /tpView-works -->
+
+        <!-- Alt-görünüş: Parametrlər -->
+        <div class="tp-view" id="tpView-settings">
         <div class="card">
             <div class="card-title"><div class="icon">&#128197;</div> Semestr və fənn</div>
             <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end;">
@@ -2421,56 +2541,12 @@
             </div>
         </div>
 
-        <div class="card">
-            <div class="card-title"><div class="icon">&#128203;</div> Sərbəst iş seçimləri və son tarixlər</div>
-            <div class="subtab-nav" id="tpTeamTabs"></div>
-            <div class="tp-tools">
-                <button class="btn-mini" onclick="tpAddStudent()">&#10133; Kursant əlavə et</button>
-                <button class="btn-mini" onclick="tpRenameTeam()">&#9998; Taqım adını dəyiş</button>
-                <button class="btn-mini btn-mini-danger" onclick="tpDeleteTeam()">&#128465; Taqımı sil</button>
-                <button class="btn-mini" onclick="tpAddTeam()">&#10133; Yeni taqım</button>
-                <button class="btn-mini" onclick="tpResetAllPasswords()">&#128273; Taqımın şifrələrini yenilə</button>
-            </div>
-            <div class="results-table-wrap">
-                <table class="results-table">
-                    <thead>
-                        <tr><th class="col-num">&#8470;</th><th>Kursant&#305;n ad&#305;</th><th>Se&#231;diyi i&#351;l&#601;r</th><th class="col-bal">S&#601;n&#601;dl&#601;r</th><th class="col-bal">Son tarix<small>f&#601;rdi</small></th><th class="col-bal">&#399;m&#601;liyyat</th></tr>
-                    </thead>
-                    <tbody id="tpStudents"></tbody>
-                </table>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="card-title"><div class="icon">&#128218;</div> <span>İşlərin bölgüsü — <strong style="color:var(--accent)" id="tpWorksTeam"></strong></span></div>
-            <div class="tp-tools">
-                <button class="btn-mini" onclick="tpAddWork()">&#10133; Yeni iş əlavə et</button>
-            </div>
-            <div class="results-table-wrap">
-                <table class="results-table">
-                    <thead>
-                        <tr><th class="col-num">&#8470;</th><th>S&#601;rb&#601;st i&#351;in ad&#305;</th><th>G&#246;t&#252;r&#601;n kursant</th><th class="col-bal">&#399;m&#601;liyyat</th></tr>
-                    </thead>
-                    <tbody id="tpWorks"></tbody>
-                </table>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="card-title"><div class="icon">&#128190;</div> Ehtiyat nüsxə</div>
-            <p class="cab-scale" style="margin:-6px 0 12px;">Baza (ballar, seçimlər, rəylər) hər gecə avtomatik nüsxələnir və 31 gün saxlanılır. İstəsəniz indi əl ilə nüsxə alın və ya köhnə tarixə qayıdın.</p>
-            <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
-                <button class="btn-mini" onclick="tpBackupNow(this)">&#128190; İndi nüsxə al</button>
-                <input type="date" class="dl-input dl-inp-cell" id="tpRestoreDate" style="width:150px;">
-                <button class="btn-mini btn-mini-danger" onclick="tpRestoreBackup()">&#9100; Bu tarixə qayıt</button>
-            </div>
-        </div>
-
         <div class="card" style="border-color: rgba(198,40,40,0.4);">
             <div class="card-title"><div class="icon" style="background:rgba(198,40,40,0.08);border-color:rgba(198,40,40,0.25);">&#9888;</div> İdarəetmə</div>
             <button class="btn btn-download" onclick="tpResetAll()">Bütün seçimləri sıfırla</button>
             <p class="cab-scale" style="margin-top:12px;">Bütün kursantların sərbəst iş seçimlərini silir — ballara və tarixlərə toxunmur. Kursantlar yenidən seçim edə bilər.</p>
         </div>
+        </div><!-- /tpView-settings -->
     </div>
     </div><!-- /tab-serbest -->
 
@@ -3662,10 +3738,12 @@
         document.getElementById('tpStats').innerHTML = Object.entries(teams).map(([team, members]) => {
             const done = members.filter(n => (sels[n] || []).length >= 2).length;
             const pct = members.length ? Math.round(done / members.length * 100) : 0;
-            return `<div class="cab-stat"><div class="cab-stat-ico">&#128101;</div><div class="cab-stat-val">${done}<span class="cab-stat-max">/${members.length}</span></div><div class="cab-stat-label">${esc(team)} — seçib</div><div class="cab-stat-bar"><i class="${pct === 100 ? 'bar-high' : pct >= 50 ? 'bar-mid' : 'bar-low'}" data-w="${pct}"></i></div></div>`;
+            return `<div class="tp-chip"><span class="tp-chip-team">${esc(team)}</span><div class="tp-chip-bar"><i class="${pct === 100 ? 'bar-high' : pct >= 50 ? 'bar-mid' : 'bar-low'}" data-w="${pct}"></i></div><span class="tp-chip-val">${done}/${members.length} seçib</span></div>`;
         }).join('');
-        document.getElementById('tpTeamTabs').innerHTML = Object.keys(teams).map(t =>
+        const tabsHtml = Object.keys(teams).map(t =>
             `<button class="subtab-btn${t === tpTeam ? ' active' : ''}" data-team="${esc(t)}" onclick="tpSwitchTeam(this.dataset.team, this)">${esc(t)}</button>`).join('');
+        document.getElementById('tpTeamTabs').innerHTML = tabsHtml;
+        document.getElementById('tpTeamTabs2').innerHTML = tabsHtml;
         renderTpStudents();
         renderTpWorks();
         requestAnimationFrame(() => setTimeout(() => {
@@ -3675,11 +3753,37 @@
 
     function tpSwitchTeam(t, btn) {
         tpTeam = t;
-        document.querySelectorAll('#tpTeamTabs .subtab-btn').forEach(b => b.classList.remove('active'));
-        if (btn) btn.classList.add('active');
+        document.querySelectorAll('#tpTeamTabs .subtab-btn, #tpTeamTabs2 .subtab-btn').forEach(b =>
+            b.classList.toggle('active', b.dataset.team === t));
         renderTpStudents();
         renderTpWorks();
     }
+
+    function tpSwitchView(name, btn) {
+        document.querySelectorAll('#teacherPanel .tp-nav-btn').forEach(b => b.classList.remove('active'));
+        if (btn) btn.classList.add('active');
+        document.querySelectorAll('#teacherPanel .tp-view').forEach(v => v.classList.remove('active'));
+        const view = document.getElementById('tpView-' + name);
+        if (view) view.classList.add('active');
+        tpCloseMenu();
+        if (name === 'students') {
+            requestAnimationFrame(() => setTimeout(() => {
+                document.querySelectorAll('#tpStats [data-w]').forEach(el => { el.style.width = el.dataset.w + '%'; });
+            }, 80));
+        }
+    }
+
+    function tpToggleMenu(e) {
+        e.stopPropagation();
+        document.getElementById('tpTeamMenu').classList.toggle('open');
+    }
+    function tpCloseMenu() {
+        const m = document.getElementById('tpTeamMenu');
+        if (m) m.classList.remove('open');
+    }
+    document.addEventListener('click', e => {
+        if (!e.target.closest('.tp-menu-wrap')) tpCloseMenu();
+    });
 
     function renderTpStudents() {
         const members = (cabData.teams || {})[tpTeam] || [];
@@ -3921,44 +4025,6 @@
             await tpRefreshAll();
             showToast('Taqım silindi', 'success');
         } catch(e) {}
-    }
-
-    async function tpBackupNow(btn) {
-        btn.disabled = true;
-        try {
-            const res = await fetch('/api/backup', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.token },
-                body: '{}'
-            });
-            const d = await res.json();
-            if (!res.ok) { showToast(d.error || 'Nüsxə alına bilmədi!', 'error'); return; }
-            showToast('Ehtiyat nüsxə alındı', 'success');
-        } catch (e) {
-            showToast('Nüsxə alına bilmədi!', 'error');
-        } finally {
-            btn.disabled = false;
-        }
-    }
-
-    async function tpRestoreBackup() {
-        const date = document.getElementById('tpRestoreDate').value;
-        if (!date) { showToast('Əvvəlcə tarix seçin!', 'error'); return; }
-        if (!confirm('DİQQƏT! Baza ' + date + ' tarixli nüsxəyə qaytarılacaq — o gündən sonrakı bütün dəyişikliklər itəcək.')) return;
-        if (!confirm('Son təsdiq: bərpadan əvvəl cari vəziyyətin qoruyucu nüsxəsi alınacaq. Davam edilsin?')) return;
-        try {
-            const res = await fetch('/api/backup-restore', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.token },
-                body: JSON.stringify({ date: date })
-            });
-            const d = await res.json();
-            if (!res.ok) { showToast(d.error || 'Bərpa alınmadı!', 'error'); return; }
-            showToast(date + ' tarixli nüsxə bərpa olundu', 'success');
-            await tpRefreshAll();
-        } catch (e) {
-            showToast('Bərpa alınmadı!', 'error');
-        }
     }
 
     async function tpResetPassword(btn) {
