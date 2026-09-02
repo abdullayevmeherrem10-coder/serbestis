@@ -10,7 +10,8 @@ if _HERE not in sys.path:
 
 from _credentials import CREDENTIALS
 from _results import RESULTS
-from _arxiv import ARXIV_IMTAHAN
+from _arxiv import (ARXIV_IMTAHAN, arxiv_entries, arxiv_clean_rows,
+                    arxiv_add, arxiv_delete, arxiv_clear_semester)
 from _roster import roster_action
 from _uploads import (upload_url_action, upload_confirm_action,
                       upload_link_action, upload_delete_action,
@@ -782,10 +783,47 @@ def upload_review():
 
 @app.route('/api/arxiv-imtahan', methods=['GET'])
 def arxiv_imtahan():
-    """Köhnə qəbulların arxivlənmiş imtahan nəticələri — yalnız müəllim."""
+    """Arxiv: müəllimin yazdığı keçmiş semestrlər (db["arxiv"]) + repo-dakı 2024 imtahan arxivi — yalnız müəllim."""
     if not teacher_from_request():
         return jsonify({"error": "İcazə yoxdur."}), 401
-    return jsonify(ARXIV_IMTAHAN)
+    return jsonify({"semestrler": arxiv_entries(load_db())})
+
+
+@app.route('/api/arxiv-save', methods=['POST'])
+def arxiv_save():
+    """Semestr sonu: cari nəticələr arxivə yazılır; clear=true olsa ballar/seçimlər təmizlənir (əvvəl qoruyucu nüsxə)."""
+    if not teacher_from_request():
+        return jsonify({"error": "İcazə yoxdur."}), 401
+    body = request.get_json(silent=True) or {}
+    qruplar = arxiv_clean_rows(body.get('qruplar'), exam_grade)
+    if qruplar is None:
+        return jsonify({"error": "Arxiv məlumatı etibarsızdır."}), 400
+    db = load_db()
+    entry = arxiv_add(db, body.get('semester') or db.get('semester', ''),
+                      body.get('subject') or db.get('subject', ''), qruplar)
+    cleared = False
+    if body.get('clear') is True:
+        try:
+            save_prerestore(db)
+        except Exception:
+            pass
+        arxiv_clear_semester(db)
+        cleared = True
+    save_db(db)
+    return jsonify({"success": True, "id": entry["id"], "cleared": cleared})
+
+
+@app.route('/api/arxiv-delete', methods=['POST'])
+def arxiv_delete_route():
+    """Səhv yazılmış arxiv girişini silir (statik 2024 silinmir)."""
+    if not teacher_from_request():
+        return jsonify({"error": "İcazə yoxdur."}), 401
+    body = request.get_json(silent=True) or {}
+    db = load_db()
+    if not arxiv_delete(db, (body.get('id') or '').strip()):
+        return jsonify({"error": "Arxiv girişi tapılmadı."}), 404
+    save_db(db)
+    return jsonify({"success": True})
 
 
 @app.route('/api/backup', methods=['GET', 'POST'])

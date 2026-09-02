@@ -839,7 +839,7 @@
             border-radius: var(--radius-sm);
             font-size: 0.9rem;
             font-weight: 500;
-            z-index: 200;
+            z-index: 4500;
             animation: toastIn 0.4s ease, toastOut 0.4s ease 3s forwards;
             max-width: 400px;
         }
@@ -1040,7 +1040,7 @@
             top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(15,30,24,0.45);
             backdrop-filter: blur(8px);
-            z-index: 100;
+            z-index: 4000;
             align-items: center;
             justify-content: center;
             padding: 20px;
@@ -1763,9 +1763,136 @@
             line-height: 1.4;
         }
 
+        /* ===== Kursant kabineti — sakit, premium üslub (cb-*) ===== */
+        #cabinetView .app-topbar { padding-right: 56px; }   /* sağ üstdəki tema düyməsi Çıxış-ı örtməsin */
+        .cb-hero {
+            display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
+            padding: 22px 26px; border-radius: 20px; margin-bottom: 14px; color: #fff;
+            background: radial-gradient(120% 160% at 0% 0%, #5f8370 0%, #455f51 55%, #3a5245 100%);
+            box-shadow: 0 14px 40px rgba(69,95,81,0.28);
+            position: relative; z-index: 1;
+        }
+        .cb-avatar {
+            width: 56px; height: 56px; border-radius: 16px; flex-shrink: 0;
+            background: rgba(255,255,255,0.14); border: 1px solid rgba(255,255,255,0.3);
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 800; font-size: 1.15rem; letter-spacing: 1px; backdrop-filter: blur(6px);
+        }
+        .cb-who { flex: 1; min-width: 200px; }
+        .cb-who h2 { margin: 0 0 5px; font-size: 1.25rem; color: #fff; letter-spacing: -0.01em; }
+        .cb-meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 0.78rem; font-weight: 600; color: rgba(255,255,255,0.78); }
+        .cb-dot { width: 4px; height: 4px; border-radius: 50%; background: rgba(255,255,255,0.5); }
+        .cb-btn {
+            display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 11px;
+            font-family: inherit; font-size: 0.8rem; font-weight: 700; cursor: pointer; text-decoration: none;
+            transition: all 0.2s; border: 1px solid var(--border-strong); background: var(--surface-90); color: var(--text);
+            white-space: nowrap;
+        }
+        .cb-btn:hover { border-color: var(--accent-ink); color: var(--accent-ink); transform: translateY(-1px); }
+        .cb-btn-primary { background: var(--accent-ink); border-color: var(--accent-ink); color: #fff; box-shadow: 0 6px 16px rgba(69,95,81,0.28); }
+        .cb-btn-primary:hover { color: #fff; filter: brightness(1.06); }
+        .cb-btn-danger { color: var(--danger); }
+        .cb-btn-danger:hover { border-color: var(--danger); color: var(--danger); background: var(--danger-bg); }
+        .cb-btn:disabled { opacity: 0.6; cursor: default; transform: none; }
+        .cb-hero-btn { color: #fff; border-color: rgba(255,255,255,0.35); background: rgba(255,255,255,0.12); }
+        .cb-hero-btn:hover { color: #fff; border-color: rgba(255,255,255,0.6); background: rgba(255,255,255,0.22); }
+        .cb-dl {
+            display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 10px 16px; border-radius: 14px;
+            margin-bottom: 14px; font-size: 0.84rem; color: var(--text);
+            background: rgba(198,40,40,0.06); border: 1px solid rgba(198,40,40,0.22);
+        }
+        .cb-dl-ico { color: var(--danger); }
+        .cb-dl .dl-date { color: var(--danger); font-weight: 800; margin-left: 4px; }
+        .cb-card {
+            background: var(--surface-solid); border: 1px solid var(--card-border); border-radius: 20px;
+            padding: 22px 24px; margin-bottom: 14px; box-shadow: 0 10px 30px rgba(69,95,81,0.08);
+        }
+        .cb-card-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 14px; }
+        .cb-label { font-size: 0.68rem; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-dim); }
+        .cb-hint { font-size: 0.74rem; color: var(--text-dim); }
+        .cb-stats { display: grid; grid-template-columns: repeat(3, 1fr); }
+        .cb-stat { padding: 4px 18px 6px; border-left: 1px solid var(--border); min-width: 0; }
+        .cb-stat:first-child { padding-left: 0; border-left: none; }
+        .cb-stat-val {
+            font-size: 2rem; font-weight: 800; letter-spacing: -0.02em; line-height: 1.15; margin: 6px 0 10px;
+            font-variant-numeric: tabular-nums; color: var(--text);
+        }
+        .cb-stat-val small { font-size: 0.9rem; font-weight: 700; opacity: 0.5; margin-left: 2px; }
+        .cb-bar { height: 4px; border-radius: 99px; background: rgba(69,95,81,0.1); overflow: hidden; }
+        .cb-bar i { display: block; height: 100%; width: 0; border-radius: 99px; background: var(--accent-ink); transition: width 0.9s cubic-bezier(0.4,0,0.2,1); }
+        .cb-bar i.t-high { background: linear-gradient(90deg, #2e7d32, #66bb6a); }
+        .cb-bar i.t-mid { background: linear-gradient(90deg, #455f51, #8fa69b); }
+        .cb-bar i.t-low { background: linear-gradient(90deg, #c62828, #ef5350); }
+        .t-high { color: var(--success); }
+        .t-low { color: var(--danger); }
+        .t-none { color: var(--text-dim); }
+        .cb-stat-sub { margin-top: 9px; font-size: 0.76rem; color: var(--text-muted); font-weight: 600; display: flex; gap: 10px; flex-wrap: wrap; }
+        .cb-stat-sub b { color: var(--text); font-weight: 800; }
+        .cb-stat-sub .live-dot { margin-left: 4px; }
+        .cb-note { margin: 14px 0 0; font-size: 0.74rem; color: var(--text-dim); line-height: 1.5; }
+        .cb-steps { display: flex; flex-direction: column; }
+        .cb-step { display: flex; gap: 16px; padding: 16px 0; border-top: 1px solid var(--border); }
+        .cb-step:first-child { border-top: none; padding-top: 4px; }
+        .cb-step:last-child { padding-bottom: 4px; }
+        .cb-step-n {
+            flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%; margin-top: 1px;
+            border: 1.5px solid var(--border-strong); color: var(--text-muted);
+            display: flex; align-items: center; justify-content: center; font-size: 0.78rem; font-weight: 800;
+            transition: all 0.3s;
+        }
+        .cb-step.active .cb-step-n { border-color: var(--accent-ink); color: var(--accent-ink); box-shadow: 0 0 0 4px rgba(69,95,81,0.1); }
+        .cb-step.done .cb-step-n { background: var(--success); border-color: var(--success); color: #fff; }
+        .cb-step-main { flex: 1; min-width: 0; }
+        .cb-step-title { font-weight: 800; font-size: 0.95rem; color: var(--text); margin-bottom: 6px; }
+        .cb-step-body { font-size: 0.86rem; color: var(--text-muted); }
+        .cb-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+        .cb-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+        .cb-file { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 10px 0; border-top: 1px dashed var(--border); }
+        .cb-file:first-child { border-top: none; padding-top: 0; }
+        .cb-file-kind { font-weight: 800; color: var(--text); min-width: 96px; font-size: 0.86rem; }
+        .cb-file-status { flex: 1; min-width: 180px; font-size: 0.82rem; color: var(--text-muted); }
+        .cb-file-status .up-ok { color: var(--success); font-weight: 800; }
+        .cb-file-status small { color: var(--text-dim); }
+        .cb-file-status .up-review { display: block; margin-top: 3px; font-size: 0.78rem; font-weight: 700; }
+        .cb-topics { margin: 0 0 6px; padding-left: 18px; color: var(--text); font-size: 0.86rem; line-height: 1.55; }
+        .cb-ok { color: var(--success); font-weight: 800; font-size: 0.8rem; }
+        .cb-muted { color: var(--text-muted); }
+        @media (max-width: 768px) {
+            .cb-stats { grid-template-columns: 1fr; }
+            .cb-stat { padding: 10px 0; border-left: none; border-top: 1px solid var(--border); }
+            .cb-stat:first-child { border-top: none; padding-top: 0; }
+            .cb-hero { padding: 18px; }
+            .cb-card { padding: 18px; }
+            .cb-step { gap: 12px; }
+        }
+        /* Nəticə blokları klikləniləndir → sağ panel */
+        .cb-stat-btn { cursor: pointer; border-radius: 14px; transition: background 0.2s; }
+        .cb-stat-btn:hover { background: rgba(69,95,81,0.05); }
+        .cb-stat-btn:focus-visible { outline: 2px solid var(--accent-ink); outline-offset: 2px; }
+        .cb-stat-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+        .cb-more { font-size: 0.7rem; font-weight: 700; color: var(--text-dim); white-space: nowrap; transition: color 0.2s; }
+        .cb-stat-btn:hover .cb-more { color: var(--accent-ink); }
+        .cb-kd { padding: 12px 0; border-top: 1px solid var(--border); }
+        .cb-kd:first-of-type { border-top: none; padding-top: 0; }
+        .cb-kd-head { display: flex; align-items: center; gap: 10px; }
+        .cb-kd-head b { font-size: 0.9rem; color: var(--text); }
+        .cb-kd-src { flex: 1; font-size: 0.72rem; color: var(--text-dim); font-weight: 600; }
+        .cb-kd-meta { margin-top: 6px; font-size: 0.78rem; color: var(--text-muted); }
+        .cb-kd-meta b { color: var(--text); }
+        .cb-kd-topics { margin-top: 6px; font-size: 0.78rem; color: var(--text-muted); line-height: 1.5; }
+        .cb-kd-lbl { font-weight: 700; color: var(--text-dim); }
+        .cb-md { padding: 10px 0; }
+        .cb-md-head { display: flex; justify-content: space-between; align-items: center; font-size: 0.86rem; font-weight: 700; color: var(--text-muted); }
+        .cb-scale { display: flex; flex-direction: column; gap: 6px; }
+        .cb-scale-row { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 10px; border: 1px solid var(--border); font-size: 0.82rem; color: var(--text-muted); }
+        .cb-scale-row.active { border-color: var(--accent-ink); background: rgba(69,95,81,0.08); color: var(--text); font-weight: 700; }
+        .cb-scale-range { min-width: 74px; font-variant-numeric: tabular-nums; font-weight: 700; }
+        .cb-scale-label { flex: 1; }
+        .cb-scale-you { font-size: 0.68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent-ink); }
+        .tp-drawer .dr-total .bal, .tp-drawer .dr-total .grade { font-size: 0.85rem; }
         /* Müəllim idarəetmə paneli */
-        #ekollokBanner { display: none; }
-        .teacher-mode #ekollokBanner { display: flex; }
+        #ekollokBtn { display: none; }
+        .teacher-mode #ekollokBtn { display: inline-flex; }
         #topicsCard { display: none; }
         .teacher-mode #topicsCard { display: block; }
         /* Dəftər mövzuları */
@@ -1882,6 +2009,150 @@
         .btn-mini:hover { background: rgba(69,95,81,0.08); border-color: var(--accent-ink); transform: translateY(-1px); }
         .btn-mini-danger { color: var(--danger); border-color: rgba(198,40,40,0.3); }
         .btn-mini-danger:hover { background: var(--danger-bg); border-color: var(--danger); }
+        /* ===== Müəllim paneli (sadələşdirilmiş): taqım paneli, kursant paneli, sətir menyusu ===== */
+        .ekollok-btn {
+            align-items: center; gap: 6px;
+            padding: 7px 14px; border-radius: 10px;
+            font-size: 0.8rem; font-weight: 700; text-decoration: none;
+            color: var(--accent-ink); background: rgba(69,95,81,0.08);
+            border: 1px solid rgba(69,95,81,0.25); white-space: nowrap;
+            transition: all 0.2s;
+        }
+        .ekollok-btn:hover { background: rgba(69,95,81,0.16); border-color: var(--accent-ink); }
+        .topbar-right { display: flex; align-items: center; gap: 8px; }
+        #tpTeamBar { display: none; }
+        .teacher-mode #tpTeamBar { display: flex; }
+        .tp-teambar { gap: 10px; flex-wrap: wrap; align-items: center; margin-left: auto; }
+        .tp-teambar .tp-chips { flex: 1; margin-bottom: 0; }
+        .tp-teambar .tp-chip { min-width: 160px; }
+        button.tp-chip { cursor: pointer; font-family: inherit; text-align: left; transition: all 0.2s; color: inherit; }
+        button.tp-chip:hover { border-color: var(--border-strong); background: var(--surface-hover); }
+        button.tp-chip.active { border-color: var(--accent-ink); background: rgba(69,95,81,0.1); box-shadow: 0 0 0 3px rgba(69,95,81,0.1); }
+        .tp-search { position: relative; min-width: 230px; }
+        .tp-search input {
+            width: 100%; padding: 9px 12px 9px 34px; border-radius: 12px;
+            border: 1px solid var(--input-border); background: var(--surface-90);
+            color: var(--text); font-family: inherit; font-size: 0.85rem; outline: none;
+        }
+        .tp-search input:focus { border-color: var(--accent-ink); box-shadow: 0 0 0 3px rgba(69,95,81,0.1); }
+        .tp-search::before { content: '\1F50D'; position: absolute; left: 11px; top: 50%; transform: translateY(-50%); font-size: 0.8rem; opacity: 0.6; }
+        .tp-table td { vertical-align: middle; }
+        .tp-row-name { cursor: pointer; font-weight: 600; }
+        .tp-row-name:hover { color: var(--accent-ink); text-decoration: underline; }
+        .row-more {
+            border: 1px solid var(--border); background: var(--surface-90); color: var(--text-muted);
+            width: 30px; height: 28px; border-radius: 8px; cursor: pointer; font-size: 1rem; line-height: 1;
+            transition: all 0.2s;
+        }
+        .row-more:hover { color: var(--accent-ink); border-color: var(--accent-ink); }
+        .doc-pills { display: flex; gap: 4px; justify-content: center; flex-wrap: wrap; }
+        .doc-pill {
+            display: inline-flex; align-items: center; gap: 3px; padding: 2px 8px; border-radius: 99px;
+            font-size: 0.7rem; font-weight: 800; border: 1px solid transparent; white-space: nowrap;
+        }
+        .doc-none { color: var(--text-dim); border-color: var(--border); }
+        .doc-wait { color: var(--accent); background: rgba(69,95,81,0.1); border-color: rgba(69,95,81,0.25); }
+        .doc-ok { color: var(--success); background: rgba(46,125,50,0.15); border-color: rgba(46,125,50,0.3); }
+        .doc-rev { color: #b26a00; background: rgba(245,158,11,0.15); border-color: rgba(245,158,11,0.35); }
+        .doc-bad { color: var(--danger); background: rgba(198,40,40,0.12); border-color: rgba(198,40,40,0.3); }
+        html[data-theme="dark"] .doc-rev, html[data-theme="dark"] .btn-mini.active-rev { color: #fbbf24; }
+        .btn-mini.active-acc { background: rgba(46,125,50,0.15); border-color: rgba(46,125,50,0.4); color: var(--success); }
+        .btn-mini.active-rev { background: rgba(245,158,11,0.15); border-color: rgba(245,158,11,0.45); color: #b26a00; }
+        /* Sətir menyusu (⋯) */
+        .tp-rowmenu {
+            display: none; position: fixed; z-index: 3200; min-width: 200px; padding: 6px;
+            background: var(--surface-solid); border: 1px solid var(--border-strong);
+            border-radius: 12px; box-shadow: 0 12px 32px rgba(0,0,0,0.18);
+        }
+        .tp-rowmenu.open { display: block; }
+        .tp-rowmenu button {
+            display: block; width: 100%; text-align: left; padding: 8px 12px; border: none; background: none;
+            border-radius: 8px; font-family: inherit; font-size: 0.82rem; font-weight: 600; color: var(--text); cursor: pointer;
+        }
+        .tp-rowmenu button:hover { background: rgba(69,95,81,0.08); }
+        .tp-rowmenu button.danger { color: var(--danger); }
+        .tp-rowmenu button.danger:hover { background: var(--danger-bg); }
+        .tp-rowmenu hr { border: none; border-top: 1px solid var(--border); margin: 4px 0; }
+        /* Kursant paneli (sağdan açılan) */
+        .tp-drawer-backdrop { display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.35); z-index: 3100; }
+        .tp-drawer-backdrop.open { display: block; }
+        .tp-drawer {
+            position: fixed; top: 0; right: 0; bottom: 0; width: 460px; max-width: 100vw; z-index: 3101;
+            background: var(--surface-solid); border-left: 1px solid var(--border-strong);
+            box-shadow: -12px 0 40px rgba(0,0,0,0.18);
+            transform: translateX(105%); transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+            display: flex; flex-direction: column;
+        }
+        .tp-drawer.open { transform: translateX(0); }
+        .tp-drawer-head { display: flex; align-items: flex-start; gap: 12px; padding: 18px 20px 14px; border-bottom: 1px solid var(--border); }
+        .tp-drawer-head h3 { margin: 0; font-size: 1.05rem; color: var(--text); line-height: 1.3; }
+        .tp-drawer-head small { display: block; margin-top: 4px; color: var(--text-muted); font-size: 0.78rem; font-weight: 600; }
+        .tp-drawer-close {
+            margin-left: auto; flex-shrink: 0; border: 1px solid var(--border); background: var(--surface-90);
+            color: var(--text-muted); width: 32px; height: 32px; border-radius: 9px; cursor: pointer; font-size: 0.9rem;
+        }
+        .tp-drawer-close:hover { color: var(--danger); border-color: var(--danger); }
+        .tp-drawer-body { overflow-y: auto; padding: 6px 20px 24px; flex: 1; }
+        .dr-sec { padding: 16px 0; border-bottom: 1px solid var(--border); }
+        .dr-sec:last-child { border-bottom: none; }
+        .dr-sec h4 { margin: 0 0 10px; font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-dim); font-weight: 800; }
+        .dr-sec.dr-danger h4 { color: var(--danger); }
+        .dr-list { margin: 0; padding-left: 20px; font-size: 0.86rem; line-height: 1.5; color: var(--text); }
+        .dr-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+        .dr-file { padding: 10px 12px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface-90); margin-bottom: 10px; }
+        .dr-file-name { font-weight: 700; font-size: 0.86rem; word-break: break-word; color: var(--text); }
+        .dr-file-meta { font-size: 0.75rem; color: var(--text-muted); margin-top: 2px; }
+        .dr-note { margin-top: 6px; font-size: 0.8rem; color: var(--text-muted); font-style: italic; }
+        .dr-scores { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+        .dr-scores label { display: flex; flex-direction: column; gap: 4px; font-size: 0.72rem; font-weight: 700; color: var(--text-muted); }
+        .dr-scores .score-inp { width: 100%; }
+        .dr-scores .span3 { grid-column: 1 / -1; }
+        .dr-total {
+            display: flex; align-items: center; justify-content: space-between; padding: 8px 12px;
+            border-radius: 10px; background: rgba(69,95,81,0.06); font-size: 0.82rem; font-weight: 700; color: var(--text-muted);
+        }
+        /* Parametrlər: taqım siyahısı */
+        .tp-teamrow {
+            display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 10px 12px;
+            border: 1px solid var(--border); border-radius: 12px; background: var(--surface-90); margin-bottom: 8px;
+        }
+        .tp-teamrow strong { color: var(--accent-dark); font-size: 0.9rem; }
+        .tp-teamrow small { color: var(--text-muted); font-weight: 600; font-size: 0.78rem; }
+        .tp-teamrow .sp { flex: 1; }
+        .card.card-danger { border-color: rgba(198,40,40,0.4); }
+        /* 2-ci sadələşdirmə: bir sətirlik naviqasiya, sakit cədvəl */
+        .topbar-right { margin-left: auto; }
+        .tp-navrow { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin: 4px 0 22px; position: relative; z-index: 2; }
+        .tp-navrow .tab-nav { margin: 0; }
+        .student-mode .tp-navrow { display: none; }
+        .tp-teamsel-wrap { display: inline-flex; align-items: center; gap: 8px; font-size: 0.78rem; font-weight: 700; color: var(--text-muted); }
+        .tp-teamsel-wrap select {
+            padding: 9px 12px; border-radius: 12px; border: 1.5px solid var(--accent-ink);
+            background: var(--surface-90); color: var(--accent-ink); font-family: inherit;
+            font-weight: 800; font-size: 0.85rem; cursor: pointer; outline: none;
+        }
+        .tp-teamsel-wrap select:focus { box-shadow: 0 0 0 3px rgba(69,95,81,0.12); }
+        .tp-table td { padding: 8px 14px; }
+        .tp-table .dim, .tp-drawer .dim { color: var(--text-dim); font-weight: 500; }
+        .tp-table td:nth-child(2) { white-space: nowrap; }
+        .doc-ico { display: inline-block; font-size: 0.95rem; opacity: 0.28; margin: 0 2px; }
+        .dl-text { cursor: pointer; font-size: 0.8rem; font-weight: 600; color: var(--text); border-bottom: 1px dashed transparent; padding: 2px 0; white-space: nowrap; }
+        .dl-text:hover { color: var(--accent-ink); border-bottom-color: var(--accent-ink); }
+        .dl-text.dl-empty { color: var(--text-dim); font-weight: 500; }
+        .row-more { border-color: transparent; background: transparent; font-size: 1.15rem; }
+        .row-more:hover { background: var(--surface-90); }
+        #tpSelStat { margin-left: 10px; font-size: 0.72rem; vertical-align: middle; }
+        @media (max-width: 768px) {
+            .tp-navrow { flex-direction: column; align-items: stretch; }
+            .tp-navrow .tab-nav { max-width: 100%; width: auto; }
+            .tp-teambar { margin-left: 0; }
+        }
+        @media (max-width: 768px) {
+            .tp-drawer { width: 100vw; }
+            .tp-search { min-width: 100%; }
+            .topbar-right { gap: 6px; }
+            .ekollok-btn { padding: 6px 10px; font-size: 0.74rem; }
+        }
 
         /* Sərbəst iş faylları (yükləmə + baxış) */
         .up-row {
@@ -2217,126 +2488,103 @@
             <button class="logout-btn" onclick="cabinetLogout()">Çıxış</button>
         </div>
 
-        <div class="cab-hero">
-            <div class="cab-hero-deco d1"></div>
-            <div class="cab-hero-deco d2"></div>
-            <div class="cab-avatar" id="cabAvatar"></div>
-            <div class="cab-who">
-                <p class="cab-hello">Xoş gəlmisiniz!</p>
-                <h2 id="cabName"></h2>
-                <div class="cab-badges">
-                    <span class="cab-badge" id="cabTeamBadge"></span>
-                    <span class="cab-badge cab-badge-alt" id="cabIdBadge"></span>
-                </div>
-            </div>
-            <div class="cab-hero-chip">
-                <span class="cab-hero-chip-dot"></span>
-                <span id="cabSemChip">2025/2026 yaz semestri</span>
-            </div>
+    <div class="cb-hero">
+        <div class="cb-avatar" id="cabAvatar"></div>
+        <div class="cb-who">
+            <h2 id="cabName"></h2>
+            <div class="cb-meta"><span id="cabTeamBadge"></span><span class="cb-dot"></span><span id="cabIdBadge"></span></div>
         </div>
-
-        <div class="cab-stats" id="cabStats"></div>
-
-        <div class="cab-grid">
-            <div class="card">
-                <div class="card-title"><div class="icon">&#128221;</div> Kollokvium nəticələri</div>
-                <div id="cabKollok"></div>
-            </div>
-            <div class="card">
-                <div class="card-title"><div class="icon">&#128202;</div> Mənimsəmə</div>
-                <div id="cabMenimseme"></div>
-            </div>
-            <div class="card">
-                <div class="card-title"><div class="icon">&#127942;</div> İmtahan nəticəsi</div>
-                <div id="cabImtahan"></div>
-            </div>
-        </div>
-
-        <div class="deadline-banner" role="alert" id="cabDeadlineBanner" style="display:none">
-            <span class="dl-icon">&#9888;</span>
-            <span class="dl-text">
-                <strong>Diqqət!</strong> Sərbəst işinizin son təhvil verilmə və müdafiə tarixi:
-                <span class="dl-date" id="cabDlDate"></span><span id="cabDlCount"></span>
-            </span>
-        </div>
-
-        <div class="card">
-            <div class="card-title"><div class="icon">&#128218;</div> Sərbəst işlərim</div>
-            <div id="cabSerbest"><span class="spinner"></span></div>
-        </div>
-
-        <div class="card" id="uploadCard">
-            <div class="card-title"><div class="icon">&#128228;</div> Sərbəst işimi təhvil ver</div>
-            <p class="cab-scale" style="margin:-8px 0 14px;">Hazır sərbəst işinizi Word (.docx, maks 10 MB) və təqdimatınızı PowerPoint (.pptx, maks 20 səhifə, maks 25 MB) formatında yükləyin — müəllim onları saytdaca görəcək.</p>
-            <div class="up-row" id="upRow-docx">
-                <span class="up-kind">&#128196; Word</span>
-                <span class="up-status" id="upStatus-docx">Yüklənməyib</span>
-                <span class="up-actions">
-                    <button class="btn-mini" onclick="upPick('docx')" id="upBtn-docx">&#11014; Yüklə</button>
-                    <button class="btn-mini" onclick="upOpen('docx', 'view')" id="upView-docx" style="display:none">&#128065; Bax</button>
-                    <button class="btn-mini btn-mini-danger" onclick="upDelete('docx')" id="upDel-docx" style="display:none">&#128465;</button>
-                </span>
-            </div>
-            <div class="up-row" id="upRow-pptx">
-                <span class="up-kind">&#128202; PowerPoint</span>
-                <span class="up-status" id="upStatus-pptx">Yüklənməyib</span>
-                <span class="up-actions">
-                    <button class="btn-mini" onclick="upPick('pptx')" id="upBtn-pptx">&#11014; Yüklə</button>
-                    <button class="btn-mini" onclick="upOpen('pptx', 'view')" id="upView-pptx" style="display:none">&#128065; Bax</button>
-                    <button class="btn-mini btn-mini-danger" onclick="upDelete('pptx')" id="upDel-pptx" style="display:none">&#128465;</button>
-                </span>
-            </div>
-            <input type="file" id="upFile-docx" accept=".docx" style="display:none" onchange="upSelected('docx', this)">
-            <input type="file" id="upFile-pptx" accept=".pptx" style="display:none" onchange="upSelected('pptx', this)">
-        </div>
-
-        <div class="download-section" style="display:flex;gap:14px;flex-wrap:wrap;justify-content:center;">
-            <div style="flex:1;min-width:250px;">
-                <p>Sərbəst iş üzlüyü sənədini yükləyin</p>
-                <a href="%C3%9CZL%C3%9CK.docx" download class="btn btn-download" style="width:100%;margin-top:8px;">
-                    &#11015; Sərbəst iş titul vərəqini yüklə
-                </a>
-            </div>
-            <div style="flex:1;min-width:250px;">
-                <p>Sərbəst işin hazırlanma qaydası</p>
-                <button class="btn btn-rules" onclick="document.getElementById('rulesModal').classList.add('active')" style="width:100%;margin-top:8px;">
-                    &#128220; Hazırlanma qaydasını oxu
-                </button>
-            </div>
-            <div style="flex:1;min-width:250px;">
-                <p>İstifadə ediləcək ədəbiyyat</p>
-                <a href="kitab.html" class="btn btn-book" style="width:100%;margin-top:8px;">
-                    &#128214; Ədəbiyyata bax
-                </a>
-            </div>
-        </div>
+        <a href="kitab.html" class="cb-btn cb-hero-btn" title="Fənn üzrə ədəbiyyat (elektron kitab)">&#128214; Ədəbiyyat</a>
     </div>
 
+    <div class="cb-dl" role="alert" id="cabDeadlineBanner" style="display:none">
+        <span class="cb-dl-ico">&#9888;</span>
+        <span>Sərbəst işin son təhvil və müdafiə tarixi:<strong class="dl-date" id="cabDlDate"></strong><span id="cabDlCount"></span></span>
+    </div>
+
+    <!-- Nəticələr: üç böyük rəqəm (Kollokvium / Mənimsəmə / İmtahan) + alt detallar -->
+    <section class="cb-card">
+        <div class="cb-card-head"><span class="cb-label">Nəticələr</span><span class="cb-hint" id="cabResultsHint"></span></div>
+        <div id="cabResults"></div>
+    </section>
+
+    <!-- Sərbəst iş: 3 addım — mövzu seçimi, hazırlıq, təhvil (fayl yükləmə + müəllim rəyi) -->
+    <section class="cb-card">
+        <div class="cb-card-head"><span class="cb-label">Sərbəst iş</span><span class="cb-hint" id="cabStepHint"></span></div>
+        <div class="cb-steps">
+            <div class="cb-step" id="cbStep1">
+                <div class="cb-step-n">1</div>
+                <div class="cb-step-main">
+                    <div class="cb-step-title">Mövzu seçimi</div>
+                    <div class="cb-step-body" id="cabSerbest"><span class="spinner"></span></div>
+                </div>
+            </div>
+            <div class="cb-step" id="cbStep2">
+                <div class="cb-step-n">2</div>
+                <div class="cb-step-main">
+                    <div class="cb-step-title">Hazırlıq</div>
+                    <div class="cb-step-body cb-actions">
+                        <a href="%C3%9CZL%C3%9CK.docx" download class="cb-btn">&#11015; Titul vərəqi</a>
+                        <button class="cb-btn" onclick="document.getElementById('rulesModal').classList.add('active')">&#128220; Hazırlanma qaydası</button>
+                    </div>
+                </div>
+            </div>
+            <div class="cb-step" id="cbStep3">
+                <div class="cb-step-n">3</div>
+                <div class="cb-step-main">
+                    <div class="cb-step-title">Təhvil</div>
+                    <div class="cb-step-body">
+                        <div class="cb-file" id="upRow-docx">
+                            <span class="cb-file-kind">&#128196; Word</span>
+                            <span class="cb-file-status" id="upStatus-docx">Yüklənməyib</span>
+                            <span class="cb-actions">
+                                <button class="cb-btn" onclick="upPick('docx')" id="upBtn-docx">&#11014; Yüklə</button>
+                                <button class="cb-btn" onclick="upOpen('docx', 'view')" id="upView-docx" style="display:none">&#128065; Bax</button>
+                                <button class="cb-btn cb-btn-danger" onclick="upDelete('docx')" id="upDel-docx" style="display:none">Sil</button>
+                            </span>
+                        </div>
+                        <div class="cb-file" id="upRow-pptx">
+                            <span class="cb-file-kind">&#128202; PowerPoint</span>
+                            <span class="cb-file-status" id="upStatus-pptx">Yüklənməyib</span>
+                            <span class="cb-actions">
+                                <button class="cb-btn" onclick="upPick('pptx')" id="upBtn-pptx">&#11014; Yüklə</button>
+                                <button class="cb-btn" onclick="upOpen('pptx', 'view')" id="upView-pptx" style="display:none">&#128065; Bax</button>
+                                <button class="cb-btn cb-btn-danger" onclick="upDelete('pptx')" id="upDel-pptx" style="display:none">Sil</button>
+                            </span>
+                        </div>
+                        <p class="cb-note">Word .docx (maks 10 MB) və PowerPoint .pptx (maks 20 səhifə, 25 MB).</p>
+                        <input type="file" id="upFile-docx" accept=".docx" style="display:none" onchange="upSelected('docx', this)">
+                        <input type="file" id="upFile-pptx" accept=".pptx" style="display:none" onchange="upSelected('pptx', this)">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    </div>
     <!-- ===================== AKTİV SEMESTR: mövcud sistem ===================== -->
     <div id="appView" style="display:none">
     <div class="app-topbar">
         <button class="back-btn" onclick="appBack()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg> Əvvəlki Səhifə</button>
         <span class="app-sem-label">2025/2026 yaz semestri &#8226; Hərbi Mühəndis Texnikası</span>
-        <button class="logout-btn" onclick="cabinetLogout()">Çıxış</button>
+        <div class="topbar-right">
+            <a href="kollokvium/" class="ekollok-btn" id="ekollokBtn" title="Elektron Kollokvium Sistemi (ayrı pəncərədə)">&#128421;&#65039; E-Kollokvium</a>
+            <button class="logout-btn" onclick="cabinetLogout()">Çıxış</button>
+        </div>
     </div>
 
-    <!-- Tab navigation -->
+    <!-- Naviqasiya sətri: tablar (sol) + taqım seçimi və axtarış (sağ). Kursant rejimində gizlidir. -->
+    <div class="tp-navrow">
     <div class="tab-nav" id="tabNav">
-        <button class="tab-btn active" onclick="switchTab('serbest', this)"><span class="tab-ico">&#128218;</span> Sərbəst işlər</button>
-        <button class="tab-btn" onclick="switchTab('kollokvium', this)"><span class="tab-ico">&#128221;</span> Kollokvium nəticələri</button>
-        <button class="tab-btn" onclick="switchTab('menimseme', this)"><span class="tab-ico">&#128202;</span> Mənimsəmə göstəriciləri</button>
-        <button class="tab-btn" onclick="switchTab('imtahan', this)"><span class="tab-ico">&#127942;</span> İmtahan nəticələri</button>
+        <button class="tab-btn active" onclick="switchTab('kursantlar', this)"><span class="tab-ico">&#128101;</span> Kursantlar</button>
+        <button class="tab-btn" onclick="switchTab('ballar', this)"><span class="tab-ico">&#128202;</span> Ballar</button>
+        <button class="tab-btn" onclick="switchTab('serbest', this)"><span class="tab-ico">&#128218;</span> Sərbəst işlər</button>
+        <button class="tab-btn" onclick="switchTab('parametrler', this)"><span class="tab-ico">&#9881;</span> Parametrlər</button>
     </div>
-
-    <!-- E-Kollokvium keçidi — yalnız müəllim rejimində, tabların altında -->
-    <a href="kollokvium/" class="ekollok-banner" id="ekollokBanner">
-        <span class="ek-ico">&#128421;&#65039;</span>
-        <span class="ek-text">
-            <strong>Elektron Kollokvium Sistemi</strong>
-        </span>
-        <span class="ek-arrow">&#8594;</span>
-    </a>
-
+    <div class="tp-teambar" id="tpTeamBar">
+        <label class="tp-teamsel-wrap"><span>Taqım</span><select id="tpTeamSel" onchange="tpSwitchTeam(this.value)"></select></label>
+        <div class="tp-search"><input type="text" id="tpSearch" placeholder="Kursant və ya iş axtar..." oninput="tpFilter()"></div>
+    </div>
+    </div>
     <!-- ===================== TAB: Sərbəst işlər ===================== -->
     <div class="tab-panel active" id="tab-serbest">
     <p class="tab-subtitle">Sərbəst İşini Özün Seç</p>
@@ -2467,65 +2715,87 @@
             <button class="btn btn-secondary" style="margin-top:20px;" onclick="resetAll()">&#8592; Əsas səhifəyə qayıt</button>
         </div>
     </div>
-    <!-- ===================== MÜƏLLİM: idarəetmə paneli ===================== -->
+    <!-- ===================== MÜƏLLİM: Sərbəst işlər (işlərin bölgüsü) ===================== -->
     <div id="teacherPanel">
-        <div class="tp-nav">
-            <button class="tp-nav-btn active" onclick="tpSwitchView('students', this)">&#128101; Kursantlar</button>
-            <button class="tp-nav-btn" onclick="tpSwitchView('works', this)">&#128218; İşlərin bölgüsü</button>
-            <button class="tp-nav-btn" onclick="tpSwitchView('settings', this)">&#9881; Parametrlər</button>
-        </div>
-
-        <!-- Alt-görünüş: Kursantlar -->
-        <div class="tp-view active" id="tpView-students">
-        <div class="tp-chips" id="tpStats"></div>
-
         <div class="card">
-            <div class="card-title"><div class="icon">&#128203;</div> Sərbəst iş seçimləri və son tarixlər</div>
-            <div class="subtab-nav" id="tpTeamTabs"></div>
-            <div class="tp-tools">
-                <button class="btn-mini" onclick="tpAddStudent()">&#10133; Kursant əlavə et</button>
-                <div class="tp-menu-wrap">
-                    <button class="btn-mini" onclick="tpToggleMenu(event)">&#9881; Taqım əməliyyatları &#9662;</button>
-                    <div class="tp-menu" id="tpTeamMenu">
-                        <button onclick="tpCloseMenu();tpRenameTeam()">&#9998; Taqım adını dəyiş</button>
-                        <button onclick="tpCloseMenu();tpAddTeam()">&#10133; Yeni taqım</button>
-                        <button onclick="tpCloseMenu();tpResetAllPasswords()">&#128273; Taqımın şifrələrini yenilə</button>
-                        <button class="tp-menu-danger" onclick="tpCloseMenu();tpDeleteTeam()">&#128465; Taqımı sil</button>
-                    </div>
-                </div>
-            </div>
-            <div class="results-table-wrap">
-                <table class="results-table">
-                    <thead>
-                        <tr><th class="col-num">&#8470;</th><th>Kursant&#305;n ad&#305;</th><th>Se&#231;diyi i&#351;l&#601;r</th><th class="col-bal">S&#601;n&#601;dl&#601;r</th><th class="col-bal">Son tarix<small>f&#601;rdi</small></th><th class="col-bal">&#399;m&#601;liyyat</th></tr>
-                    </thead>
-                    <tbody id="tpStudents"></tbody>
-                </table>
-            </div>
-        </div>
-        </div><!-- /tpView-students -->
-
-        <!-- Alt-görünüş: İşlərin bölgüsü -->
-        <div class="tp-view" id="tpView-works">
-        <div class="card">
-            <div class="card-title"><div class="icon">&#128218;</div> <span>İşlərin bölgüsü — <strong style="color:var(--accent)" id="tpWorksTeam"></strong></span></div>
-            <div class="subtab-nav" id="tpTeamTabs2"></div>
+            <div class="card-title"><div class="icon">&#128218;</div> <span>İşlərin bölgüsü &#8212; <strong style="color:var(--accent)" id="tpWorksTeam"></strong></span></div>
             <div class="tp-tools">
                 <button class="btn-mini" onclick="tpAddWork()">&#10133; Yeni iş əlavə et</button>
+                <span class="cab-scale" style="margin:0;align-self:center;">Seçilmiş işi silmək üçün əvvəlcə kursantın seçimini sıfırlayın.</span>
             </div>
             <div class="results-table-wrap">
-                <table class="results-table">
+                <table class="results-table tp-table">
                     <thead>
-                        <tr><th class="col-num">&#8470;</th><th>S&#601;rb&#601;st i&#351;in ad&#305;</th><th>G&#246;t&#252;r&#601;n kursant</th><th class="col-bal">&#399;m&#601;liyyat</th></tr>
+                        <tr><th class="col-num">&#8470;</th><th>Sərbəst işin adı</th><th>Götürən kursant</th><th class="col-bal">Əməliyyat</th></tr>
                     </thead>
                     <tbody id="tpWorks"></tbody>
                 </table>
             </div>
         </div>
-        </div><!-- /tpView-works -->
+    </div>
+    </div><!-- /tab-serbest -->
 
-        <!-- Alt-görünüş: Parametrlər -->
-        <div class="tp-view" id="tpView-settings">
+    <!-- ===================== TAB: Kursantlar (müəllim) ===================== -->
+    <div class="tab-panel" id="tab-kursantlar">
+        <div class="card">
+            <div class="card-title"><div class="icon">&#128101;</div> <span>Kursantlar &#8212; <strong style="color:var(--accent)" id="tpStudentsTeam"></strong><span class="bal bal-mid" id="tpSelStat"></span></span></div>
+            <div class="tp-tools">
+                <button class="btn-mini" onclick="tpAddStudent()">&#10133; Kursant əlavə et</button>
+                <span class="cab-scale" style="margin:0;align-self:center;">Kursantın adına klikləyin &#8212; bütün məlumatları və əməliyyatları sağ paneldə açılır.</span>
+            </div>
+            <div class="results-table-wrap">
+                <table class="results-table tp-table">
+                    <thead>
+                        <tr>
+                            <th class="col-num">&#8470;</th><th>Kursantın adı</th>
+                            <th class="col-bal">Seçim</th>
+                            <th class="col-bal" style="width:130px;">Sənədlər</th>
+                            <th class="col-bal">Mənimsəmə<small>maks 50</small></th>
+                            <th class="col-bal">İmtahan</th>
+                            <th class="col-bal" style="width:120px;">Son tarix<small>fərdi</small></th>
+                            <th class="col-bal" style="width:48px;"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="tpStudents"></tbody>
+                </table>
+            </div>
+        </div>
+    </div><!-- /tab-kursantlar -->
+
+    <!-- ===================== TAB: Ballar (müəllim) ===================== -->
+    <div class="tab-panel" id="tab-ballar">
+        <div class="card">
+            <div class="card-title"><div class="icon">&#128202;</div> <span>Ballar &#8212; <strong style="color:var(--accent)" id="balTeam"></strong></span></div>
+            <div class="results-table-wrap">
+                <table class="results-table tp-table">
+                    <thead>
+                        <tr>
+                            <th class="col-num">&#8470;</th><th>Kursantın adı</th>
+                            <th class="col-bal">K1</th><th class="col-bal">K2</th><th class="col-bal">K3</th>
+                            <th class="col-bal">Koll.<small>maks 30</small></th>
+                            <th class="col-bal">Sərbəst<small>0-10</small></th>
+                            <th class="col-bal">Dəftər<small>0-10</small></th>
+                            <th class="col-bal">Mənimsəmə<small>maks 50</small></th>
+                            <th class="col-bal">İmtahan<small>0-100</small></th>
+                            <th class="col-grade">Qiymət</th>
+                        </tr>
+                    </thead>
+                    <tbody id="balBody"></tbody>
+                </table>
+            </div>
+            <div class="results-summary" id="balSummary">
+                <div class="rs-item"><span class="rs-label">Kursant sayı</span><span class="rs-val">&#8212;</span></div>
+                <div class="rs-item"><span class="rs-label">Orta &#8211; K1</span><span class="rs-val">&#8212;</span></div>
+                <div class="rs-item"><span class="rs-label">Orta &#8211; K2</span><span class="rs-val">&#8212;</span></div>
+                <div class="rs-item"><span class="rs-label">Orta &#8211; K3</span><span class="rs-val">&#8212;</span></div>
+                <div class="rs-item"><span class="rs-label">Orta mənimsəmə</span><span class="rs-val">&#8212;</span></div>
+                <div class="rs-item"><span class="rs-label">Orta imtahan</span><span class="rs-val">&#8212;</span></div>
+            </div>
+        </div>
+    </div><!-- /tab-ballar -->
+
+    <!-- ===================== TAB: Parametrlər (müəllim) ===================== -->
+    <div class="tab-panel" id="tab-parametrler">
         <div class="card">
             <div class="card-title"><div class="icon">&#128197;</div> Semestr və fənn</div>
             <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end;">
@@ -2541,21 +2811,10 @@
             </div>
         </div>
 
-        <div class="card" style="border-color: rgba(198,40,40,0.4);">
-            <div class="card-title"><div class="icon" style="background:rgba(198,40,40,0.08);border-color:rgba(198,40,40,0.25);">&#9888;</div> İdarəetmə</div>
-            <button class="btn btn-download" onclick="tpResetAll()">Bütün seçimləri sıfırla</button>
-            <p class="cab-scale" style="margin-top:12px;">Bütün kursantların sərbəst iş seçimlərini silir — ballara və tarixlərə toxunmur. Kursantlar yenidən seçim edə bilər.</p>
-        </div>
-        </div><!-- /tpView-settings -->
-    </div>
-    </div><!-- /tab-serbest -->
-
-    <!-- ===================== TAB: Kollokvium nəticələri ===================== -->
-    <div class="tab-panel" id="tab-kollokvium">
-        <!-- Dəftər mövzuları (müəllim, hər kollokvium üçün) -->
+        <!-- Dəftər mövzuları (hər kollokvium üçün, Firebase topics/K1..K3) -->
         <div class="card" id="topicsCard">
             <div class="card-title"><div class="icon">&#128211;</div> Dəftər mövzuları</div>
-            <p class="cab-scale" style="margin:-8px 0 14px;">Hər kollokvium üçün dəftər mövzularının siyahısı — imtahanda "yarımçıq mövzular" bu siyahıdan seçilir.</p>
+            <p class="cab-scale" style="margin:-8px 0 14px;">Hər kollokvium üçün dəftər mövzularının siyahısı &#8212; imtahanda "yarımçıq mövzular" bu siyahıdan seçilir.</p>
             <div class="topics-rows">
                 <div class="topics-row"><span class="topics-k">Kollokvium 1</span><span class="topics-list" id="topicsList1">&#8212;</span><button class="btn-mini" onclick="editKollokTopics(1)">&#9998; Redaktə</button></div>
                 <div class="topics-row"><span class="topics-k">Kollokvium 2</span><span class="topics-list" id="topicsList2">&#8212;</span><button class="btn-mini" onclick="editKollokTopics(2)">&#9998; Redaktə</button></div>
@@ -2563,206 +2822,58 @@
             </div>
         </div>
 
-        <div class="subtab-nav">
-            <button class="subtab-btn active" onclick="switchKollok('a1', this)">YT 23A1</button>
-            <button class="subtab-btn" onclick="switchKollok('a2', this)">YT 23A2</button>
-        </div>
-
-        <div class="kollok-view active" id="kollok-a1">
         <div class="card">
-            <div class="card-title">
-                <div class="icon">&#128221;</div>
-                <span>Kollokvium n&#601;tic&#601;l&#601;ri &#8212; <strong style="color:var(--accent)">YT 23A1</strong></span>
-            </div>
-            <div class="search-wrapper">
-                <input type="text" class="search-box" id="kollokSearch" placeholder="Ad&#305;n&#305;z&#305; axtar&#305;n..." oninput="filterResults(this,'kollokBody')">
-            </div>
-            <div class="results-table-wrap">
-                <table class="results-table">
-                    <thead>
-                        <tr><th class="col-num">&#8470;</th><th>Kursant&#305;n ad&#305;</th><th class="col-bal">Kollokvium 1</th><th class="col-bal">Kollokvium 2</th><th class="col-bal">Kollokvium 3</th></tr>
-                    </thead>
-                    <tbody id="kollokBody"></tbody>
-                </table>
-            </div>
-            <div class="results-summary">
-                <div class="rs-item"><span class="rs-label">Kursant say&#305;</span><span class="rs-val">&#8212;</span></div>
-                <div class="rs-item"><span class="rs-label">Orta &#8211; Koll. 1</span><span class="rs-val">&#8212;</span></div>
-                <div class="rs-item"><span class="rs-label">Orta &#8211; Koll. 2</span><span class="rs-val">&#8212;</span></div>
-                <div class="rs-item"><span class="rs-label">Orta &#8211; Koll. 3</span><span class="rs-val">&#8212;</span></div>
+            <div class="card-title"><div class="icon">&#128101;</div> Taqımlar</div>
+            <div id="tpTeamList"></div>
+            <div class="tp-tools" style="margin:10px 0 0;">
+                <button class="btn-mini" onclick="tpAddTeam()">&#10133; Yeni taqım</button>
+                <span class="cab-scale" style="margin:0;align-self:center;">Əsas 4 qrup silinə bilməz. Şifrələr yenilənəndə siyahı txt fayl kimi endirilir.</span>
             </div>
         </div>
-        </div><!-- /kollok-a1 -->
 
-        <div class="kollok-view" id="kollok-a2">
-        <div class="card">
-            <div class="card-title">
-                <div class="icon">&#128221;</div>
-                <span>Kollokvium n&#601;tic&#601;l&#601;ri &#8212; <strong style="color:var(--accent)">YT 23A2</strong></span>
+        <!-- Arxiv: keçmiş semestrlərin nəticələri (müəllim semestr sonunda yazır) + repo-dakı 2024 imtahan arxivi -->
+        <div class="card" id="arxivCard">
+            <div class="card-title"><div class="icon">&#128230;</div> Arxiv &#8212; keçmiş semestrlər</div>
+            <p class="cab-scale" style="margin:-8px 0 12px;">Semestr bitəndə "Cari semestri arxivlə" bütün taqımların kollokvium, sərbəst iş, dəftər, mənimsəmə və imtahan nəticələrini semestrin adı ilə arxivə yazır. Sonra istəsəniz yeni semestr üçün ballar və seçimlər təmizlənir; taqımlar, girişlər və yüklənmiş fayllar qalır.</p>
+            <div class="tp-tools">
+                <button class="btn-mini" onclick="tpArchiveSemester()">&#128230; Cari semestri arxivlə</button>
+                <button class="btn-mini" onclick="toggleArxivImt()">&#128194; Arxivə bax <span id="arxivImtChev">&#9662;</span></button>
             </div>
-            <div class="search-wrapper">
-                <input type="text" class="search-box" id="kollok2Search" placeholder="Ad&#305;n&#305;z&#305; axtar&#305;n..." oninput="filterResults(this,'kollok2Body')">
-            </div>
-            <div class="results-table-wrap">
-                <table class="results-table">
-                    <thead>
-                        <tr><th class="col-num">&#8470;</th><th>Kursant&#305;n ad&#305;</th><th class="col-bal">Kollokvium 1</th><th class="col-bal">Kollokvium 2</th><th class="col-bal">Kollokvium 3</th></tr>
-                    </thead>
-                    <tbody id="kollok2Body"></tbody>
-                </table>
-            </div>
-            <div class="results-summary">
-                <div class="rs-item"><span class="rs-label">Kursant say&#305;</span><span class="rs-val">&#8212;</span></div>
-                <div class="rs-item"><span class="rs-label">Orta &#8211; Koll. 1</span><span class="rs-val">&#8212;</span></div>
-                <div class="rs-item"><span class="rs-label">Orta &#8211; Koll. 2</span><span class="rs-val">&#8212;</span></div>
-                <div class="rs-item"><span class="rs-label">Orta &#8211; Koll. 3</span><span class="rs-val">&#8212;</span></div>
-            </div>
-        </div>
-        </div><!-- /kollok-a2 -->
-    </div>
-
-    <!-- ===================== TAB: Mənimsəmə göstəriciləri ===================== -->
-    <div class="tab-panel" id="tab-menimseme">
-        <div class="subtab-nav">
-            <button class="subtab-btn active" onclick="switchMenimseme('a1', this)">YT 23A1</button>
-            <button class="subtab-btn" onclick="switchMenimseme('a2', this)">YT 23A2</button>
-        </div>
-
-        <div class="menimseme-view active" id="menimseme-a1">
-        <div class="card">
-            <div class="card-title">
-                <div class="icon">&#128202;</div>
-                <span>M&#601;nims&#601;m&#601; g&#246;st&#601;ricil&#601;ri &#8212; <strong style="color:var(--accent)">YT 23A1</strong></span>
-            </div>
-            <p style="color:var(--text-muted);font-size:0.82rem;margin:-6px 0 14px;">M&#601;nims&#601;m&#601; = Kollokvium c&#601;mi (maks 30) + S&#601;rb&#601;st i&#351; (maks 10) + D&#601;ft&#601;r/&#304;ntizam (maks 10) &#8226; ballar avtomatik c&#601;ml&#601;nir v&#601; kursant&#305;n kabinetind&#601; d&#601;rhal g&#246;r&#252;n&#252;r</p>
-            <div class="search-wrapper">
-                <input type="text" class="search-box" id="menimseme1Search" placeholder="Ad&#305;n&#305;z&#305; axtar&#305;n..." oninput="filterResults(this,'menimseme1Body')">
-            </div>
-            <div class="results-table-wrap">
-                <table class="results-table">
-                    <thead>
-                        <tr><th class="col-num">&#8470;</th><th>Kursant&#305;n ad&#305;</th><th class="col-bal">K1</th><th class="col-bal">K2</th><th class="col-bal">K3</th><th class="col-bal">Koll. c&#601;mi<small>maks 30</small></th><th class="col-bal">S&#601;rb&#601;st i&#351;<small>maks 10</small></th><th class="col-bal">D&#601;ft&#601;r / &#304;ntizam<small>maks 10</small></th><th class="col-bal">M&#601;nims&#601;m&#601;<small>maks 50</small></th></tr>
-                    </thead>
-                    <tbody id="menimseme1Body"></tbody>
-                </table>
-            </div>
-            <div class="results-summary">
-                <div class="rs-item"><span class="rs-label">Kursant say&#305;</span><span class="rs-val">&#8212;</span></div>
-                <div class="rs-item"><span class="rs-label">Orta g&#246;st&#601;rici</span><span class="rs-val">&#8212;</span></div>
-                <div class="rs-item"><span class="rs-label">Maksimum</span><span class="rs-val">&#8212;</span></div>
-            </div>
-        </div>
-        </div><!-- /menimseme-a1 -->
-
-        <div class="menimseme-view" id="menimseme-a2">
-        <div class="card">
-            <div class="card-title">
-                <div class="icon">&#128202;</div>
-                <span>M&#601;nims&#601;m&#601; g&#246;st&#601;ricil&#601;ri &#8212; <strong style="color:var(--accent)">YT 23A2</strong></span>
-            </div>
-            <p style="color:var(--text-muted);font-size:0.82rem;margin:-6px 0 14px;">M&#601;nims&#601;m&#601; = Kollokvium c&#601;mi (maks 30) + S&#601;rb&#601;st i&#351; (maks 10) + D&#601;ft&#601;r/&#304;ntizam (maks 10) &#8226; ballar avtomatik c&#601;ml&#601;nir v&#601; kursant&#305;n kabinetind&#601; d&#601;rhal g&#246;r&#252;n&#252;r</p>
-            <div class="search-wrapper">
-                <input type="text" class="search-box" id="menimseme2Search" placeholder="Ad&#305;n&#305;z&#305; axtar&#305;n..." oninput="filterResults(this,'menimseme2Body')">
-            </div>
-            <div class="results-table-wrap">
-                <table class="results-table">
-                    <thead>
-                        <tr><th class="col-num">&#8470;</th><th>Kursant&#305;n ad&#305;</th><th class="col-bal">K1</th><th class="col-bal">K2</th><th class="col-bal">K3</th><th class="col-bal">Koll. c&#601;mi<small>maks 30</small></th><th class="col-bal">S&#601;rb&#601;st i&#351;<small>maks 10</small></th><th class="col-bal">D&#601;ft&#601;r / &#304;ntizam<small>maks 10</small></th><th class="col-bal">M&#601;nims&#601;m&#601;<small>maks 50</small></th></tr>
-                    </thead>
-                    <tbody id="menimseme2Body"></tbody>
-                </table>
-            </div>
-            <div class="results-summary">
-                <div class="rs-item"><span class="rs-label">Kursant say&#305;</span><span class="rs-val">&#8212;</span></div>
-                <div class="rs-item"><span class="rs-label">Orta g&#246;st&#601;rici</span><span class="rs-val">&#8212;</span></div>
-                <div class="rs-item"><span class="rs-label">Maksimum</span><span class="rs-val">&#8212;</span></div>
-            </div>
-        </div>
-        </div><!-- /menimseme-a2 -->
-    </div>
-
-    <!-- ===================== TAB: İmtahan nəticələri ===================== -->
-    <div class="tab-panel" id="tab-imtahan">
-        <div class="subtab-nav">
-            <button class="subtab-btn active" onclick="switchImtahan('a1', this)">YT 23A1</button>
-            <button class="subtab-btn" onclick="switchImtahan('a2', this)">YT 23A2</button>
-        </div>
-
-        <div class="imtahan-view active" id="imtahan-a1">
-        <div class="card">
-            <div class="card-title">
-                <div class="icon">&#127942;</div>
-                <span>&#304;mtahan n&#601;tic&#601;l&#601;ri &#8212; <strong style="color:var(--accent)">YT 23A1</strong></span>
-            </div>
-            <p class="imt-desc" style="color:var(--text-muted);font-size:0.82rem;margin:-6px 0 14px;">&#8220;H&#601;rbi M&#252;h&#601;ndis Texnikas&#305;&#8221; f&#601;nni &#252;zr&#601; imtahan n&#601;tic&#601;l&#601;ri &#8226; 2025/2026 yaz semestri</p>
-            <div class="search-wrapper">
-                <input type="text" class="search-box" id="imtahan1Search" placeholder="Ad&#305;n&#305;z&#305; axtar&#305;n..." oninput="filterResults(this,'imtahan1Body')">
-            </div>
-            <div class="results-table-wrap">
-                <table class="results-table">
-                    <thead>
-                        <tr><th class="col-num">&#8470;</th><th>Kursant&#305;n ad&#305;</th><th class="col-bal">Bal</th><th class="col-grade">Qiym&#601;t</th></tr>
-                    </thead>
-                    <tbody id="imtahan1Body"></tbody>
-                </table>
-            </div>
-            <div class="results-summary">
-                <div class="rs-item"><span class="rs-label">Kursant say&#305;</span><span class="rs-val">&#8212;</span></div>
-                <div class="rs-item"><span class="rs-label">Orta bal</span><span class="rs-val">&#8212;</span></div>
-                <div class="rs-item"><span class="rs-label">Maksimum</span><span class="rs-val">&#8212;</span></div>
-            </div>
-        </div>
-        </div><!-- /imtahan-a1 -->
-
-        <div class="imtahan-view" id="imtahan-a2">
-        <div class="card">
-            <div class="card-title">
-                <div class="icon">&#127942;</div>
-                <span>&#304;mtahan n&#601;tic&#601;l&#601;ri &#8212; <strong style="color:var(--accent)">YT 23A2</strong></span>
-            </div>
-            <p class="imt-desc" style="color:var(--text-muted);font-size:0.82rem;margin:-6px 0 14px;">&#8220;H&#601;rbi M&#252;h&#601;ndis Texnikas&#305;&#8221; f&#601;nni &#252;zr&#601; imtahan n&#601;tic&#601;l&#601;ri &#8226; 2025/2026 yaz semestri</p>
-            <div class="search-wrapper">
-                <input type="text" class="search-box" id="imtahan2Search" placeholder="Ad&#305;n&#305;z&#305; axtar&#305;n..." oninput="filterResults(this,'imtahan2Body')">
-            </div>
-            <div class="results-table-wrap">
-                <table class="results-table">
-                    <thead>
-                        <tr><th class="col-num">&#8470;</th><th>Kursant&#305;n ad&#305;</th><th class="col-bal">Bal</th><th class="col-grade">Qiym&#601;t</th></tr>
-                    </thead>
-                    <tbody id="imtahan2Body"></tbody>
-                </table>
-            </div>
-            <div class="results-summary">
-                <div class="rs-item"><span class="rs-label">Kursant say&#305;</span><span class="rs-val">&#8212;</span></div>
-                <div class="rs-item"><span class="rs-label">Orta bal</span><span class="rs-val">&#8212;</span></div>
-                <div class="rs-item"><span class="rs-label">Maksimum</span><span class="rs-val">&#8212;</span></div>
-            </div>
-        </div>
-        </div><!-- /imtahan-a2 -->
-
-        <!-- Arxiv: köhnə qəbulların imtahan nəticələri (kompakt; data müəllim-only API-dən gəlir) -->
-        <div class="card" style="margin-top:14px;padding:14px 18px;">
-            <div style="display:flex;align-items:center;gap:10px;cursor:pointer;user-select:none;" onclick="toggleArxivImt()">
-                <span style="font-size:1.05rem;">&#128230;</span>
-                <span style="font-weight:700;color:var(--accent-ink);">Arxiv &#8212; 2024 q&#601;bul imtahan n&#601;tic&#601;l&#601;ri</span>
-                <span id="arxivImtChev" style="margin-left:auto;color:var(--text-muted);">&#9662;</span>
-            </div>
-            <div id="arxivImtBody" style="display:none;margin-top:12px;">
+            <div id="arxivImtBody" style="display:none;">
+                <div class="subtab-nav" id="arxivSemTabs" style="margin-bottom:8px;"></div>
                 <div class="subtab-nav" id="arxivImtTabs" style="margin-bottom:10px;"></div>
                 <div class="results-table-wrap">
-                    <table class="results-table" style="font-size:0.85rem;">
-                        <thead><tr><th class="col-num">&#8470;</th><th>Kursant&#305;n ad&#305;</th><th class="col-bal">Bal</th><th class="col-grade">Qiym&#601;t</th></tr></thead>
+                    <table class="results-table tp-table" style="font-size:0.85rem;">
+                        <thead><tr>
+                            <th class="col-num">&#8470;</th><th>Kursantın adı</th>
+                            <th class="col-bal">K1</th><th class="col-bal">K2</th><th class="col-bal">K3</th>
+                            <th class="col-bal">Koll.</th><th class="col-bal">Sərbəst</th><th class="col-bal">Dəftər</th>
+                            <th class="col-bal">Mənimsəmə</th><th class="col-bal">İmtahan</th><th class="col-grade">Qiymət</th>
+                        </tr></thead>
                         <tbody id="arxivImtTbody"></tbody>
                     </table>
                 </div>
+                <div class="dr-row" style="justify-content:space-between;">
+                    <span class="cab-scale" id="arxivInfo" style="margin:0;"></span>
+                    <button class="btn-mini btn-mini-danger" id="arxivDelBtn" style="display:none;" onclick="tpArchiveDelete()">&#128465; Bu arxivi sil</button>
+                </div>
             </div>
         </div>
-    </div>
+        <div class="card card-danger">
+            <div class="card-title"><div class="icon" style="background:rgba(198,40,40,0.08);border-color:rgba(198,40,40,0.25);">&#9888;</div> Təhlükəli əməliyyatlar</div>
+            <button class="btn btn-download" onclick="tpResetAll()">Bütün seçimləri sıfırla</button>
+            <p class="cab-scale" style="margin-top:12px;">Bütün kursantların sərbəst iş seçimlərini silir &#8212; ballara və tarixlərə toxunmur. Kursantlar yenidən seçim edə bilər.</p>
+        </div>
+    </div><!-- /tab-parametrler -->
     </div><!-- /appView -->
 
     <footer class="site-footer">&copy; 2026 - M&#252;&#601;llif h&#252;quqlar&#305; qorunur.</footer>
 </div>
 
+<!-- Müəllim: kursant paneli (sağdan açılır) və sətir menyusu (⋯) -->
+<div class="tp-drawer-backdrop" id="tpDrawerBackdrop" onclick="closeDrawer()"></div>
+<div class="tp-drawer" id="tpDrawer"></div>
+<div class="tp-rowmenu" id="tpRowMenu"></div>
 <!-- Rules Modal -->
 <!-- Sənəd baxış modalı (Office Online viewer) -->
 <div class="viewer-modal" id="viewerModal" onclick="if(event.target===this)closeViewer()">
@@ -3181,60 +3292,10 @@
     }
 
     // Kollokvium taqım alt-seçimi
-    function switchKollok(id, btn) {
-        document.querySelectorAll('#tab-kollokvium .kollok-view').forEach(v => v.classList.remove('active'));
-        document.querySelectorAll('#tab-kollokvium .subtab-btn').forEach(b => b.classList.remove('active'));
-        const view = document.getElementById('kollok-' + id);
-        if (view) view.classList.add('active');
-        if (btn) btn.classList.add('active');
-    }
-
-    // Mənimsəmə taqım alt-seçimi
-    function switchMenimseme(id, btn) {
-        document.querySelectorAll('#tab-menimseme .menimseme-view').forEach(v => v.classList.remove('active'));
-        document.querySelectorAll('#tab-menimseme .subtab-btn').forEach(b => b.classList.remove('active'));
-        const view = document.getElementById('menimseme-' + id);
-        if (view) view.classList.add('active');
-        if (btn) btn.classList.add('active');
-    }
-
-    // İmtahan taqım alt-seçimi
-    function switchImtahan(id, btn) {
-        document.querySelectorAll('#tab-imtahan .imtahan-view').forEach(v => v.classList.remove('active'));
-        document.querySelectorAll('#tab-imtahan .subtab-btn').forEach(b => b.classList.remove('active'));
-        const view = document.getElementById('imtahan-' + id);
-        if (view) view.classList.add('active');
-        if (btn) btn.classList.add('active');
-    }
-
-    // Filter results table by name
-    function filterResults(input, bodyId) {
-        const q = input.value.toLowerCase().trim();
-        const tbody = document.getElementById(bodyId);
-        let visible = 0;
-        tbody.querySelectorAll('tr').forEach(tr => {
-            if (tr.classList.contains('no-result')) return;
-            const name = (tr.dataset.name || '').toLowerCase();
-            const show = name.includes(q);
-            tr.style.display = show ? '' : 'none';
-            if (show) visible++;
-        });
-        let nr = tbody.querySelector('.no-result');
-        if (visible === 0) {
-            if (!nr) {
-                nr = document.createElement('tr');
-                nr.className = 'no-result';
-                nr.innerHTML = '<td colspan="3">Nəticə tapılmadı</td>';
-                tbody.appendChild(nr);
-            }
-            nr.style.display = '';
-        } else if (nr) {
-            nr.style.display = 'none';
-        }
-    }
-
     // Giriş ekranına qayıdış (çıxışdan sonra)
     function backToSemesters() {
+        closeDrawer();
+        closeRowMenu();
         document.getElementById('appView').style.display = 'none';
         document.getElementById('cabinetView').style.display = 'none';
         document.getElementById('cabinetLogin').style.display = '';
@@ -3467,93 +3528,70 @@
         return out;
     }
 
+    let cabModel = null;   // Nəticələr üçün hesablanmış model — sağ panel (openCabDrawer) bundan istifadə edir
+
     function buildPersonalCards(r, liveK) {
         liveK = liveK || [null, null, null];
-        const empty = '<p class="cab-empty">Nəticələr hələ yerləşdirilməyib</p>';
-
         // Balların birləşməsi: müəllimin manual balı > canlı (E-Kollokvium) > statik
         const kman = cabData.kollok_manual || {};
         const kmerged = [0, 1, 2].map(i => {
             const mv = kman[String(i + 1)];
-            if (mv != null) return { val: String(mv), n: mv, live: null, absent: false };
+            if (mv != null) return { val: String(mv), n: mv, live: null, absent: false, src: 'manual' };
             const lv = liveK[i];
-            if (lv) return { val: lv.absent ? null : String(lv.total), n: lv.absent ? NaN : lv.total, live: lv, absent: lv.absent };
+            if (lv) return { val: lv.absent ? null : String(lv.total), n: lv.absent ? NaN : lv.total, live: lv, absent: lv.absent, src: 'live' };
             const sv = r.kollok ? r.kollok[i] : null;
-            return { val: sv, n: parseInt(sv), live: null, absent: false };
+            return { val: sv, n: parseInt(sv), live: null, absent: false, src: (sv != null && sv !== '') ? 'static' : 'none' };
         });
         const hasKollok = !!r.kollok || liveK.some(v => v) || Object.keys(kman).length > 0;
-
-        // KPI statistika kartları
-        const kvals = kmerged.map(x => x.n).filter(n => !isNaN(n));
-        const kavg = kvals.length ? kvals.reduce((a, b) => a + b, 0) / kvals.length : null;
-        // Mənimsəmə = Kollokvium cəmi (30) + Sərbəst iş (10) + Dəftər/İntizam (10)
         const kollokSum = kmerged.reduce((a, x) => a + (isNaN(x.n) ? 0 : x.n), 0);
         const sc = cabData.scores || null;
-        const hasScores = !!(sc && (sc.serbest != null || sc.defter != null));
-        const men = hasScores ? kollokSum + (sc.serbest || 0) + (sc.defter || 0) : null;
-        const imt = r.imtahan ? parseInt(r.imtahan[0]) : null;
-        const selCnt = Math.min(2, (cabData.selections || []).length);
-        const tiles = [
-            { ico: '&#128221;', val: kavg != null ? (Math.round(kavg * 10) / 10) : '&#8212;', max: '/10', label: 'Orta kollokvium',
-              pct: kavg != null ? kavg * 10 : 0, cls: kavg == null ? 'bar-mid' : (kavg >= 7 ? 'bar-high' : kavg >= 5 ? 'bar-mid' : 'bar-low') },
-            { ico: '&#128202;', val: men != null ? men : '&#8212;', max: '/50', label: 'Mənimsəmə',
-              pct: men != null ? men * 2 : 0, cls: men == null ? 'bar-mid' : barCls(menCls(men)) },
-            { ico: '&#127942;', val: imt != null ? imt : '&#8212;', max: '/100', label: 'İmtahan balı',
-              pct: imt != null ? imt : 0, cls: imt == null ? 'bar-mid' : barCls(imtCls(imt)) },
-            { ico: '&#128218;', val: selCnt + '/2', max: '', label: 'Sərbəst iş seçimi',
-              pct: selCnt * 50, cls: selCnt >= 2 ? 'bar-high' : 'bar-low' }
-        ];
-        document.getElementById('cabStats').innerHTML = tiles.map(t => `
-            <div class="cab-stat">
-                <div class="cab-stat-ico">${t.ico}</div>
-                <div class="cab-stat-val">${t.val}<span class="cab-stat-max">${t.max}</span></div>
-                <div class="cab-stat-label">${t.label}</div>
-                <div class="cab-stat-bar"><i class="${t.cls}" data-w="${Math.min(100, Math.max(0, t.pct))}"></i></div>
-            </div>`).join('');
-
-        // Kollokvium — statik + E-Kollokvium canlı balları
-        const k = document.getElementById('cabKollok');
-        if (hasKollok) {
-            k.innerHTML = kmerged.map((x, i) => {
-                const chip = x.absent
-                    ? '<span class="grade bal-low">Qayıb</span>'
-                    : balSpanHtml(x.val, balCls(x.val));
-                const dot = x.live ? '<span class="live-dot" title="Elektron Kollokvium Sistemindən canlı bal"></span>' : '';
-                let row = `<div class="cab-row"><span class="cab-row-name">Kollokvium ${i + 1}${dot}</span><div class="cab-row-bar"><i class="${barCls(balCls(x.absent ? null : x.val))}" data-w="${isNaN(x.n) ? 0 : x.n * 10}"></i></div>${chip}</div>`;
-                if (x.live && !x.absent) {
-                    row += `<div class="cab-subrow">Suallar: ${x.live.qsum}/5 &#8226; Dəftər: ${x.live.notebook}${x.live.note ? ' &#8226; ' + esc(x.live.note) : ''}</div>`;
-                } else if (x.live && x.absent && x.live.absentReason) {
-                    row += `<div class="cab-subrow">Səbəb: ${esc(x.live.absentReason)}</div>`;
-                }
-                return row;
-            }).join('') + '<p class="cab-scale">Maksimum bal: 10</p>';
-        } else k.innerHTML = empty;
-
-        // Mənimsəmə — bölgü: Kollokvium ∑ + Sərbəst iş + Dəftər/İntizam
-        const m = document.getElementById('cabMenimseme');
-        const pctCls = p => p >= 80 ? 'bal-high' : p >= 60 ? 'bal-mid' : 'bal-low';
         const serbestB = sc && sc.serbest != null ? sc.serbest : null;
         const defterB = sc && sc.defter != null ? sc.defter : null;
-        const menRow = (label, val, max) => {
-            const has = val != null;
-            const pct = has ? (val / max) * 100 : 0;
-            const chip = has ? `<span class="bal ${pctCls(pct)}">${val}</span>` : '<span class="bal bal-none">&#8212;</span>';
-            return `<div class="cab-row"><span class="cab-row-name">${label}</span><div class="cab-row-bar"><i class="${has ? pctCls(pct).replace('bal-', 'bar-') : 'bar-mid'}" data-w="${Math.round(pct)}"></i></div>${chip}</div>`;
-        };
-        m.innerHTML =
-            menRow('Kollokvium cəmi', hasKollok ? kollokSum : null, 30) +
-            menRow('Sərbəst iş', serbestB, 10) +
-            menRow('Dəftər/İntizam', defterB, 10) +
-            (men != null
-                ? `<div class="cab-row cab-row-total"><span class="cab-row-name">Mənimsəmə</span><div class="cab-row-bar"><i class="${barCls(menCls(men))}" data-w="${Math.min(100, men * 2)}"></i></div><span class="bal ${menCls(men)}">${men}<small style="font-weight:700;opacity:0.6;">/50</small></span></div>`
-                : '<p class="cab-scale">Sərbəst iş və Dəftər/İntizam ballarını müəllim daxil etdikdən sonra cəm avtomatik hesablanacaq</p>');
+        const hasScores = serbestB != null || defterB != null;
+        // Mənimsəmə = Kollokvium cəmi (30) + Sərbəst iş (10) + Dəftər/İntizam (10)
+        const men = hasScores ? kollokSum + (serbestB || 0) + (defterB || 0) : null;
+        const imt = r.imtahan ? parseInt(r.imtahan[0]) : null;
+        const grade = r.imtahan && r.imtahan[1] ? r.imtahan[1] : null;
+        cabModel = { kmerged, hasKollok, kollokSum, serbestB, defterB, hasScores, men, imt, grade };
 
-        // İmtahan
-        const im = document.getElementById('cabImtahan');
-        if (r.imtahan) {
-            im.innerHTML = `<div class="cab-row"><span class="cab-row-name">Bal</span><div class="cab-row-bar"><i class="${barCls(imtCls(imt))}" data-w="${Math.min(100, imt || 0)}"></i></div>${balSpanHtml(r.imtahan[0], imtCls(imt))}</div>
-                <div class="cab-row"><span class="cab-row-name">Qiymət</span><span style="flex:1;"></span>${r.imtahan[1] ? `<span class="grade ${imtCls(imt)}">${r.imtahan[1]}</span>` : '<span class="bal bal-none">&#8212;</span>'}</div>`;
-        } else im.innerHTML = empty;
+        const dash = '&#8212;';
+        const tone = cls => cls === 'bal-none' ? 't-none' : cls.replace('bal-', 't-');
+        const stat = (key, label, valHtml, t, pct, subHtml) =>
+            `<div class="cb-stat cb-stat-btn" role="button" tabindex="0" title="Ətraflı bax" onclick="openCabDrawer('${key}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openCabDrawer('${key}');}">` +
+            `<div class="cb-stat-head"><span class="cb-label">${label}</span><span class="cb-more">ətraflı &#8250;</span></div>` +
+            `<div class="cb-stat-val ${t}">${valHtml}</div>` +
+            `<div class="cb-bar"><i class="${t}" data-w="${Math.round(Math.min(100, Math.max(0, pct || 0)))}"></i></div><div class="cb-stat-sub">${subHtml}</div></div>`;
+
+        // Kollokvium: cəm /30, altında K1·K2·K3 (canlı ballar yaşıl nöqtə ilə)
+        const kSub = kmerged.map((x, i) => {
+            const dot = x.live ? '<span class="live-dot" title="Elektron Kollokvium Sistemindən canlı bal"></span>' : '';
+            const v = x.absent ? '<b class="t-low">qayıb</b>' : (x.val != null && x.val !== '' ? `<b>${esc(String(x.val))}</b>` : dash);
+            return `<span>K${i + 1} ${v}${dot}</span>`;
+        }).join('');
+        const kTone = !hasKollok ? 't-none' : kollokSum >= 24 ? 't-high' : kollokSum >= 18 ? 't-mid' : 't-low';
+        // Mənimsəmə: cəm /50, altında Sərbəst iş və Dəftər balları
+        const mTone = men == null ? 't-none' : tone(menCls(men));
+        const mSub = hasScores
+            ? `<span>Sərbəst iş <b>${serbestB != null ? serbestB : dash}</b>/10</span><span>Dəftər <b>${defterB != null ? defterB : dash}</b>/10</span>`
+            : '<span>müəllim bal daxil edəndə hesablanır</span>';
+        // İmtahan: bal /100, altında qiymət
+        const iTone = imt == null ? 't-none' : tone(imtCls(imt));
+        const iSub = grade ? `<span><b>${esc(grade.charAt(0))}</b> ${esc(grade.slice(1).trim())}</span>` : '<span>maksimum 100 bal</span>';
+
+        let html = '<div class="cb-stats">'
+            + stat('kollok', 'Kollokvium', hasKollok ? `${kollokSum}<small>/30</small>` : dash, kTone, hasKollok ? kollokSum / 30 * 100 : 0, kSub)
+            + stat('men', 'Mənimsəmə', men != null ? `${men}<small>/50</small>` : dash, mTone, men != null ? men * 2 : 0, mSub)
+            + stat('imt', 'İmtahan', imt != null ? `${imt}<small>/100</small>` : dash, iTone, imt != null ? imt : 0, iSub)
+            + '</div>';
+        const details = kmerged.map((x, i) => {
+            if (x.live && !x.absent) return `K${i + 1}: suallar ${x.live.qsum}/5, dəftər ${x.live.notebook}${x.live.note ? ', ' + esc(x.live.note) : ''}`;
+            if (x.live && x.absent && x.live.absentReason) return `K${i + 1}: qayıb (${esc(x.live.absentReason)})`;
+            return null;
+        }).filter(Boolean);
+        if (details.length) html += `<p class="cb-note">${details.join(' &#8226; ')}</p>`;
+        document.getElementById('cabResults').innerHTML = html;
+        const hint = document.getElementById('cabResultsHint');
+        if (hint) hint.textContent = (!hasKollok && !hasScores && imt == null) ? 'Nəticələr hələ yerləşdirilməyib' : '';
 
         // Barları animasiya ilə doldur
         requestAnimationFrame(() => setTimeout(() => {
@@ -3561,6 +3599,94 @@
         }, 80));
     }
 
+    // ── Kursant: nəticə bloku → sağ panel (müəllim panelindəki #tpDrawer elementi paylaşılır) ──
+    let cabTopics = null;
+
+    function openCabDrawer(kind) {
+        const d = document.getElementById('tpDrawer'), b = document.getElementById('tpDrawerBackdrop');
+        if (!d || !cabModel) return;
+        d.dataset.name = '';
+        d.innerHTML = renderCabDrawer(kind);
+        d.classList.add('open');
+        if (b) b.classList.add('open');
+        const body = d.querySelector('.tp-drawer-body');
+        if (body) body.scrollTop = 0;
+        if (kind === 'kollok') loadCabTopics();
+        requestAnimationFrame(() => setTimeout(() => {
+            d.querySelectorAll('[data-w]').forEach(el => { el.style.width = el.dataset.w + '%'; });
+        }, 60));
+    }
+
+    function renderCabDrawer(kind) {
+        const m = cabModel;
+        const name = cabData.name || '';
+        const none = '<span class="bal bal-none">&#8212;</span>';
+        const head = (title) => `<div class="tp-drawer-head"><div><h3>${title}</h3><small>${esc(name)}</small></div><button class="tp-drawer-close" onclick="closeDrawer()" title="Bağla (Esc)">&#10005;</button></div>`;
+        const tone = cls => cls === 'bal-none' ? 't-none' : cls.replace('bal-', 't-');
+        const bar = (v, max, cls) => `<div class="cb-bar" style="margin-top:6px;"><i class="${tone(cls)}" data-w="${v != null ? Math.round(Math.min(100, v / max * 100)) : 0}"></i></div>`;
+        const mdRow = (label, v, max, cls) => `<div class="cb-md"><div class="cb-md-head"><span>${label}</span>${v == null ? none : `<span class="bal ${cls}">${v}<small>/${max}</small></span>`}</div>${bar(v, max, cls)}</div>`;
+        const scaleRow = (range, label, active, cls) => `<div class="cb-scale-row${active ? ' active' : ''}"><span class="cb-scale-range ${active ? cls.replace('bal-', 't-') : ''}">${range}</span><span class="cb-scale-label">${label}</span>${active ? '<span class="cb-scale-you">siz</span>' : ''}</div>`;
+        const kCls = m.kollokSum >= 24 ? 'bal-high' : m.kollokSum >= 18 ? 'bal-mid' : 'bal-low';
+        let body = '';
+        if (kind === 'kollok') {
+            const srcTxt = { manual: 'Müəllimin düzəlişi', live: 'E-Kollokvium (canlı)', static: 'Yekun cədvəl', none: 'Hələ keçirilməyib' };
+            const blocks = m.kmerged.map((x, i) => {
+                const chip = x.absent ? '<span class="grade bal-low">Qayıb</span>' : balSpanHtml(x.val, balCls(x.val));
+                let det = '';
+                if (x.live && !x.absent) det = `<div class="cb-kd-meta">Suallar: <b>${x.live.qsum}/5</b> &#8226; Dəftər: <b>${x.live.notebook}</b>${x.live.note ? ' &#8226; Qeyd: ' + esc(x.live.note) : ''}</div>`;
+                else if (x.live && x.absent) det = `<div class="cb-kd-meta">Qayıb${x.live.absentReason ? ' &#8212; ' + esc(x.live.absentReason) : ''}</div>`;
+                return `<div class="cb-kd"><div class="cb-kd-head"><b>Kollokvium ${i + 1}</b><span class="cb-kd-src">${srcTxt[x.src] || ''}</span>${chip}</div>${det}<div class="cb-kd-topics" id="cabTopics${i + 1}"><span class="cb-muted">Dəftər mövzuları yüklənir...</span></div></div>`;
+            }).join('');
+            body = `<div class="dr-sec"><h4>Kollokvium balları</h4>${blocks}<div class="dr-total" style="margin-top:12px;"><span>Cəm (maks 30)</span><span>${m.hasKollok ? `<span class="bal ${kCls}">${m.kollokSum}</span>` : none}</span></div></div>` +
+                   `<div class="dr-sec"><h4>Necə hesablanır</h4><p class="cb-note" style="margin:0;">Hər kollokvium maksimum 10 baldır: 7 və yuxarı yüksək, 5–6 orta, 5-dən aşağı zəif. Ballar Elektron Kollokvium Sistemindən avtomatik gəlir (yaşıl nöqtə); müəllim düzəliş edibsə, düzəliş üstündür. Üç kollokviumun cəmi (maks 30) mənimsəmə balına daxil olur.</p></div>`;
+            return head('Kollokvium') + `<div class="tp-drawer-body">${body}</div>`;
+        }
+        if (kind === 'men') {
+            body = `<div class="dr-sec"><h4>Bölgü</h4>` +
+                mdRow('Kollokvium cəmi', m.hasKollok ? m.kollokSum : null, 30, m.hasKollok ? kCls : 'bal-none') +
+                mdRow('Sərbəst iş', m.serbestB, 10, m.serbestB != null ? balCls(m.serbestB) : 'bal-none') +
+                mdRow('Dəftər / İntizam', m.defterB, 10, m.defterB != null ? balCls(m.defterB) : 'bal-none') +
+                `<div class="dr-total" style="margin-top:12px;"><span>Mənimsəmə (maks 50)</span><span>${m.men == null ? none : `<span class="bal ${menCls(m.men)}">${m.men}</span>`}</span></div>` +
+                (m.men == null ? '<p class="cb-note">Sərbəst iş və Dəftər/İntizam ballarını müəllim daxil edəndən sonra cəm hesablanır.</p>' : '') + `</div>` +
+                `<div class="dr-sec"><h4>Şkala</h4><div class="cb-scale">` +
+                scaleRow('40 – 50', 'Yüksək', m.men != null && m.men >= 40, 'bal-high') +
+                scaleRow('30 – 39', 'Orta', m.men != null && m.men >= 30 && m.men < 40, 'bal-mid') +
+                scaleRow('0 – 29', 'Aşağı', m.men != null && m.men < 30, 'bal-low') +
+                `</div><p class="cb-note">Mənimsəmə = Kollokvium cəmi (maks 30) + Sərbəst iş (maks 10) + Dəftər/İntizam (maks 10).</p></div>`;
+            return head('Mənimsəmə') + `<div class="tp-drawer-body">${body}</div>`;
+        }
+        const rows = [['A', '91 – 100', 'Əla'], ['B', '81 – 90', 'Çox yaxşı'], ['C', '71 – 80', 'Yaxşı'], ['D', '61 – 70', 'Kafi'], ['E', '51 – 60', 'Qənaətbəxş'], ['F', '0 – 50', 'Qeyri-kafi']];
+        const cur = m.grade ? m.grade.charAt(0) : null;
+        body = `<div class="dr-sec"><h4>İmtahan nəticəsi</h4>` +
+            mdRow('Bal', m.imt, 100, m.imt != null ? imtCls(m.imt) : 'bal-none') +
+            `<div class="dr-total" style="margin-top:12px;"><span>Qiymət</span><span>${m.grade ? `<span class="grade ${imtCls(m.imt)}">${esc(m.grade)}</span>` : none}</span></div>` +
+            (m.imt == null ? '<p class="cb-note">İmtahan balı hələ yerləşdirilməyib.</p>' : '') + `</div>` +
+            `<div class="dr-sec"><h4>Qiymət şkalası</h4><div class="cb-scale">` +
+            rows.map(r => scaleRow(r[1], r[0] + ' &#8212; ' + r[2], cur === r[0], (r[0] === 'A' || r[0] === 'B') ? 'bal-high' : r[0] === 'C' ? 'bal-mid' : 'bal-low')).join('') +
+            `</div><p class="cb-note">51 və yuxarı bal müsbət qiymətdir. Qiymət baldan avtomatik hesablanır.</p></div>`;
+        return head('İmtahan') + `<div class="tp-drawer-body">${body}</div>`;
+    }
+
+    // Dəftər mövzuları (Firebase topics/K1..K3, açıq oxunur) — kollokvium panelində göstərilir
+    async function loadCabTopics() {
+        if (!cabTopics) {
+            try {
+                const ctl = new AbortController();
+                const tm = setTimeout(() => ctl.abort(), 5000);
+                const res = await fetch('https://kollokvium1-default-rtdb.firebaseio.com/topics.json', { signal: ctl.signal });
+                clearTimeout(tm);
+                cabTopics = res.ok ? ((await res.json()) || {}) : {};
+            } catch (e) { cabTopics = {}; }
+        }
+        [1, 2, 3].forEach(k => {
+            const el = document.getElementById('cabTopics' + k);
+            if (!el) return;
+            const t = cabTopics['K' + k];
+            el.innerHTML = (t && t.length)
+                ? '<span class="cb-kd-lbl">Dəftər mövzuları:</span> ' + t.map(esc).join(', ')
+                : '<span class="cb-muted">Dəftər mövzuları hələ təyin edilməyib</span>';
+        });
+    }
     async function renderCabSerbest() {
         const el = document.getElementById('cabSerbest');
         const sel = cabData.selections || [];
@@ -3571,18 +3697,29 @@
                 const wres = await fetch(`/api/works?team=${encodeURIComponent(cabData.team)}`, { headers: { 'Authorization': 'Bearer ' + session.token } }).then(r => r.json());
                 titles = sel.map(i => wres.works[i] ? wres.works[i].title : `Sərbəst iş #${i + 1}`);
             } catch(e) {}
-            el.innerHTML = '<ul class="cab-sel-list">' + titles.map((t, i) =>
-                `<li><span class="cab-sel-num">${i + 1}</span><span>${esc(t)}</span></li>`).join('') +
-                '</ul><p class="cab-note-ok">&#10003; Seçiminiz qeydə alınıb</p>';
+            el.innerHTML = '<ol class="cb-topics">' + titles.map(t => `<li>${esc(t)}</li>`).join('') + '</ol><span class="cb-ok">&#10003; Seçim qeydə alınıb</span>';
         } else if (!cabData.key) {
-            el.innerHTML = '<p class="cab-empty">Sərbəst iş seçimi üçün təsdiq açarı hələ təyin edilməyib — müəllimlə əlaqə saxlayın.</p>';
+            el.innerHTML = '<span class="cb-muted">Seçim üçün təsdiq açarı hələ təyin edilməyib — müəllimlə əlaqə saxlayın.</span>';
         } else {
-            const dlTxt = cabData.deadline ? ` Son təhvil tarixi: <strong style="color:var(--danger);">${cabData.deadline}</strong>` : '';
-            el.innerHTML = `<p class="cab-empty" style="margin-bottom:14px;">Hələ sərbəst iş seçməmisiniz.${dlTxt}</p>
-                <button class="btn btn-primary" onclick="startSerbestFlow()">Sərbəst iş seç &#8594;</button>`;
+            el.innerHTML = `<div class="cb-row"><span class="cb-muted">Siyahıdan 2 mövzu seçin.</span><button class="cb-btn cb-btn-primary" onclick="startSerbestFlow()">Mövzu seç &#8594;</button></div>`;
         }
+        updateStepStates();
     }
 
+    // Addım vəziyyətləri: 1 — seçim; 2 — hazırlıq; 3 — təhvil (hər iki fayl)
+    function updateStepStates() {
+        const s = [1, 2, 3].map(i => document.getElementById('cbStep' + i));
+        if (s.some(x => !x) || !cabData) return;
+        const sel = (cabData.selections || []).length >= 2;
+        const ups = cabData.uploads || {};
+        const both = !!(ups.docx && ups.pptx);
+        s.forEach(x => x.classList.remove('active', 'done'));
+        if (sel) s[0].classList.add('done'); else s[0].classList.add('active');
+        if (both) { s[1].classList.add('done'); s[2].classList.add('done'); }
+        else if (sel) { s[1].classList.add('active'); s[2].classList.add('active'); }
+        const hint = document.getElementById('cabStepHint');
+        if (hint) hint.textContent = both ? 'Hər şey təhvil verilib' : sel ? (ups.docx || ups.pptx ? 'Bir fayl qalıb' : 'Növbəti: hazırlayıb təhvil verin') : 'Növbəti: mövzu seçin';
+    }
     function startSerbestFlow() {
         selectedTeam = cabData.team;
         selectedStudent = cabData.name;
@@ -3604,24 +3741,18 @@
         document.getElementById('cabinetLogin').style.display = 'none';
         document.getElementById('cabinetView').style.display = 'none';
         try { if (!cabData) await fetchCabData(); } catch(e) { return; }
-        renderTeacherTables(cabData.results || {});
-        enrichTeacherLive();
-        renderTeacherPanel();
-        loadKollokTopics();
         document.getElementById('tabNav').style.display = '';
         const av = document.getElementById('appView');
         av.classList.remove('student-mode');
         av.classList.add('teacher-mode');
         av.style.display = '';
-        const activeTab = document.querySelector('.tab-nav .tab-btn.active');
-        if (activeTab) {
-            const nav = activeTab.closest('.tab-nav');
-            if (nav && nav.scrollWidth > nav.clientWidth) {
-                nav.scrollLeft = Math.max(0, activeTab.offsetLeft - (nav.clientWidth - activeTab.offsetWidth) / 2);
-            }
-        }
+        const search = document.getElementById('tpSearch');
+        if (search) search.value = '';
+        switchTab('kursantlar', document.querySelector('.tab-nav .tab-btn'));
+        renderTeacherPanel();
+        enrichTeacherLive();
+        loadKollokTopics();
     }
-
     function appBack() {
         if (session && session.role === 'student') {
             document.getElementById('appView').style.display = 'none';
@@ -3629,20 +3760,6 @@
             showCabinet();
         } else {
             backToSemesters();
-        }
-    }
-
-    function renderTeacherTables(results) {
-        const groups = [
-            ['YT 23A1', 'kollokBody', 'menimseme1Body', 'imtahan1Body'],
-            ['YT 23A2', 'kollok2Body', 'menimseme2Body', 'imtahan2Body']
-        ];
-        for (const [group, kolId, menId, imtId] of groups) {
-            const g = results[group];
-            if (!g) continue;
-            applyLiveToKollokTable(kolId, g, teacherLive[group] || null);
-            renderMenimsemeTable(group, menId, g, teacherLive[group] || null);
-            renderImtahanTable(imtId, g);
         }
     }
 
@@ -3726,8 +3843,8 @@
     }
 
     async function saveStudentDeadline(inp) {
-        const tr = inp.closest('tr');
-        const name = tr.dataset.name;
+        const host = inp.closest('[data-name]');
+        const name = host.dataset.name;
         const v = inp.value.trim();
         try {
             const res = await fetch('/api/cabinet-deadline', {
@@ -3739,111 +3856,209 @@
             if (!res.ok) throw 0;
             cabData.deadlines = cabData.deadlines || {};
             if (v) cabData.deadlines[name] = v; else delete cabData.deadlines[name];
-            tr.style.background = 'rgba(46,125,50,0.1)';
-            setTimeout(() => { tr.style.background = ''; }, 700);
+            syncDeadlineViews(name);
+            flashHost(host, inp);
         } catch(e) {
+            syncDeadlineViews(name);
             showToast('Tarix yadda saxlanıla bilmədi!', 'error');
         }
     }
 
+    // Eyni kursantın bütün görünüşlərində (cədvəl mətni, panel inputu) son tarixi bazadakı dəyərə gətirir
+    function syncDeadlineViews(name) {
+        const v = (cabData.deadlines || {})[name] || '';
+        document.querySelectorAll(`[data-name="${CSS.escape(name)}"] .dl-inp-cell`).forEach(o => { if (document.activeElement !== o) o.value = v; });
+        document.querySelectorAll(`[data-name="${CSS.escape(name)}"] .dl-text`).forEach(s => { s.textContent = v || '—'; s.classList.toggle('dl-empty', !v); });
+    }
+
+    // Cədvəldə son tarix mətn kimi görünür; klikləyəndə input olur, Enter/blur-da yadda saxlanılır, Esc ləğv edir
+    function editDeadlineInline(span) {
+        const name = ctxName(span);
+        const inp = document.createElement('input');
+        inp.type = 'text'; inp.className = 'dl-input dl-inp-cell'; inp.maxLength = 40; inp.placeholder = 'məs: 20.05.2026';
+        inp.value = (cabData.deadlines || {})[name] || '';
+        inp.onchange = () => saveStudentDeadline(inp);
+        inp.onkeydown = e => {
+            if (e.key === 'Escape') { inp.value = (cabData.deadlines || {})[name] || ''; inp.blur(); }
+            if (e.key === 'Enter') inp.blur();
+        };
+        inp.onblur = () => setTimeout(() => { if (inp.parentNode) inp.replaceWith(deadlineSpan(name, inp.value.trim())); }, 120);
+        span.replaceWith(inp);
+        inp.focus(); inp.select();
+    }
+    function deadlineSpan(name, v) {
+        const s = document.createElement('span');
+        s.className = 'dl-text' + (v ? '' : ' dl-empty');
+        s.title = 'Son tarixi dəyişmək üçün klik';
+        s.textContent = v || '—';
+        s.onclick = () => editDeadlineInline(s);
+        return s;
+    }
     // ===== Müəllim: idarəetmə paneli =====
+    // Naviqasiya: üstdə qlobal taqım seçici (tpTeam), 4 tab (Kursantlar / Ballar / Sərbəst işlər / Parametrlər),
+    // kursant sətrinə klik → sağdan açılan panel (drawer) — bütün fərdi əməliyyatlar oradadır.
     let tpTeam = 'YT23A1';
+    let drawerName = null;
 
-    function renderTeacherPanel() {
+    // Elementin ən yaxın data-name daşıyıcısından (cədvəl sətri, panel, menyu) kursant adı
+    function ctxName(el) {
+        const h = el && el.closest ? el.closest('[data-name]') : null;
+        return h ? h.dataset.name : null;
+    }
+
+    function teamOf(name) {
         const teams = cabData.teams || {};
+        return Object.keys(teams).find(t => (teams[t] || []).includes(name)) || tpTeam;
+    }
+
+    // Taqım → statik nəticə qrupu ("YT23A1" → "YT 23A1"); statik qrup yoxdursa boş qrup düzəldilir
+    function groupForTeam(team) {
+        for (const [key, g] of Object.entries(cabData.results || {})) {
+            if (g && g.team === team) return { key: key, g: g };
+        }
+        const key = String(team || '').replace(/^([^\d\s]+)(\d)/, '$1 $2');
+        return { key: key, g: { team: team, kollok: {}, menimseme: {}, imtahan: {} } };
+    }
+
+    // Kursantın cari balları: {ks, ksum, serbest, defter, total|null, exam|null, examStatic|null}
+    function studentTotals(name, team) {
+        const gt = groupForTeam(team);
+        const live = teacherLive[gt.key] || null;
+        const ks = mergedKollokFor(name, gt.g, live);
+        const ksum = ks.reduce((a, v) => a + (v || 0), 0);
+        const sc = (cabData.scores || {})[name] || {};
+        const s = sc.serbest != null ? sc.serbest : null;
+        const d = sc.defter != null ? sc.defter : null;
+        const hasAny = ks.some(v => v != null) || s != null || d != null;
+        const total = hasAny ? ksum + (s || 0) + (d || 0) : null;
+        const st = ((gt.g.imtahan || {})[name] || [])[0];
+        const examStatic = st != null && !isNaN(parseInt(st)) ? parseInt(st) : null;
+        const man = (cabData.exam_scores || {})[name];
+        return { ks: ks, ksum: ksum, serbest: s, defter: d, total: total,
+                 exam: man != null ? man : examStatic, examStatic: examStatic };
+    }
+
+    function menCellHtml(total) {
+        return total == null ? '<span class="dim">&#8212;</span>' : `<span class="bal ${menCls(total)}">${total}</span>`;
+    }
+    function examCellHtml(exam) {
+        if (exam == null) return '<span class="dim">&#8212;</span>';
+        const g = examGrade(exam);
+        return `<span class="bal ${imtCls(exam)}" title="${esc(g)}">${exam} &#183; ${esc(g.charAt(0))}</span>`;
+    }
+
+    function tpSelStat(team) {
+        const members = (cabData.teams || {})[team] || [];
         const sels = cabData.selections || {};
-        if (!(tpTeam in teams)) tpTeam = Object.keys(teams)[0] || '';
-        document.getElementById('tpStats').innerHTML = Object.entries(teams).map(([team, members]) => {
-            const done = members.filter(n => (sels[n] || []).length >= 2).length;
-            const pct = members.length ? Math.round(done / members.length * 100) : 0;
-            return `<div class="tp-chip"><span class="tp-chip-team">${esc(team)}</span><div class="tp-chip-bar"><i class="${pct === 100 ? 'bar-high' : pct >= 50 ? 'bar-mid' : 'bar-low'}" data-w="${pct}"></i></div><span class="tp-chip-val">${done}/${members.length} seçib</span></div>`;
-        }).join('');
-        const tabsHtml = Object.keys(teams).map(t =>
-            `<button class="subtab-btn${t === tpTeam ? ' active' : ''}" data-team="${esc(t)}" onclick="tpSwitchTeam(this.dataset.team, this)">${esc(t)}</button>`).join('');
-        document.getElementById('tpTeamTabs').innerHTML = tabsHtml;
-        document.getElementById('tpTeamTabs2').innerHTML = tabsHtml;
-        renderTpStudents();
-        renderTpWorks();
-        requestAnimationFrame(() => setTimeout(() => {
-            document.querySelectorAll('#tpStats [data-w]').forEach(el => { el.style.width = el.dataset.w + '%'; });
-        }, 80));
+        const done = members.filter(n => (sels[n] || []).length >= 2).length;
+        return { done: done, total: members.length };
     }
-
-    function tpSwitchTeam(t, btn) {
-        tpTeam = t;
-        document.querySelectorAll('#tpTeamTabs .subtab-btn, #tpTeamTabs2 .subtab-btn').forEach(b =>
-            b.classList.toggle('active', b.dataset.team === t));
-        renderTpStudents();
-        renderTpWorks();
-    }
-
-    function tpSwitchView(name, btn) {
-        document.querySelectorAll('#teacherPanel .tp-nav-btn').forEach(b => b.classList.remove('active'));
-        if (btn) btn.classList.add('active');
-        document.querySelectorAll('#teacherPanel .tp-view').forEach(v => v.classList.remove('active'));
-        const view = document.getElementById('tpView-' + name);
-        if (view) view.classList.add('active');
-        tpCloseMenu();
-        if (name === 'students') {
-            requestAnimationFrame(() => setTimeout(() => {
-                document.querySelectorAll('#tpStats [data-w]').forEach(el => { el.style.width = el.dataset.w + '%'; });
-            }, 80));
+    function tpUpdateTeamLabels() {
+        document.querySelectorAll('#tpStudentsTeam, #tpWorksTeam, #balTeam').forEach(el => { el.textContent = tpTeam; });
+        const st = tpSelStat(tpTeam);
+        const b = document.getElementById('tpSelStat');
+        if (b) {
+            b.textContent = st.done + '/' + st.total + ' seçib';
+            b.className = 'bal ' + (st.total && st.done === st.total ? 'bal-high' : st.done ? 'bal-mid' : 'bal-none');
         }
     }
+    function renderTeacherPanel() {
+        const teams = cabData.teams || {};
+        if (!(tpTeam in teams)) tpTeam = Object.keys(teams)[0] || '';
+        const sel = document.getElementById('tpTeamSel');
+        sel.innerHTML = Object.keys(teams).map(t => {
+            const st = tpSelStat(t);
+            return `<option value="${esc(t)}"${t === tpTeam ? ' selected' : ''}>${esc(t)} &#183; ${st.done}/${st.total} seçib</option>`;
+        }).join('');
+        tpUpdateTeamLabels();
+        renderTpStudents();
+        renderTpWorks();
+        renderBallar();
+        renderTeamList();
+    }
 
-    function tpToggleMenu(e) {
-        e.stopPropagation();
-        document.getElementById('tpTeamMenu').classList.toggle('open');
+    function tpSwitchTeam(t) {
+        if (!t || t === tpTeam) return;
+        tpTeam = t;
+        const sel = document.getElementById('tpTeamSel');
+        if (sel && sel.value !== t) sel.value = t;
+        tpUpdateTeamLabels();
+        if (drawerName && !((cabData.teams || {})[t] || []).includes(drawerName)) closeDrawer();
+        renderTpStudents();
+        renderTpWorks();
+        renderBallar();
     }
-    function tpCloseMenu() {
-        const m = document.getElementById('tpTeamMenu');
-        if (m) m.classList.remove('open');
+    // Qlobal axtarış — bütün cədvəllərdə (kursant adı / iş adı)
+    function tpFilter() {
+        const inp = document.getElementById('tpSearch');
+        const q = inp ? (inp.value || '').trim().toLocaleLowerCase('az') : '';
+        ['tpStudents', 'balBody', 'tpWorks'].forEach(id => {
+            const tb = document.getElementById(id);
+            if (!tb) return;
+            tb.querySelectorAll('tr').forEach(tr => {
+                const txt = (tr.dataset.name || tr.textContent || '').toLocaleLowerCase('az');
+                tr.style.display = !q || txt.includes(q) ? '' : 'none';
+            });
+        });
     }
-    document.addEventListener('click', e => {
-        if (!e.target.closest('.tp-menu-wrap')) tpCloseMenu();
-    });
+
+    function flashHost(host, inp, color) {
+        const el = host && host.tagName === 'TR' ? host : inp;
+        if (!el) return;
+        el.style.background = color || 'rgba(46,125,50,0.12)';
+        setTimeout(() => { el.style.background = ''; }, 700);
+    }
+
+    // Sənəd vəziyyəti nişanı (cədvəldə): yoxdur / baxılmayıb / qəbul / düzəliş / virus
+    function docPill(meta, label) {
+        if (!meta) return `<span class="doc-ico" title="${label}: yüklənməyib">${label === 'Word' ? '&#128196;' : '&#128202;'}</span>`;
+        const vt = meta.vt || {}, rv = meta.review || {};
+        if (vt.status === 'flagged') return `<span class="doc-pill doc-bad" title="${label}: VirusTotal ${vt.malicious || 0} zərərli, ${vt.suspicious || 0} şübhəli — EHTİYATLI OL!">${label} &#9888;</span>`;
+        if (rv.status === 'accepted') return `<span class="doc-pill doc-ok" title="${label}: qəbul edilib">${label} &#10003;</span>`;
+        if (rv.status === 'revise') return `<span class="doc-pill doc-rev" title="${label}: düzəliş istənilib${rv.note ? ' — ' + esc(rv.note) : ''}">${label} &#9998;</span>`;
+        return `<span class="doc-pill doc-wait" title="${label}: yüklənib, hələ baxılmayıb (${esc(meta.fname || '')})">${label} &#8987;</span>`;
+    }
 
     function renderTpStudents() {
         const members = (cabData.teams || {})[tpTeam] || [];
         const sels = cabData.selections || {};
         const works = cabData.works || [];
         const dls = cabData.deadlines || {};
+        const ups = cabData.uploads || {};
         const tb = document.getElementById('tpStudents');
         tb.innerHTML = '';
         members.forEach((name, i) => {
             const sel = sels[name] || [];
-            const selHtml = sel.length
-                ? '<ol class="tp-sel">' + sel.map(id => `<li>${esc(works[id] || ('Sərbəst iş #' + (id + 1)))}</li>`).join('') + '</ol>'
-                : '<span class="bal bal-none">Seçməyib</span>';
-            const up = (cabData.uploads || {})[name] || {};
-            const tpVt = kind => {
-                const vt = (up[kind] || {}).vt;
-                if (!vt) return `<button class="vt vt-ask" title="Virus yoxlanışına göndər" onclick="tpVtCheck('${kind}', this)">&#128737;?</button>`;
-                if (vt.status === 'pending') return `<button class="vt vt-pending" title="Yoxlanılır — kliklə yenilə" onclick="tpVtRefresh('${kind}', this)">&#8987;</button>`;
-                if (vt.status === 'clean') return `<span class="vt vt-ok" title="VirusTotal: təmiz">&#128737;</span>`;
-                return `<span class="vt vt-bad" title="VirusTotal: ${vt.malicious || 0} zərərli, ${vt.suspicious || 0} şübhəli — EHTİYATLI OL!">&#9888;</span>`;
-            };
-            const tpRv = kind => {
-                const rv = (up[kind] || {}).review;
-                const acc = rv && rv.status === 'accepted';
-                const rev = rv && rv.status === 'revise';
-                const note = rv && rv.note ? ': ' + esc(rv.note) : '';
-                return `<button class="rv${acc ? ' rv-acc' : ''}" title="${acc ? 'Qəbul edilib' + note + ' — ləğv üçün klik' : 'Qəbul et'}" onclick="tpReview('${kind}', 'accepted', this)">&#10003;</button>`
-                     + `<button class="rv${rev ? ' rv-rev' : ''}" title="${rev ? 'Düzəliş istənilib' + note + ' — dəyişmək üçün klik' : 'Düzəliş istə (rəy yaz)'}" onclick="tpReview('${kind}', 'revise', this)">&#9998;</button>`;
-            };
-            const docBtns = (kind, ico) => up[kind]
-                ? `<span class="up-doc"><button class="btn-mini" title="${esc(up[kind].fname || '')} — saytda bax" onclick="tpViewUpload('${kind}', this)">${ico} Bax</button><button class="btn-mini" title="Endir" onclick="tpDownloadUpload('${kind}', this)">&#11015;</button>${tpVt(kind)}${tpRv(kind)}<button class="btn-mini btn-mini-danger" title="Faylı sil" onclick="tpDeleteUpload('${kind}', this)">&#10005;</button></span>`
-                : `<span class="up-doc up-doc-none">${ico} &#8212;</span>`;
-            const docsHtml = docBtns('docx', '&#128196;') + docBtns('pptx', '&#128202;');
+            const titles = sel.map(id => works[id] || ('Sərbəst iş #' + (id + 1))).join(' | ');
+            const selHtml = sel.length >= 2
+                ? `<span class="bal bal-high" title="${esc(titles)}">2/2 &#10003;</span>`
+                : sel.length ? `<span class="bal bal-mid" title="${esc(titles)}">${sel.length}/2</span>`
+                : '<span class="dim" title="Hələ seçməyib">&#8212;</span>';
+            const up = ups[name] || {};
+            const t = studentTotals(name, tpTeam);
+            const dl = dls[name] || '';
             tb.insertAdjacentHTML('beforeend', `<tr data-name="${esc(name)}">
                 <td class="col-num">${i + 1}</td>
-                <td>${esc(name)} <button class="row-edit" title="Adı dəyiş" onclick="tpRenameStudent(this)">&#9998;</button></td>
-                <td>${selHtml}</td>
-                <td class="col-bal"><div class="up-docs">${docsHtml}</div></td>
-                <td class="col-bal"><input type="text" class="dl-input dl-inp-cell" value="${esc(dls[name] || '')}" placeholder="&#8212;" maxlength="40" onchange="saveStudentDeadline(this)"></td>
-                <td class="col-bal"><div class="tp-actions">${sel.length ? '<button class="btn-reset" onclick="tpResetStudent(this)">Sıfırla</button>' : ''}<button class="btn-reset" title="Yeni şifrə yarat" onclick="tpResetPassword(this)">&#128273;</button><button class="btn-reset" title="Kursantı sil" onclick="tpDeleteStudent(this)">&#128465;</button></div></td>
+                <td><span class="tp-row-name" title="Ətraflı panel" onclick="openDrawer(ctxName(this))">${esc(name)}</span></td>
+                <td class="col-bal">${selHtml}</td>
+                <td class="col-bal"><div class="doc-pills">${docPill(up.docx, 'Word')}${docPill(up.pptx, 'PPT')}</div></td>
+                <td class="col-bal">${menCellHtml(t.total)}</td>
+                <td class="col-bal">${examCellHtml(t.exam)}</td>
+                <td class="col-bal"><span class="dl-text${dl ? '' : ' dl-empty'}" title="Son tarixi dəyişmək üçün klik" onclick="editDeadlineInline(this)">${esc(dl || '—')}</span></td>
+                <td class="col-bal"><button class="row-more" title="Əməliyyatlar" onclick="tpOpenRowMenu(this)">&#8943;</button></td>
             </tr>`);
         });
+        tpFilter();
+        if (drawerName) renderDrawer();
+    }
+    // Yalnız bir kursantın Mənimsəmə / İmtahan xanalarını yeniləyir (cədvəl yenidən qurulmur, fokus itmir)
+    function refreshStudentRow(name) {
+        const tr = document.querySelector(`#tpStudents tr[data-name="${CSS.escape(name)}"]`);
+        if (!tr) return;
+        const t = studentTotals(name, teamOf(name));
+        const cells = tr.querySelectorAll('td');
+        if (cells[4]) cells[4].innerHTML = menCellHtml(t.total);
+        if (cells[5]) cells[5].innerHTML = examCellHtml(t.exam);
     }
 
     function renderTpWorks() {
@@ -3852,12 +4067,156 @@
         const taken = (cabData.work_taken_by || {})[tpTeam] || {};
         document.getElementById('tpWorks').innerHTML = works.map((w, i) => {
             const owner = taken[String(i)];
-            return `<tr data-id="${i}"><td class="col-num">${i + 1}</td><td>${esc(w)} <button class="row-edit" title="Adı dəyiş" onclick="tpEditWork(this)">&#9998;</button></td><td>${owner ? `<span class="bal bal-high" style="font-size:0.75rem;">${esc(owner)}</span>` : '<span class="bal bal-none">Boş</span>'}</td><td class="col-bal"><button class="btn-reset" title="İşi sil" onclick="tpDeleteWork(this)">&#128465;</button></td></tr>`;
+            return `<tr data-id="${i}"><td class="col-num">${i + 1}</td><td>${esc(w)} <button class="row-edit" title="Adı dəyiş" onclick="tpEditWork(this)">&#9998;</button></td><td>${owner ? `<span class="bal bal-high" style="font-size:0.75rem;cursor:pointer;" title="Kursantın panelini aç" onclick="openDrawer(this.dataset.n)" data-n="${esc(owner)}">${esc(owner)}</span>` : '<span class="bal bal-none">Boş</span>'}</td><td class="col-bal"><button class="btn-reset" title="İşi sil" onclick="tpDeleteWork(this)">&#128465;</button></td></tr>`;
         }).join('');
+        tpFilter();
     }
 
+    // Parametrlər: taqım siyahısı
+    function renderTeamList() {
+        const el = document.getElementById('tpTeamList');
+        if (!el) return;
+        const teams = cabData.teams || {};
+        el.innerHTML = Object.entries(teams).map(([t, members]) => `<div class="tp-teamrow" data-team="${esc(t)}">
+            <strong>${esc(t)}</strong><small>${members.length} kursant</small><span class="sp"></span>
+            <button class="btn-mini" onclick="tpRenameTeam(this.closest('[data-team]').dataset.team)">&#9998; Ad dəyiş</button>
+            <button class="btn-mini" onclick="tpResetAllPasswords(this.closest('[data-team]').dataset.team)">&#128273; Şifrələri yenilə</button>
+            <button class="btn-mini btn-mini-danger" onclick="tpDeleteTeam(this.closest('[data-team]').dataset.team)">&#128465; Sil</button>
+        </div>`).join('') || '<p class="cab-scale">Taqım yoxdur.</p>';
+    }
+
+    // ── Sətir menyusu (⋯) ──
+    function tpOpenRowMenu(btn) {
+        const name = ctxName(btn);
+        const menu = document.getElementById('tpRowMenu');
+        const hasSel = ((cabData.selections || {})[name] || []).length > 0;
+        menu.dataset.name = name;
+        menu.innerHTML =
+            `<button onclick="closeRowMenu();openDrawer(ctxName(this))">&#128203; Ətraflı panel</button>` +
+            (hasSel ? `<button onclick="closeRowMenu();tpResetStudent(this)">&#8635; Seçimi sıfırla</button>` : '') +
+            `<button onclick="closeRowMenu();tpRenameStudent(this)">&#9998; Adı dəyiş</button>` +
+            `<button onclick="closeRowMenu();tpResetPassword(this)">&#128273; Yeni şifrə yarat</button>` +
+            `<hr><button class="danger" onclick="closeRowMenu();tpDeleteStudent(this)">&#128465; Kursantı sil</button>`;
+        menu.classList.add('open');
+        const r = btn.getBoundingClientRect();
+        const mw = menu.offsetWidth, mh = menu.offsetHeight;
+        let left = r.right - mw, top = r.bottom + 6;
+        if (top + mh > window.innerHeight - 8) top = r.top - mh - 6;
+        if (left < 8) left = 8;
+        menu.style.left = left + 'px';
+        menu.style.top = top + 'px';
+    }
+    function closeRowMenu() {
+        const m = document.getElementById('tpRowMenu');
+        if (m) m.classList.remove('open');   // məzmun qalır ki, klik olunan düymənin data-name konteksti itməsin
+    }
+    document.addEventListener('click', e => {
+        if (!e.target.closest('#tpRowMenu') && !e.target.closest('.row-more')) closeRowMenu();
+    });
+    window.addEventListener('scroll', closeRowMenu, true);
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeRowMenu(); closeDrawer(); } });
+
+    // ── Kursant paneli (drawer) ──
+    function openDrawer(name) {
+        if (!name) return;
+        drawerName = name;
+        renderDrawer();
+        if (!drawerName) return;   // kursant tapılmadısa renderDrawer bağlayıb
+        document.getElementById('tpDrawer').classList.add('open');
+        document.getElementById('tpDrawerBackdrop').classList.add('open');
+    }
+    function closeDrawer() {
+        drawerName = null;
+        const d = document.getElementById('tpDrawer');
+        const b = document.getElementById('tpDrawerBackdrop');
+        if (d) d.classList.remove('open');
+        if (b) b.classList.remove('open');
+    }
+
+    function renderDrawer() {
+        const name = drawerName;
+        const d = document.getElementById('tpDrawer');
+        if (!name || !d) return;
+        const teams = cabData.teams || {};
+        const team = Object.keys(teams).find(t => (teams[t] || []).includes(name));
+        if (!team) { closeDrawer(); return; }
+        d.dataset.name = name;
+        const sel = (cabData.selections || {})[name] || [];
+        const works = cabData.works || [];
+        const dl = (cabData.deadlines || {})[name] || '';
+        const up = (cabData.uploads || {})[name] || {};
+        const fileBox = (kind, label) => {
+            const m = up[kind];
+            if (!m) return `<div class="dr-file"><div class="dr-file-name" style="color:var(--text-dim);font-weight:600;">${label}: yüklənməyib</div></div>`;
+            const vt = m.vt, rv = m.review;
+            let vtHtml;
+            if (!vt) vtHtml = `<button class="btn-mini" title="Faylı VirusTotal-a göndər" onclick="tpVtCheck('${kind}', this)">&#128737; Virus yoxla</button>`;
+            else if (vt.status === 'pending') vtHtml = `<button class="btn-mini" title="Nəticə 1-2 dəqiqəyə hazır olur — kliklə yenilə" onclick="tpVtRefresh('${kind}', this)">&#8987; Yoxlanılır &#8212; yenilə</button>`;
+            else if (vt.status === 'clean') vtHtml = `<span class="doc-pill doc-ok">&#128737; VirusTotal: təmiz</span>`;
+            else vtHtml = `<span class="doc-pill doc-bad">&#9888; VirusTotal: ${vt.malicious || 0} zərərli, ${vt.suspicious || 0} şübhəli</span>`;
+            const acc = rv && rv.status === 'accepted', rev = rv && rv.status === 'revise';
+            return `<div class="dr-file">
+                <div class="dr-file-name">${label}: ${esc(m.fname || '')}</div>
+                <div class="dr-file-meta">${fmtSize(m.size || 0)} &#8226; ${esc(m.ts || '')}</div>
+                ${rev && rv.note ? `<div class="dr-note">Rəy: ${esc(rv.note)}</div>` : ''}
+                <div class="dr-row">
+                    <button class="btn-mini" title="Saytda bax (endirmədən)" onclick="tpViewUpload('${kind}', this)">&#128065; Bax</button>
+                    <button class="btn-mini" title="Endir" onclick="tpDownloadUpload('${kind}', this)">&#11015; Endir</button>
+                    ${vtHtml}
+                </div>
+                <div class="dr-row">
+                    <button class="btn-mini${acc ? ' active-acc' : ''}" title="${acc ? 'Ləğv etmək üçün klik' : 'Faylı qəbul et'}" onclick="tpReview('${kind}', 'accepted', this)">&#10003; ${acc ? 'Qəbul edilib' : 'Qəbul et'}</button>
+                    <button class="btn-mini${rev ? ' active-rev' : ''}" title="${rev ? 'Rəyi dəyişmək və ya ləğv etmək üçün klik' : 'Düzəliş istə (rəy yaz)'}" onclick="tpReview('${kind}', 'revise', this)">&#9998; ${rev ? 'Düzəliş istənilib' : 'Düzəliş istə'}</button>
+                    <button class="btn-mini btn-mini-danger" title="Faylı sil" onclick="tpDeleteUpload('${kind}', this)">&#10005; Sil</button>
+                </div>
+            </div>`;
+        };
+        d.innerHTML = `
+            <div class="tp-drawer-head">
+                <div><h3>${esc(name)}</h3><small>${esc(team)}</small></div>
+                <button class="tp-drawer-close" onclick="closeDrawer()" title="Bağla (Esc)">&#10005;</button>
+            </div>
+            <div class="tp-drawer-body">
+                <div class="dr-sec">
+                    <h4>Sərbəst iş seçimi</h4>
+                    ${sel.length ? '<ol class="dr-list">' + sel.map(id => `<li>${esc(works[id] || ('Sərbəst iş #' + (id + 1)))}</li>`).join('') + '</ol>' : '<span class="bal bal-none">Hələ seçməyib</span>'}
+                    <div class="dr-row">
+                        ${sel.length ? '<button class="btn-mini" onclick="tpResetStudent(this)">&#8635; Seçimi sıfırla</button>' : ''}
+                        <label style="display:flex;align-items:center;gap:6px;font-size:0.76rem;font-weight:700;color:var(--text-muted);">Son tarix <input type="text" class="dl-input dl-inp-cell" value="${esc(dl)}" placeholder="məs: 20.05.2026" maxlength="40" onchange="saveStudentDeadline(this)"></label>
+                    </div>
+                </div>
+                <div class="dr-sec">
+                    <h4>Sənədlər</h4>
+                    ${fileBox('docx', 'Word')}${fileBox('pptx', 'Təqdimat')}
+                </div>
+                <div class="dr-sec">
+                    <h4>Ballar</h4>
+                    <div class="dr-scores">
+                        <label>Kollokvium 1<input type="number" class="score-inp" data-k="1" min="0" max="10" onchange="saveKollokScore(this)"></label>
+                        <label>Kollokvium 2<input type="number" class="score-inp" data-k="2" min="0" max="10" onchange="saveKollokScore(this)"></label>
+                        <label>Kollokvium 3<input type="number" class="score-inp" data-k="3" min="0" max="10" onchange="saveKollokScore(this)"></label>
+                        <div class="dr-total span3"><span>Kollokvium cəmi (maks 30)</span><span class="bal-ksum"></span></div>
+                        <label>Sərbəst iş (0-10)<input type="number" class="score-inp" data-field="serbest" min="0" max="10" onchange="saveScore(this)"></label>
+                        <label>Dəftər / İntizam (0-10)<input type="number" class="score-inp" data-field="defter" min="0" max="10" onchange="saveScore(this)"></label>
+                        <label>İmtahan (0-100)<input type="number" class="score-inp" data-exam="1" min="0" max="100" onchange="saveExamScore(this)"></label>
+                        <div class="dr-total span3"><span>Mənimsəmə (maks 50)</span><span class="bal-total"></span></div>
+                        <div class="dr-total span3"><span>İmtahan qiyməti</span><span class="exam-grade"></span></div>
+                    </div>
+                </div>
+                <div class="dr-sec dr-danger">
+                    <h4>Hesab</h4>
+                    <div class="dr-row" style="margin-top:0;">
+                        <button class="btn-mini" onclick="tpRenameStudent(this)">&#9998; Adı dəyiş</button>
+                        <button class="btn-mini" onclick="tpResetPassword(this)">&#128273; Yeni şifrə</button>
+                        <button class="btn-mini btn-mini-danger" onclick="tpDeleteStudent(this)">&#128465; Kursantı sil</button>
+                    </div>
+                </div>
+            </div>`;
+        fillScoreInputs(d, name, team);
+        updateBalRow(d);
+    }
     async function tpResetStudent(btn) {
-        const name = btn.closest('tr').dataset.name;
+        const name = ctxName(btn);
         if (!confirm(name + ' — sərbəst iş seçimi sıfırlansın? Kursant yenidən seçim edə biləcək.')) return;
         try {
             const res = await fetch('/api/cabinet-reset', {
@@ -3965,11 +4324,9 @@
     async function tpRefreshAll() {
         cabData = null;
         try { await fetchCabData(); } catch(e) { return; }
-        renderTeacherTables(cabData.results || {});
-        enrichTeacherLive();
         renderTeacherPanel();
+        enrichTeacherLive();
     }
-
     function applyRoster(d) {
         ['teams', 'works', 'work_taken_by', 'selections', 'scores', 'deadlines', 'exam_scores'].forEach(k => {
             if (d[k] !== undefined) cabData[k] = d[k];
@@ -4020,33 +4377,34 @@
         } catch(e) {}
     }
 
-    async function tpRenameTeam() {
-        const nv = prompt('"' + tpTeam + '" taqımının yeni adı:', tpTeam);
-        if (!nv || !nv.trim() || nv.trim() === tpTeam) return;
+    async function tpRenameTeam(team) {
+        team = team || tpTeam;
+        const nv = prompt('"' + team + '" taqımının yeni adı:', team);
+        if (!nv || !nv.trim() || nv.trim() === team) return;
         try {
-            await rosterPost({ action: 'rename_team', team: tpTeam, new: nv.trim() });
-            tpTeam = nv.trim();
+            await rosterPost({ action: 'rename_team', team: team, new: nv.trim() });
+            if (tpTeam === team) tpTeam = nv.trim();
             await tpRefreshAll();
             showToast('Taqım adı dəyişdirildi', 'success');
         } catch(e) {}
     }
 
-    async function tpDeleteTeam() {
-        const members = (cabData.teams || {})[tpTeam] || [];
+    async function tpDeleteTeam(team) {
+        team = team || tpTeam;
+        const members = (cabData.teams || {})[team] || [];
         const warn = members.length
             ? '\n\nDiqqət: taqımdakı ' + members.length + ' kursant, onların balları və girişləri də silinəcək!'
             : '';
-        if (!confirm('"' + tpTeam + '" taqımı silinsin?' + warn)) return;
+        if (!confirm('"' + team + '" taqımı silinsin?' + warn)) return;
         try {
-            await rosterPost({ action: 'delete_team', team: tpTeam });
-            tpTeam = '';
+            await rosterPost({ action: 'delete_team', team: team });
+            if (tpTeam === team) tpTeam = '';
             await tpRefreshAll();
             showToast('Taqım silindi', 'success');
         } catch(e) {}
     }
-
     async function tpResetPassword(btn) {
-        const name = btn.closest('tr').dataset.name;
+        const name = ctxName(btn);
         if (!confirm(name + ' üçün yeni şifrə yaradılsın?\n\nKöhnə şifrə dərhal ləğv olunacaq, digər kursantlara toxunulmur.')) return;
         try {
             const d = await rosterPost({ action: 'reset_password', name: name });
@@ -4054,23 +4412,23 @@
         } catch(e) {}
     }
 
-    async function tpResetAllPasswords() {
-        if (!confirm('"' + tpTeam + '" taqımındakı BÜTÜN kursantların şifrələri yenilənsin? Köhnə şifrələr dərhal ləğv olunacaq.')) return;
+    async function tpResetAllPasswords(team) {
+        team = team || tpTeam;
+        if (!confirm('"' + team + '" taqımındakı BÜTÜN kursantların şifrələri yenilənsin? Köhnə şifrələr dərhal ləğv olunacaq.')) return;
         if (!confirm('Son təsdiq: taqımın hamısı yeni şifrə alacaq. Davam edilsin?')) return;
         try {
-            const d = await rosterPost({ action: 'reset_all_passwords', team: tpTeam });
+            const d = await rosterPost({ action: 'reset_all_passwords', team: team });
             const rows = (d.creds || []).map(c => c.id + '\t' + c.password + '\t' + c.name).join('\n');
             const blob = new Blob(['ID\tŞifrə\tAd\n' + rows], { type: 'text/plain;charset=utf-8' });
             const a = document.createElement('a');
             a.href = URL.createObjectURL(blob);
-            a.download = tpTeam + '-yeni-sifreler.txt';
+            a.download = team + '-yeni-sifreler.txt';
             document.body.appendChild(a);
             a.click();
             a.remove();
-            alert((d.creds || []).length + ' kursantın şifrəsi yeniləndi.\n\nYeni şifrələr fayl kimi endirildi ("' + tpTeam + '-yeni-sifreler.txt") — kursantlara paylayın. Şifrələr bir daha göstərilməyəcək!');
+            alert((d.creds || []).length + ' kursantın şifrəsi yeniləndi.\n\nYeni şifrələr fayl kimi endirildi ("' + team + '-yeni-sifreler.txt") — kursantlara paylayın. Şifrələr bir daha göstərilməyəcək!');
         } catch(e) {}
     }
-
     async function tpAddStudent() {
         const n = prompt('"' + tpTeam + '" taqımına yeni kursantın tam adı:');
         if (!n || !n.trim()) return;
@@ -4082,7 +4440,7 @@
     }
 
     async function tpRenameStudent(btn) {
-        const old = btn.closest('tr').dataset.name;
+        const old = ctxName(btn);
         const nv = prompt('Kursantın yeni adı:', old);
         if (!nv || !nv.trim() || nv.trim() === old) return;
         try {
@@ -4093,7 +4451,7 @@
     }
 
     async function tpDeleteStudent(btn) {
-        const name = btn.closest('tr').dataset.name;
+        const name = ctxName(btn);
         if (!confirm(name + ' — silinsin? Bütün balları, seçimi və girişi ləğv olunacaq.')) return;
         try {
             await rosterPost({ action: 'delete_student', name: name });
@@ -4135,6 +4493,7 @@
                 d.style.display = 'none';
             }
         });
+        updateStepStates();
     }
 
     function upPick(kind) { document.getElementById('upFile-' + kind).click(); }
@@ -4247,7 +4606,7 @@
     }
 
     async function tpVtCheck(kind, btn) {
-        const name = btn.closest('tr').dataset.name;
+        const name = ctxName(btn);
         btn.disabled = true;
         btn.innerHTML = '&#8987;';
         try {
@@ -4268,7 +4627,7 @@
     }
 
     async function tpVtRefresh(kind, btn) {
-        const name = btn.closest('tr').dataset.name;
+        const name = ctxName(btn);
         try {
             const r = await fetch('/api/vt-status', {
                 method: 'POST',
@@ -4284,7 +4643,7 @@
     }
 
     async function tpReview(kind, status, btn) {
-        const name = btn.closest('tr').dataset.name;
+        const name = ctxName(btn);
         const meta = ((cabData.uploads || {})[name] || {})[kind] || {};
         const cur = meta.review;
         let note = '';
@@ -4313,7 +4672,7 @@
     }
 
     async function tpDeleteUpload(kind, btn) {
-        const name = btn.closest('tr').dataset.name;
+        const name = ctxName(btn);
         const meta = ((cabData.uploads || {})[name] || {})[kind] || {};
         if (!confirm(name + ' — "' + (meta.fname || kind) + '" faylı silinsin? Kursant yenidən yükləyə biləcək.')) return;
         try {
@@ -4335,19 +4694,19 @@
     }
 
     async function tpViewUpload(kind, btn) {
-        const name = btn.closest('tr').dataset.name;
+        const name = ctxName(btn);
         const d = await fetchUploadLink(name, kind, 'view');
         if (d) openViewer(d.url, name + ' — ' + (d.fname || kind));
     }
 
     async function tpDownloadUpload(kind, btn) {
-        const name = btn.closest('tr').dataset.name;
+        const name = ctxName(btn);
         const d = await fetchUploadLink(name, kind, 'download');
         if (d) triggerDownload(d.url);
     }
 
-    // ===== Müəllim: canlı kollokvium balları + mənimsəmə qiymətləndirməsi =====
-    const teacherLive = {};
+    // ===== Müəllim: canlı kollokvium balları + Ballar cədvəli =====
+    const teacherLive = {};   // qrup açarı ("YT 23A1") → [{ad: bal}, {..}, {..}] (K1..K3, Firebase)
 
     async function fetchGroupLiveKollok(group) {
         const gkey = group.replace(/\s/g, '_');
@@ -4369,10 +4728,6 @@
         return maps;
     }
 
-    function teamRoster(g) {
-        return (cabData.teams || {})[g.team] || Object.keys(g.kollok || {});
-    }
-
     function autoKollokFor(name, g, live) {
         // Avtomatik ballar: canlı (Firebase) statik baldan üstündür; [k1,k2,k3]
         const stat = (g.kollok && g.kollok[name]) || [null, null, null];
@@ -4390,55 +4745,130 @@
         return [0, 1, 2].map(i => man[String(i + 1)] != null ? man[String(i + 1)] : auto[i]);
     }
 
-    function renderMenimsemeTable(group, menId, g, live) {
-        const mb = document.getElementById(menId);
-        if (!mb) return;
-        const scores = cabData.scores || {};
-        mb.innerHTML = '';
-        let i = 1;
-        for (const name of teamRoster(g)) {
-            const ks = mergedKollokFor(name, g, live);
-            const man = (cabData.kollok_scores || {})[name] || {};
-            const ksum = ks.reduce((a, v) => a + (v || 0), 0);
-            const sc = scores[name] || {};
-            const sv = sc.serbest != null ? sc.serbest : '';
-            const dv = sc.defter != null ? sc.defter : '';
-            mb.insertAdjacentHTML('beforeend',
-                `<tr data-name="${esc(name)}" data-ksum="${ksum}"><td class="col-num">${i++}</td><td>${esc(name)}</td>` +
-                ks.map((v, j) => `<td class="col-bal">${balSpanHtml(v, balCls(v) + (man[String(j + 1)] != null ? ' bal-manual' : ''))}</td>`).join('') +
-                `<td class="col-bal"><span class="bal ${ksum >= 24 ? 'bal-high' : ksum >= 18 ? 'bal-mid' : 'bal-low'}">${ksum}</span></td>` +
-                `<td class="col-bal"><input type="number" class="score-inp" data-field="serbest" min="0" max="10" value="${sv}" onchange="saveScore(this)"></td>` +
-                `<td class="col-bal"><input type="number" class="score-inp" data-field="defter" min="0" max="10" value="${dv}" onchange="saveScore(this)"></td>` +
-                `<td class="col-bal men-total"></td></tr>`);
-            updateMenRow(mb.lastElementChild);
+    // Bütün taqımların canlı kollokvium ballarını gətirir, sonra cari görünüşləri yeniləyir
+    async function enrichTeacherLive() {
+        const teams = Object.keys(cabData.teams || {});
+        liveReady = Promise.all(teams.map(async team => {
+            const key = groupForTeam(team).key;
+            try { teacherLive[key] = await fetchGroupLiveKollok(key); } catch(e) {}
+        }));
+        await liveReady;
+        if (!cabData) return;
+        renderBallar();
+        renderTpStudents();
+    }
+
+    // Ballar tabı: seçilmiş taqım üçün bir cədvəl (K1 K2 K3 | Koll. | Sərbəst | Dəftər | Mənimsəmə | İmtahan | Qiymət)
+    function renderBallar() {
+        const tb = document.getElementById('balBody');
+        if (!tb) return;
+        const members = (cabData.teams || {})[tpTeam] || [];
+        tb.innerHTML = '';
+        members.forEach((name, i) => {
+            tb.insertAdjacentHTML('beforeend', `<tr data-name="${esc(name)}">
+                <td class="col-num">${i + 1}</td><td><span class="tp-row-name" title="Ətraflı panel" onclick="openDrawer(ctxName(this))">${esc(name)}</span></td>
+                <td class="col-bal"><input type="number" class="score-inp" data-k="1" min="0" max="10" onchange="saveKollokScore(this)"></td>
+                <td class="col-bal"><input type="number" class="score-inp" data-k="2" min="0" max="10" onchange="saveKollokScore(this)"></td>
+                <td class="col-bal"><input type="number" class="score-inp" data-k="3" min="0" max="10" onchange="saveKollokScore(this)"></td>
+                <td class="col-bal bal-ksum"></td>
+                <td class="col-bal"><input type="number" class="score-inp" data-field="serbest" min="0" max="10" onchange="saveScore(this)"></td>
+                <td class="col-bal"><input type="number" class="score-inp" data-field="defter" min="0" max="10" onchange="saveScore(this)"></td>
+                <td class="col-bal bal-total"></td>
+                <td class="col-bal"><input type="number" class="score-inp" data-exam="1" min="0" max="100" onchange="saveExamScore(this)"></td>
+                <td class="col-grade exam-grade"></td>
+            </tr>`);
+            const tr = tb.lastElementChild;
+            fillScoreInputs(tr, name, tpTeam);
+            updateBalRow(tr);
+        });
+        updateBalSummary();
+        tpFilter();
+    }
+
+    // Verilən konteynerdəki (cədvəl sətri və ya panel) bal inputlarını bazadakı dəyərlərlə doldurur
+    function fillScoreInputs(host, name, team) {
+        const gt = groupForTeam(team);
+        const live = teacherLive[gt.key] || null;
+        const man = (cabData.kollok_scores || {})[name] || {};
+        const auto = autoKollokFor(name, gt.g, live);
+        host.querySelectorAll('input[data-k]').forEach(inp => {
+            const j = parseInt(inp.dataset.k) - 1;
+            const isMan = man[String(j + 1)] != null;
+            const v = isMan ? man[String(j + 1)] : auto[j];
+            inp.value = v != null ? v : '';
+            inp.dataset.auto = auto[j] != null ? auto[j] : '';
+            inp.classList.toggle('manual-edit', isMan);
+            inp.title = isMan ? 'Manual bal — silsəniz avtomatik bala qayıdır' : 'Avtomatik bal — dəyişsəniz manual olur';
+        });
+        const sc = (cabData.scores || {})[name] || {};
+        const si = host.querySelector('input[data-field="serbest"]');
+        if (si) si.value = sc.serbest != null ? sc.serbest : '';
+        const di = host.querySelector('input[data-field="defter"]');
+        if (di) di.value = sc.defter != null ? sc.defter : '';
+        const ei = host.querySelector('input[data-exam]');
+        if (ei) {
+            const t = studentTotals(name, team);
+            ei.value = t.exam != null ? t.exam : '';
+            ei.dataset.static = t.examStatic != null ? t.examStatic : '';
         }
-        updateMenSummary(mb);
     }
 
-    function updateMenRow(tr) {
-        const ksum = parseInt(tr.dataset.ksum) || 0;
-        const s = tr.querySelector('input[data-field="serbest"]').value;
-        const d = tr.querySelector('input[data-field="defter"]').value;
-        const cell = tr.querySelector('.men-total');
-        if (s === '' && d === '') { cell.innerHTML = '<span class="bal bal-none">&#8212;</span>'; return; }
-        const total = ksum + (parseInt(s) || 0) + (parseInt(d) || 0);
-        cell.innerHTML = `<span class="bal ${menCls(total)}">${total}</span>`;
+    // Konteynerdəki inputlardan Koll. cəmi / Mənimsəmə / Qiymət xanalarını hesablayır (yerində, fokus itmir)
+    function updateBalRow(host) {
+        if (!host) return;
+        const ks = Array.from(host.querySelectorAll('input[data-k]')).map(i => i.value === '' ? null : parseInt(i.value));
+        const ksum = ks.reduce((a, v) => a + (v || 0), 0);
+        const noK = ks.every(v => v == null);
+        const kc = host.querySelector('.bal-ksum');
+        if (kc) kc.innerHTML = noK ? '<span class="dim">&#8212;</span>' : `<span class="bal ${ksum >= 24 ? 'bal-high' : ksum >= 18 ? 'bal-mid' : 'bal-low'}">${ksum}</span>`;
+        const si = host.querySelector('input[data-field="serbest"]'), di = host.querySelector('input[data-field="defter"]');
+        const s = si ? si.value : '', dd = di ? di.value : '';
+        const tc = host.querySelector('.bal-total');
+        if (tc) {
+            if (noK && s === '' && dd === '') tc.innerHTML = '<span class="dim">&#8212;</span>';
+            else { const total = ksum + (parseInt(s) || 0) + (parseInt(dd) || 0); tc.innerHTML = `<span class="bal ${menCls(total)}">${total}</span>`; }
+        }
+        const ei = host.querySelector('input[data-exam]');
+        const gc = host.querySelector('.exam-grade');
+        if (ei && gc) {
+            if (ei.value === '') gc.innerHTML = '<span class="dim">&#8212;</span>';
+            else { const b = parseInt(ei.value); gc.innerHTML = `<span class="grade ${imtCls(b)}">${examGrade(b)}</span>`; }
+        }
     }
 
-    function updateMenSummary(mb) {
-        const totals = Array.from(mb.querySelectorAll('.men-total .bal')).map(el => parseInt(el.textContent)).filter(n => !isNaN(n));
-        updateSummary(mb, [mb.querySelectorAll('tr').length,
-            totals.length ? (totals.reduce((a, b) => a + b, 0) / totals.length).toFixed(1) : '—',
-            totals.length ? Math.max(...totals) : '—']);
+    function updateBalSummary() {
+        const tb = document.getElementById('balBody');
+        if (!tb) return;
+        const rows = Array.from(tb.querySelectorAll('tr'));
+        const avg = arr => arr.length ? (arr.reduce((a, b) => a + b, 0) / arr.length).toFixed(1) : '—';
+        const col = sel => rows.map(tr => {
+            const el = tr.querySelector(sel);
+            const v = el ? parseInt(el.tagName === 'INPUT' ? el.value : el.textContent) : NaN;
+            return isNaN(v) ? null : v;
+        }).filter(v => v != null);
+        const vals = [rows.length, avg(col('input[data-k="1"]')), avg(col('input[data-k="2"]')), avg(col('input[data-k="3"]')),
+                      avg(col('.bal-total .bal')), avg(col('input[data-exam]'))];
+        document.querySelectorAll('#balSummary .rs-val').forEach((el, i) => { el.textContent = vals[i]; });
+    }
+
+    // Bal dəyişəndən sonra eyni kursantın digər görünüşlərini (cədvəl / panel / kursant sətri) sinxronlaşdırır
+    function syncScoreViews(name, fromHost) {
+        const team = teamOf(name);
+        const others = [document.querySelector(`#balBody tr[data-name="${CSS.escape(name)}"]`),
+                        drawerName === name ? document.getElementById('tpDrawer') : null];
+        others.forEach(h => { if (h && h !== fromHost) { fillScoreInputs(h, name, team); updateBalRow(h); } });
+        updateBalRow(fromHost);
+        updateBalSummary();
+        refreshStudentRow(name);
     }
 
     async function saveScore(inp) {
         let v = inp.value === '' ? null : Math.max(0, Math.min(10, parseInt(inp.value) || 0));
         if (v != null) inp.value = v;
-        const tr = inp.closest('tr');
-        const name = tr.dataset.name;
-        const s = tr.querySelector('input[data-field="serbest"]').value;
-        const d = tr.querySelector('input[data-field="defter"]').value;
+        const host = inp.closest('[data-name]');
+        const name = host.dataset.name;
+        const s = host.querySelector('input[data-field="serbest"]').value;
+        const d = host.querySelector('input[data-field="defter"]').value;
         const payload = { name: name, serbest: s === '' ? null : parseInt(s), defter: d === '' ? null : parseInt(d) };
         try {
             const res = await fetch('/api/cabinet-scores', {
@@ -4450,41 +4880,16 @@
             if (!res.ok) throw 0;
             cabData.scores = cabData.scores || {};
             cabData.scores[name] = { serbest: payload.serbest, defter: payload.defter };
-            updateMenRow(tr);
-            updateMenSummary(tr.closest('tbody'));
-            tr.style.background = 'rgba(46,125,50,0.1)';
-            setTimeout(() => { tr.style.background = ''; }, 700);
+            syncScoreViews(name, host);
+            flashHost(host, inp);
         } catch(e) {
             showToast('Bal yadda saxlanıla bilmədi!', 'error');
         }
     }
 
-    function applyLiveToKollokTable(kolId, g, live) {
-        const kb = document.getElementById(kolId);
-        if (!kb) return;
-        const manAll = cabData.kollok_scores || {};
-        kb.innerHTML = '';
-        let i = 1;
-        const sums = [0, 0, 0], cnts = [0, 0, 0];
-        for (const name of teamRoster(g)) {
-            const man = manAll[name] || {};
-            const auto = autoKollokFor(name, g, live);
-            const cells = [0, 1, 2].map(j => {
-                const isMan = man[String(j + 1)] != null;
-                const v = isMan ? man[String(j + 1)] : auto[j];
-                return `<td class="col-bal"><input type="number" class="score-inp${isMan ? ' manual-edit' : ''}" data-k="${j + 1}" data-auto="${auto[j] != null ? auto[j] : ''}" min="0" max="10" value="${v != null ? v : ''}" title="${isMan ? 'Manual bal — silsəniz avtomatik bala qayıdır' : 'Avtomatik bal — dəyişsəniz manual olur'}" onchange="saveKollokScore(this)"></td>`;
-            }).join('');
-            kb.insertAdjacentHTML('beforeend', `<tr data-name="${esc(name)}"><td class="col-num">${i++}</td><td>${esc(name)}</td>${cells}</tr>`);
-            mergedKollokFor(name, g, live).forEach((v, j) => { if (v != null) { sums[j] += v; cnts[j]++; } });
-        }
-        updateSummary(kb, [i - 1, ...sums.map((s, j) => cnts[j] ? (s / cnts[j]).toFixed(1) : '—')]);
-    }
-
-    const KOLLOK_GROUPS = { kollokBody: ['YT 23A1', 'menimseme1Body'], kollok2Body: ['YT 23A2', 'menimseme2Body'] };
-
     async function saveKollokScore(inp) {
-        const tr = inp.closest('tr');
-        const name = tr.dataset.name;
+        const host = inp.closest('[data-name]');
+        const name = host.dataset.name;
         const k = parseInt(inp.dataset.k);
         let bal = inp.value === '' ? null : Math.max(0, Math.min(10, parseInt(inp.value) || 0));
         if (bal != null) inp.value = bal;
@@ -4500,121 +4905,167 @@
             const d = await res.json();
             if (!res.ok) { showToast(d.error || 'Xəta!', 'error'); return; }
             cabData.kollok_scores = d.kollok_scores || {};
-            // Kollokvium və mənimsəmə cədvəllərini yenilə (kollok cəmi dəyişir)
-            const tbId = tr.closest('tbody').id;
-            const [group, menId] = KOLLOK_GROUPS[tbId] || [];
-            const g = (cabData.results || {})[group];
-            if (g) {
-                applyLiveToKollokTable(tbId, g, teacherLive[group] || null);
-                renderMenimsemeTable(group, menId, g, teacherLive[group] || null);
-                const row = document.querySelector(`#${tbId} tr[data-name="${CSS.escape(name)}"]`);
-                if (row) { row.style.background = 'rgba(21,101,192,0.08)'; setTimeout(() => { row.style.background = ''; }, 700); }
-            }
+            // yalnız bu input yenilənir (qonşu inputa artıq yazılmış dəyər pozulmasın)
+            const isMan = ((cabData.kollok_scores[name] || {})[String(k)]) != null;
+            inp.classList.toggle('manual-edit', isMan);
+            if (!isMan) inp.value = inp.dataset.auto;   // manual silindi → avtomatik bala qayıt
+            inp.title = isMan ? 'Manual bal — silsəniz avtomatik bala qayıdır' : 'Avtomatik bal — dəyişsəniz manual olur';
+            syncScoreViews(name, host);
+            flashHost(host, inp, 'rgba(21,101,192,0.08)');
         } catch (e) {
             showToast('Bal yadda saxlanıla bilmədi!', 'error');
         }
     }
-
-    async function enrichTeacherLive() {
-        const groups = [['YT 23A1', 'kollokBody', 'menimseme1Body'], ['YT 23A2', 'kollok2Body', 'menimseme2Body']];
-        for (const [group, kolId, menId] of groups) {
-            const g = (cabData.results || {})[group];
-            if (!g) continue;
-            const live = await fetchGroupLiveKollok(group);
-            teacherLive[group] = live;
-            applyLiveToKollokTable(kolId, g, live);
-            renderMenimsemeTable(group, menId, g, live);
-        }
-    }
-
-    // ===== Arxiv: köhnə qəbulların imtahan nəticələri (kompakt kart) =====
-    let arxivImtData = null, arxivImtGroup = null;
+    // ===== Arxiv: keçmiş semestrlər (müəllim yazır, db["arxiv"]) + repo-dakı statik 2024 =====
+    let arxivData = null, arxivSem = null, arxivGroup = null;
+    let liveReady = Promise.resolve();   // enrichTeacherLive: canlı kollokvium ballarının gəlməsi
 
     async function toggleArxivImt() {
         const body = document.getElementById('arxivImtBody');
         const open = body.style.display === 'none';
         body.style.display = open ? '' : 'none';
         document.getElementById('arxivImtChev').innerHTML = open ? '&#9652;' : '&#9662;';
-        if (!open || arxivImtData) return;
+        if (open) await loadArxiv(false);
+    }
+
+    async function loadArxiv(force) {
+        if (arxivData && !force) return;
         try {
             const res = await fetch('/api/arxiv-imtahan', { headers: { 'Authorization': 'Bearer ' + session.token } });
+            if (res.status === 401) { cabinetLogout(); showToast('Sessiya bitib — yenidən daxil olun.', 'error'); return; }
             if (!res.ok) throw 0;
-            arxivImtData = (await res.json()).qruplar || {};
+            arxivData = (await res.json()).semestrler || [];
         } catch (e) {
-            document.getElementById('arxivImtTbody').innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--text-muted);">Arxiv yüklənə bilmədi</td></tr>';
+            document.getElementById('arxivImtTbody').innerHTML = '<tr><td colspan="11" style="text-align:center;color:var(--text-muted);">Arxiv yüklənə bilmədi</td></tr>';
             return;
         }
-        const tabs = document.getElementById('arxivImtTabs');
+        if (!arxivData.find(e => e.id === arxivSem)) arxivSem = arxivData.length ? arxivData[0].id : null;
+        renderArxivSemTabs();
+    }
+
+    function arxivEntry() { return (arxivData || []).find(e => e.id === arxivSem) || null; }
+
+    function renderArxivSemTabs() {
+        const tabs = document.getElementById('arxivSemTabs');
         tabs.innerHTML = '';
-        Object.keys(arxivImtData).forEach((g, i) => {
+        (arxivData || []).forEach(e => {
             const b = document.createElement('button');
-            b.className = 'subtab-btn' + (i === 0 ? ' active' : '');
-            b.textContent = g;
-            b.onclick = () => {
-                arxivImtGroup = g;
-                tabs.querySelectorAll('.subtab-btn').forEach(x => x.classList.toggle('active', x === b));
-                renderArxivImt();
-            };
+            b.className = 'subtab-btn' + (e.id === arxivSem ? ' active' : '');
+            b.textContent = e.semester + (e.subject ? ' · ' + e.subject : '');
+            b.title = e.ts ? 'Arxivlənib: ' + e.ts : '';
+            b.onclick = () => { arxivSem = e.id; arxivGroup = null; renderArxivSemTabs(); };
             tabs.appendChild(b);
         });
-        arxivImtGroup = Object.keys(arxivImtData)[0] || null;
+        renderArxivGroupTabs();
+    }
+
+    function renderArxivGroupTabs() {
+        const e = arxivEntry();
+        const tabs = document.getElementById('arxivImtTabs');
+        tabs.innerHTML = '';
+        const groups = e ? Object.keys(e.qruplar || {}) : [];
+        if (!groups.includes(arxivGroup)) arxivGroup = groups[0] || null;
+        groups.forEach(g => {
+            const b = document.createElement('button');
+            b.className = 'subtab-btn' + (g === arxivGroup ? ' active' : '');
+            b.textContent = g;
+            b.onclick = () => { arxivGroup = g; renderArxivGroupTabs(); };
+            tabs.appendChild(b);
+        });
+        document.getElementById('arxivDelBtn').style.display = e && !e.static ? '' : 'none';
+        document.getElementById('arxivInfo').textContent = !e ? 'Arxiv boşdur.'
+            : e.static ? 'Repo-dakı statik arxiv (yalnız imtahan nəticələri).'
+            : 'Arxivlənib: ' + (e.ts || '') + ' · ' + groups.length + ' taqım';
         renderArxivImt();
     }
 
     function renderArxivImt() {
         const tb = document.getElementById('arxivImtTbody');
         tb.innerHTML = '';
-        const g = (arxivImtData || {})[arxivImtGroup] || {};
+        const e = arxivEntry();
+        const rows = e && arxivGroup ? (e.qruplar[arxivGroup] || {}) : {};
+        const cell = (v, cls) => v == null ? '<span class="dim">&#8212;</span>' : `<span class="bal ${cls(v)}">${esc(String(v))}</span>`;
+        const kollCls = v => v >= 24 ? 'bal-high' : v >= 18 ? 'bal-mid' : 'bal-low';
         let i = 1;
-        for (const [name, imt] of Object.entries(g)) {
-            const bal = imt && imt[0] != null ? String(imt[0]) : '—';
-            const grade = imt && imt[1] ? imt[1] : '—';
-            tb.insertAdjacentHTML('beforeend', `<tr><td class="col-num">${i++}</td><td>${esc(name)}</td><td class="col-bal">${esc(bal)}</td><td class="col-grade">${esc(grade)}</td></tr>`);
+        for (const [name, r] of Object.entries(rows)) {
+            tb.insertAdjacentHTML('beforeend', `<tr><td class="col-num">${i++}</td><td>${esc(name)}</td>` +
+                `<td class="col-bal">${cell(r.k1, balCls)}</td><td class="col-bal">${cell(r.k2, balCls)}</td><td class="col-bal">${cell(r.k3, balCls)}</td>` +
+                `<td class="col-bal">${cell(r.koll, kollCls)}</td>` +
+                `<td class="col-bal">${cell(r.serbest, balCls)}</td><td class="col-bal">${cell(r.defter, balCls)}</td>` +
+                `<td class="col-bal">${cell(r.menimseme, menCls)}</td><td class="col-bal">${cell(r.imtahan, imtCls)}</td>` +
+                `<td class="col-grade">${r.qiymet ? `<span class="grade ${imtCls(r.imtahan)}">${esc(r.qiymet)}</span>` : '<span class="dim">&#8212;</span>'}</td></tr>`);
         }
-        if (i === 1) tb.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--text-muted);">Boşdur</td></tr>';
+        if (i === 1) tb.innerHTML = '<tr><td colspan="11" style="text-align:center;color:var(--text-muted);">Boşdur</td></tr>';
     }
 
+    // Semestr sonu: bütün taqımların cari nəticələri arxivə yazılır (cəmləri və qiyməti server hesablayır)
+    async function tpArchiveSemester() {
+        await liveReady;
+        const teams = cabData.teams || {};
+        const qruplar = {};
+        let n = 0;
+        for (const [team, members] of Object.entries(teams)) {
+            qruplar[team] = {};
+            for (const name of members) {
+                const t = studentTotals(name, team);
+                qruplar[team][name] = { k1: t.ks[0], k2: t.ks[1], k3: t.ks[2], serbest: t.serbest, defter: t.defter, imtahan: t.exam };
+                n++;
+            }
+        }
+        if (!n) { showToast('Arxivləmək üçün kursant yoxdur.', 'error'); return; }
+        const label = semInfo.semester + ' · ' + semInfo.subject;
+        if (!confirm('"' + label + '" nəticələri arxivə yazılsın?\n\n' + Object.keys(qruplar).length + ' taqım, ' + n + ' kursant. Arxivə yazmaq cari ballara toxunmur.')) return;
+        const clear = confirm('Arxivə yazıldıqdan sonra CARİ semestrin balları, sərbəst iş seçimləri və son tarixlər təmizlənsin?\n\nOK = təmizlə (yeni semestrə boş başla)\nLəğv et = yalnız arxivə yaz, hər şey qalsın\n\nTaqımlar, kursantlar, girişlər və yüklənmiş fayllar hər halda qalır.');
+        if (clear && !confirm('Son təsdiq: cari ballar və seçimlər silinəcək (arxivdə qalacaq). Davam edilsin?')) return;
+        try {
+            const res = await fetch('/api/arxiv-save', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.token },
+                body: JSON.stringify({ semester: semInfo.semester, subject: semInfo.subject, qruplar: qruplar, clear: clear })
+            });
+            if (res.status === 401) { cabinetLogout(); showToast('Sessiya bitib — yenidən daxil olun.', 'error'); return; }
+            const d = await res.json();
+            if (!res.ok) { showToast(d.error || 'Arxivə yazıla bilmədi!', 'error'); return; }
+            arxivSem = d.id;
+            if (d.cleared) await tpRefreshAll();
+            const body = document.getElementById('arxivImtBody');
+            if (body.style.display === 'none') { body.style.display = ''; document.getElementById('arxivImtChev').innerHTML = '&#9652;'; }
+            await loadArxiv(true);
+            showToast(d.cleared ? 'Semestr arxivləndi, cari ballar təmizləndi' : 'Semestr arxivə yazıldı', 'success');
+        } catch (e) {
+            showToast('Arxivə yazıla bilmədi!', 'error');
+        }
+    }
+
+    async function tpArchiveDelete() {
+        const e = arxivEntry();
+        if (!e || e.static) return;
+        if (!confirm('"' + e.semester + (e.subject ? ' · ' + e.subject : '') + '" arxivi silinsin? Bu geri qaytarılmır.')) return;
+        try {
+            const res = await fetch('/api/arxiv-delete', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.token },
+                body: JSON.stringify({ id: e.id })
+            });
+            if (res.status === 401) { cabinetLogout(); showToast('Sessiya bitib — yenidən daxil olun.', 'error'); return; }
+            const d = await res.json();
+            if (!res.ok) { showToast(d.error || 'Silinmədi!', 'error'); return; }
+            arxivSem = null;
+            await loadArxiv(true);
+            showToast('Arxiv silindi', 'success');
+        } catch (e2) {
+            showToast('Silinmədi!', 'error');
+        }
+    }
     // İmtahan qiymət hərfi (bal üzrə avtomatik)
     function examGrade(b) {
         return b >= 91 ? 'A “Əla”' : b >= 81 ? 'B “Çox yaxşı”' : b >= 71 ? 'C “Yaxşı”'
              : b >= 61 ? 'D “Kafi”' : b >= 51 ? 'E “Qənaətbəxş”' : 'F “Qeyri-kafi”';
     }
 
-    function renderImtahanTable(imtId, g) {
-        const ib = document.getElementById(imtId);
-        if (!ib) return;
-        const manual = cabData.exam_scores || {};
-        ib.innerHTML = '';
-        let i = 1;
-        for (const name of teamRoster(g)) {
-            const v = (g.imtahan || {})[name];
-            const staticBal = v ? parseInt(v[0]) : NaN;
-            const bal = manual[name] != null ? manual[name] : (isNaN(staticBal) ? null : staticBal);
-            ib.insertAdjacentHTML('beforeend',
-                `<tr data-name="${esc(name)}" data-static="${isNaN(staticBal) ? '' : staticBal}"><td class="col-num">${i++}</td><td>${esc(name)}</td>` +
-                `<td class="col-bal"><input type="number" class="score-inp" min="0" max="100" value="${bal != null ? bal : ''}" onchange="saveExamScore(this)"></td>` +
-                `<td class="col-grade exam-grade"></td></tr>`);
-            updateExamRow(ib.lastElementChild);
-        }
-        updateExamSummary(ib);
-    }
-
-    function updateExamRow(tr) {
-        const v = tr.querySelector('input').value;
-        const cell = tr.querySelector('.exam-grade');
-        if (v === '') { cell.innerHTML = '<span class="bal bal-none">&#8212;</span>'; return; }
-        const b = parseInt(v);
-        cell.innerHTML = `<span class="grade ${imtCls(b)}">${examGrade(b)}</span>`;
-    }
-
-    function updateExamSummary(ib) {
-        const vals = Array.from(ib.querySelectorAll('input')).map(el => parseInt(el.value)).filter(n => !isNaN(n));
-        updateSummary(ib, [ib.querySelectorAll('tr').length, vals.length ? (vals.reduce((a, b) => a + b, 0) / vals.length).toFixed(1) : '—']);
-    }
-
     async function saveExamScore(inp) {
-        const tr = inp.closest('tr');
-        const name = tr.dataset.name;
+        const host = inp.closest('[data-name]');
+        const name = host.dataset.name;
         let bal = inp.value === '' ? null : Math.max(0, Math.min(100, parseInt(inp.value) || 0));
         if (bal != null) inp.value = bal;
         try {
@@ -4630,24 +5081,14 @@
             else {
                 delete cabData.exam_scores[name];
                 // manual bal silindisə statik nəticəyə qayıt
-                if (tr.dataset.static !== '') inp.value = tr.dataset.static;
+                if (inp.dataset.static !== '') inp.value = inp.dataset.static;
             }
-            updateExamRow(tr);
-            updateExamSummary(tr.closest('tbody'));
-            tr.style.background = 'rgba(46,125,50,0.1)';
-            setTimeout(() => { tr.style.background = ''; }, 700);
+            syncScoreViews(name, host);
+            flashHost(host, inp);
         } catch(e) {
             showToast('Bal yadda saxlanıla bilmədi!', 'error');
         }
     }
-
-    function updateSummary(tbody, vals) {
-        const card = tbody.closest('.card');
-        if (!card) return;
-        const items = card.querySelectorAll('.results-summary .rs-val');
-        vals.forEach((v, i) => { if (items[i]) items[i].textContent = v; });
-    }
-
     // Səhifə yenilənəndə aktiv sessiya varsa avtomatik yönləndirmə etmirik —
     // istifadəçi semestri seçəndə routeCabinet() işə düşür.
 

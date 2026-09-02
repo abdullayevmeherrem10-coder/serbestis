@@ -21,7 +21,8 @@ DB_FILE = os.path.join(BASE_DIR, "database.json")
 sys.path.insert(0, os.path.join(BASE_DIR, "api"))
 from _credentials import CREDENTIALS
 from _results import RESULTS
-from _arxiv import ARXIV_IMTAHAN
+from _arxiv import (ARXIV_IMTAHAN, arxiv_entries, arxiv_clean_rows,
+                    arxiv_add, arxiv_delete, arxiv_clear_semester)
 from _roster import roster_action
 from _uploads import (upload_url_action, upload_confirm_action,
                       upload_link_action, upload_delete_action,
@@ -244,7 +245,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
             if not cid or CREDENTIALS.get(cid, {}).get("role") != "teacher":
                 self.send_json({"error": "İcazə yoxdur."}, 401)
                 return
-            self.send_json(ARXIV_IMTAHAN)
+            self.send_json({"semestrler": arxiv_entries(load_db())})
 
         elif path == "/api/cabinet-data":
             auth = self.headers.get("Authorization", "")
@@ -419,6 +420,39 @@ class Handler(http.server.BaseHTTPRequestHandler):
                 self.send_json({"success": True})
             except Exception:
                 self.send_json({"error": "Firebase yazma alınmadı."}, 502)
+
+        elif path in ("/api/arxiv-save", "/api/arxiv-delete"):
+            # Semestr sonu arxivi (yaz / sil) — yalnız müəllim
+            auth = self.headers.get("Authorization", "")
+            cid = verify_token(auth[7:].strip()) if auth.startswith("Bearer ") else None
+            if not cid or CREDENTIALS.get(cid, {}).get("role") != "teacher":
+                self.send_json({"error": "İcazə yoxdur."}, 401)
+                return
+            body = self.read_body()
+            db = load_db()
+            if path == "/api/arxiv-delete":
+                if not arxiv_delete(db, (body.get("id") or "").strip()):
+                    self.send_json({"error": "Arxiv girişi tapılmadı."}, 404)
+                    return
+                save_db(db)
+                self.send_json({"success": True})
+                return
+            qruplar = arxiv_clean_rows(body.get("qruplar"), exam_grade)
+            if qruplar is None:
+                self.send_json({"error": "Arxiv məlumatı etibarsızdır."}, 400)
+                return
+            entry = arxiv_add(db, body.get("semester") or db.get("semester", ""),
+                              body.get("subject") or db.get("subject", ""), qruplar)
+            cleared = False
+            if body.get("clear") is True:
+                try:
+                    save_prerestore(db)
+                except Exception:
+                    pass
+                arxiv_clear_semester(db)
+                cleared = True
+            save_db(db)
+            self.send_json({"success": True, "id": entry["id"], "cleared": cleared})
 
         elif path == "/api/cabinet-roster":
             auth = self.headers.get("Authorization", "")
@@ -816,7 +850,8 @@ class Handler(http.server.BaseHTTPRequestHandler):
 
 if __name__ == "__main__":
     os.chdir(BASE_DIR)
-    server = http.server.HTTPServer(("127.0.0.1", PORT), Handler)
+    # ThreadingHTTPServer: brauzerin boş (preconnect) bağlantısı və ya asılmış sorğu bütün serveri bloklamasın
+    server = http.server.ThreadingHTTPServer(("127.0.0.1", PORT), Handler)
     print(f"Server running at http://localhost:{PORT}")
     print(f"Admin panel: http://localhost:{PORT}/admin")
     print(f"Admin password: {ADMIN_PASSWORD}")

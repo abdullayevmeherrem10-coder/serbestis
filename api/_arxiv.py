@@ -211,3 +211,108 @@ ARXIV_IMTAHAN = json.loads(r'''{
     }
   }
 }''')
+
+
+# ───────── Dinamik arxiv: müəllim semestr sonunda yazır, db["arxiv"] siyahısında saxlanılır ─────────
+# Giriş: {id, semester, subject, ts, qruplar: {taqım: {ad: {k1,k2,k3,koll,serbest,defter,menimseme,imtahan,qiymet}}}}
+# Statik 2024 arxivi (yuxarıdakı ARXIV_IMTAHAN) eyni formata çevrilib siyahının sonuna əlavə olunur (static=True).
+import time as _time
+
+ARXIV_MAX = 30
+_ROW_FIELDS = ("k1", "k2", "k3", "serbest", "defter", "imtahan")
+
+
+def _static_entry():
+    qruplar = {}
+    for group, rows in (ARXIV_IMTAHAN.get("qruplar") or {}).items():
+        out = {}
+        for name, v in rows.items():
+            try:
+                bal = int(v[0])
+            except (TypeError, ValueError, IndexError):
+                bal = None
+            out[name] = {"k1": None, "k2": None, "k3": None, "koll": None, "serbest": None, "defter": None,
+                         "menimseme": None, "imtahan": bal,
+                         "qiymet": v[1] if isinstance(v, (list, tuple)) and len(v) > 1 else None}
+        qruplar[group] = out
+    return {"id": "2024-qebul", "static": True, "semester": "2024 qəbul", "subject": "yalnız imtahan nəticələri",
+            "ts": ARXIV_IMTAHAN.get("arxivlənmə_tarixi", ""), "qruplar": qruplar}
+
+
+def arxiv_entries(db):
+    """Bütün arxiv girişləri: dinamiklər (yenidən köhnəyə) + statik 2024."""
+    return list(db.get("arxiv", [])) + [_static_entry()]
+
+
+def _int_or_none(v):
+    if v is None or v == "":
+        return None
+    return int(v)
+
+
+def arxiv_clean_rows(qruplar, grade_fn):
+    """Müştəridən gələn snapshot-u yoxlayır; koll./mənimsəmə cəmini və qiyməti serverdə hesablayır.
+    Etibarsızdırsa None."""
+    if not isinstance(qruplar, dict) or not qruplar or len(qruplar) > 20:
+        return None
+    out = {}
+    for team, rows in qruplar.items():
+        if not isinstance(team, str) or not team.strip() or not isinstance(rows, dict) or len(rows) > 200:
+            return None
+        clean = {}
+        for name, r in rows.items():
+            if not isinstance(name, str) or not name.strip() or not isinstance(r, dict):
+                return None
+            try:
+                vals = {f: _int_or_none(r.get(f)) for f in _ROW_FIELDS}
+            except (TypeError, ValueError):
+                return None
+            for f in ("k1", "k2", "k3", "serbest", "defter"):
+                if vals[f] is not None:
+                    vals[f] = max(0, min(10, vals[f]))
+            if vals["imtahan"] is not None:
+                vals["imtahan"] = max(0, min(100, vals["imtahan"]))
+            ks = [vals["k1"], vals["k2"], vals["k3"]]
+            koll = sum(v for v in ks if v is not None) if any(v is not None for v in ks) else None
+            has_men = koll is not None or vals["serbest"] is not None or vals["defter"] is not None
+            vals["koll"] = koll
+            vals["menimseme"] = ((koll or 0) + (vals["serbest"] or 0) + (vals["defter"] or 0)) if has_men else None
+            vals["qiymet"] = grade_fn(vals["imtahan"]) if vals["imtahan"] is not None else None
+            clean[name.strip()[:70]] = vals
+        out[team.strip()[:40]] = clean
+    return out
+
+
+def arxiv_add(db, semester, subject, qruplar):
+    """Yeni girişi siyahının əvvəlinə qoyur (ən çoxu ARXIV_MAX saxlanılır); girişi qaytarır."""
+    entry = {
+        "id": _time.strftime("%Y%m%d-%H%M%S"),
+        "semester": (semester or "").strip()[:60],
+        "subject": (subject or "").strip()[:60],
+        "ts": _time.strftime("%d.%m.%Y %H:%M"),
+        "qruplar": qruplar,
+    }
+    arx = db.setdefault("arxiv", [])
+    arx.insert(0, entry)
+    del arx[ARXIV_MAX:]
+    return entry
+
+
+def arxiv_delete(db, eid):
+    """Dinamik girişi silir (statik 2024 silinmir). Silindisə True."""
+    arx = db.get("arxiv", [])
+    for i, e in enumerate(arx):
+        if e.get("id") == eid:
+            del arx[i]
+            return True
+    return False
+
+
+def arxiv_clear_semester(db):
+    """Yeni semestr üçün cari balları və seçimləri təmizləyir; taqımlar, girişlər, fayllar qalır."""
+    db["scores"] = {}
+    db["exam_scores"] = {}
+    db["kollok_scores"] = {}
+    db["selections"] = {}
+    db["deadlines"] = {}
+    db["work_taken_by"] = {t: {} for t in db.get("teams", {})}

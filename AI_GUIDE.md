@@ -180,8 +180,13 @@ Dil: **Azərbaycan dili** (bütün UI və kod şərhləri AZ dilindədir).
 - `POST /api/kollok-write` `{path, data}` → Firebase-ə yazma proxy-si (bax §10).
 - `POST /api/upload-review` `{name, kind, status: accepted|revise|"", note}` → fayl rəyi (bax §18).
 - `POST /api/vt-check` `{name, kind}` / `POST /api/vt-status` `{name, kind}` → VirusTotal (bax §18).
-- `GET /api/arxiv-imtahan` → köhnə qəbulların arxivlənmiş imtahan nəticələri
-  (`api/_arxiv.py`; UI: İmtahan tabının altındakı kompakt "Arxiv" kartı).
+- `GET /api/arxiv-imtahan` → `{semestrler: [...]}` — müəllimin yazdığı keçmiş semestrlər
+  (`db["arxiv"]`, yenidən köhnəyə) + repo-dakı statik 2024 imtahan arxivi (`api/_arxiv.py`, `static: true`).
+- `POST /api/arxiv-save` `{semester, subject, qruplar: {taqım: {ad: {k1,k2,k3,serbest,defter,imtahan}}}, clear}`
+  → semestr sonu arxivi (bax §21). Server koll./mənimsəmə cəmini və qiyməti özü hesablayır.
+  `clear=true` olsa əvvəl B2-yə qoruyucu nüsxə (`save_prerestore`), sonra scores/exam_scores/
+  kollok_scores/selections/deadlines/work_taken_by təmizlənir (taqımlar, girişlər, uploads qalır).
+- `POST /api/arxiv-delete` `{id}` → dinamik arxiv girişini silir (statik 2024 silinmir).
 - `GET|POST /api/backup` → əl ilə ehtiyat nüsxə (cron da bunu çağırır — `vercel-cron` UA ilə).
 - `POST /api/backup-restore` `{date: "YYYY-MM-DD"}` → nüsxədən bərpa (bax §19).
 
@@ -219,6 +224,12 @@ Dil: **Azərbaycan dili** (bütün UI və kod şərhləri AZ dilindədir).
   "kollok_scores": { "Ad Soyad": {"1": 9, "3": 7} },   // müəllimin MANUAL kollokvium balları (mavi)
   "cred_overrides": { "Y1-02": "sha256hash" },  // şifrə yeniləməsi: statik hesabın yeni hash-i
                                                 // (raw_cred() bunu CREDENTIALS-dan üstün tutur)
+  "arxiv": [ {                                  // semestr sonu arxivləri (yenidən köhnəyə, maks 30; bax §21)
+    "id": "20260902-130000", "semester": "2025/2026 yaz semestri", "subject": "Hərbi Mühəndis Texnikası",
+    "ts": "02.09.2026 13:00",
+    "qruplar": { "YT23A1": { "Ad Soyad": { "k1": 8, "k2": 7, "k3": null, "koll": 15, "serbest": 9,
+                                           "defter": 8, "menimseme": 32, "imtahan": 74, "qiymet": "C “Yaxşı”" } } }
+  } ],
   "uploads": {                                  // kursant faylları (fayl özü B2-dədir!)
     "Ad Soyad": {
       "docx": { "key": "uploads/<hash16>-docx.docx", "fname": "orijinal ad.docx",
@@ -313,20 +324,31 @@ Dil: **Azərbaycan dili** (bütün UI və kod şərhləri AZ dilindədir).
 ## 11. Frontend axını (`index.html`)
 
 1. **Giriş ekranı** (`#cabinetLogin`) — sayt açılanda birbaşa bura düşür (semestr seçimi yoxdur).
-2. **Kursant kabineti** (`#cabinetView`) — hero panel, KPI kartları, nəticə kartları,
-   fərdi deadline banneri (+geri sayım, §20), "Sərbəst işlərim",
-   "Sərbəst işimi təhvil ver" (fayl yükləmə + müəllim rəyi, §18), sənəd düymələri.
+2. **Kursant kabineti** (`#cabinetView`, 2026-09-02-dən sadələşdirilmiş) — hero (ad, taqım, ID,
+   "Ədəbiyyata bax" keçidi), fərdi deadline banneri (+geri sayım, §20), **"Nəticələrim"** kartı
+   (`#cabResults`, `buildPersonalCards()`: Kollokvium K1-K3 çipləri + cəm/30, Sərbəst iş/10,
+   Dəftər/10, Mənimsəmə/50, İmtahan/100 + qiymət; canlı ballar yaşıl nöqtə, detallar `.cab-subrow`),
+   **"Sərbəst iş"** kartı — 3 addım: 1) Mövzu seçimi (`#cabSerbest`, `renderCabSerbest()`),
+   2) Hazırlıq (titul vərəqi + hazırlanma qaydası), 3) Təhvil (fayl yükləmə + müəllim rəyi, §18).
+   Köhnə KPI kartları və ayrı nəticə kartları ləğv edilib — bütün məlumat "Nəticələrim"-dədir.
    - Sərbəst iş seçmək üçün `startSerbestFlow()` → `#appView` (student-mode).
-3. **Müəllim paneli** (`#appView.teacher-mode`) — tab naviqasiya + E-Kollokvium banneri:
-   - **Sərbəst işlər tab:** idarəetmə paneli (xülasə, kursant cədvəli: seçimlər + Sənədlər
-     sütunu [Bax/Endir/VT/rəy/sil] + fərdi tarixlər + sıfırla/🔑şifrə/sil; taqım düymələri:
-     ad dəyiş/sil/yeni/şifrələri yenilə; işlərin bölgüsü, semestr/fənn, Ehtiyat nüsxə kartı,
-     "hamısını sıfırla").
-   - **Kollokvium tabı:** Dəftər mövzuları kartı (yalnız bu tabda) + redaktə olunan bal
-     inputları (manual=mavi, §8). **Mənimsəmə/İmtahan tabları:** redaktə olunan cədvəllər.
+3. **Müəllim paneli** (`#appView.teacher-mode`, 2026-09-02-dən sadələşdirilmiş) — bir sətirlik
+   naviqasiya: 4 tab (solda) + **qlobal taqım `select`-i** (`#tpTeamSel`, `tpTeam`) + axtarış (`tpFilter`).
+   Seçilən taqım bütün tablara tətbiq olunur. E-Kollokvium keçidi üst paneldə düymədir (`#ekollokBtn`).
+   - **Kursantlar tabı:** sakit cədvəl (seçim, sənəd nişanları, mənimsəmə, imtahan, klik-redaktə son tarix,
+     ⋯ menyusu). Kursantın adına klik → **sağdan açılan panel** (`#tpDrawer`, `openDrawer/renderDrawer`):
+     seçim + sıfırla, sənədlər (Bax/Endir/Virus yoxla/Qəbul et/Düzəliş istə/Sil), bütün bal inputları,
+     Hesab (ad dəyiş / yeni şifrə / sil). Əməliyyat funksiyaları kursantı `ctxName(el)` ilə
+     (ən yaxın `[data-name]`) tapır — cədvəl sətri, panel və ⋯ menyusu eyni funksiyaları paylaşır.
+   - **Ballar tabı:** bir cədvəl: K1 K2 K3 | Koll. | Sərbəst | Dəftər | Mənimsəmə | İmtahan | Qiymət
+     (`renderBallar`, `fillScoreInputs`, `updateBalRow` yerində hesablayır, `syncScoreViews` panel/cədvəl/sətri
+     sinxronlaşdırır). Manual kollokvium balı mavi (§8). Bütün taqımlar (HFT daxil) görünür.
+   - **Sərbəst işlər tabı:** işlərin bölgüsü (əlavə/redaktə/sil).
+   - **Parametrlər tabı:** semestr/fənn, dəftər mövzuları, taqımlar (ad dəyiş / şifrələri yenilə / sil / yeni),
+     Arxiv kartı (§21), "Təhlükəli əməliyyatlar" (bütün seçimləri sıfırla).
 - Əsas render funksiyaları: `showCabinet()`, `showTeacherApp()`, `buildPersonalCards()`,
-  `renderTeacherPanel()`, `renderMenimsemeTable()`, `renderImtahanTable()`, `renderTpStudents()`,
-  `applyLiveToKollokTable()`, `renderUploads()`.
+  `renderTeacherPanel()`, `renderTpStudents()`, `renderBallar()`, `renderDrawer()`, `renderTeamList()`,
+  `renderUploads()`.
 - Tema keçidi: `toggleTheme()` / `updateThemeIcon()` (bax §16).
 - İstifadəçi mətni HTML-ə qoyulanda `esc()`-dən keçir (XSS qoruması).
 
@@ -507,3 +529,18 @@ Vercel serverless funksiyaları maks ~4.5 MB sorğu qəbul edir, ona görə axı
 - Rənglər: >7 gün yaşıl, 3-7 narıncı, ≤3 qırmızı (yanıb-sönən), "bu gün son gündür!",
   keçibsə "vaxt keçib". Tarix parse olunmasa nişan sadəcə göstərilmir (banner qalır).
 ```
+
+---
+
+## 21. Semestr sonu arxivi
+
+- **UI:** Parametrlər → "Arxiv — keçmiş semestrlər" kartı. "Cari semestri arxivlə" düyməsi bütün
+  taqımların cari nəticələrini (`studentTotals()`: manual > canlı > statik kollokvium, sərbəst/dəftər,
+  imtahan) `POST /api/arxiv-save`-ə göndərir; iki təsdiq: (1) arxivə yaz, (2) cari balları/seçimləri
+  təmizlə (istəyə görə, 3-cü təsdiqlə). "Arxivə bax" — semestr tabları → taqım tabları → cədvəl;
+  dinamik girişlər "Bu arxivi sil" ilə silinir, statik 2024 silinmir.
+- **Saxlanma:** `db["arxiv"]` (Redis, gecə nüsxəsinə daxildir), ən çoxu 30 giriş. Statik 2024
+  (`api/_arxiv.py` → `ARXIV_IMTAHAN`) eyni formata çevrilib siyahının sonunda göstərilir.
+- **Firebase-ə toxunulmur:** kollokvium sessiyaları qrup açarı ilə (`K1_YT_23A1`) saxlanır; yeni semestrdə
+  müəllim yeni kollokvium keçirəndə üstünə yazılır. Arxiv snapshot-u dəyərləri artıq saxladığı üçün
+  bu, arxivə təsir etmir.
