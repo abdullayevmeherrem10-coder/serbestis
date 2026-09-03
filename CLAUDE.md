@@ -49,6 +49,9 @@ Gitignore-da (heç vaxt commit etmə): `kabinet_girisleri.txt`, `admin_secret.tx
 7. **Yeni xarici resurs (CDN, font, API)** → `vercel.json` CSP-yə mənbə əlavə et.
 8. **Push-dan əvvəl `git fetch origin`** — lokal repo geri qala bilər, üzərinə yazma.
 9. Sirləri (şifrə, açar, JSON) heç vaxt commit etmə.
+10. **C diskinə heç nə yazma.** Müvəqqəti fayl, skript, skrinşot, brauzer profili, klon — hamısı
+    D:/claude-tmp/sapyor/ qovluğuna (sistem scratchpad-i C-də olsa belə istifadə etmə). Layihə
+    qovluğunda müvəqqəti fayl (məs. _preview_*.html) yaradılsa iş bitəndə sil.
 
 ## Lokal işə salma
 ```bash
