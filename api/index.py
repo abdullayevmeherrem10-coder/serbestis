@@ -13,6 +13,9 @@ from _results import RESULTS
 from _arxiv import (ARXIV_IMTAHAN, arxiv_entries, arxiv_clean_rows,
                     arxiv_add, arxiv_delete, arxiv_clear_semester)
 from _roster import roster_action
+from _subjects import (subjects_of, current_subject, set_current_subject, current_pick,
+                       work_subjects, works_payload, select_works, reset_selection,
+                       reset_all_selections, ensure_subject2_topics)
 from _uploads import (upload_url_action, upload_confirm_action,
                       upload_link_action, upload_delete_action,
                       upload_review_action, vt_check_action, vt_status_action)
@@ -290,9 +293,10 @@ def load_db():
         if db.get("roster_version") != ROSTER_VERSION:
             new_db = json.loads(json.dumps(DEFAULT_DB))
             # cari semestr/fənn adı saxlanılır (müəllim paneldən dəyişə bilir)
-            for k in ("semester", "subject"):
+            for k in ("semester", "subject", "subject_id"):
                 if k in db:
                     new_db[k] = db[k]
+            ensure_subject2_topics(new_db)
             save_db(new_db)
             return new_db
         # 2024 arxiv açarı sahibin istəyi ilə lazımsızdır — bir dəfə təmizlənir
@@ -316,8 +320,12 @@ def load_db():
         for t in db["teams"]:
             if t not in db.get("work_taken_by", {}):
                 db.setdefault("work_taken_by", {})[t] = {}
+        # İkinci fənnin (s2) mövzuları bir dəfə əlavə olunur
+        if ensure_subject2_topics(db):
+            save_db(db)
         return db
     db = json.loads(json.dumps(DEFAULT_DB))
+    ensure_subject2_topics(db)
     save_db(db)
     return db
 
@@ -557,6 +565,9 @@ def cabinet_data():
             "teams": db.get('teams', {}),
             "works": db.get('works', []),
             "work_taken_by": db.get('work_taken_by', {}),
+            "work_subjects": work_subjects(db),
+            "subjects": subjects_of(db),
+            "subject_id": current_subject(db),
             "semester": db.get('semester', '2025/2026 yaz semestri'),
             "subject": db.get('subject', 'Hərbi Mühəndis Texnikası'),
             "exam_scores": db.get('exam_scores', {}),
@@ -571,6 +582,8 @@ def cabinet_data():
         "team": cred['team'],
         "key": db.get('keys', {}).get(name, ''),
         "selections": db.get('selections', {}).get(name, []),
+        "subjects": subjects_of(db),
+        "subject_id": current_subject(db),
         "results": student_results(name, cred['team'], db),
         "scores": db.get('scores', {}).get(name),
         "deadline": db.get('deadlines', {}).get(name),
@@ -588,6 +601,8 @@ def semester_info():
     return jsonify({
         "semester": db.get('semester', '2025/2026 yaz semestri'),
         "subject": db.get('subject', 'Hərbi Mühəndis Texnikası'),
+        "subject_id": current_subject(db),
+        "subjects": subjects_of(db),
     })
 
 
@@ -599,14 +614,22 @@ def cabinet_semester():
         return jsonify({"error": "İcazə yoxdur."}), 401
     body = request.get_json(silent=True) or {}
     semester = (body.get('semester') or '').strip()[:60]
+    subject_id = body.get('subject_id')
     subject = (body.get('subject') or '').strip()[:60]
-    if not semester or not subject:
+    if not semester or not (subject_id or subject):
         return jsonify({"error": "Semestr və fənn boş ola bilməz."}), 400
     db = load_db()
     db['semester'] = semester
-    db['subject'] = subject
+    if subject_id:
+        # Fənn siyahıdan seçilir: adı və sərbəst iş siyahısı (s1 / s2) birlikdə dəyişir
+        if not set_current_subject(db, subject_id):
+            return jsonify({"error": "Fənn tapılmadı."}), 400
+    else:
+        db['subject'] = subject          # köhnə müştəri: sərbəst mətn
+        db.pop('subject_id', None)
     save_db(db)
-    return jsonify({"success": True, "semester": semester, "subject": subject})
+    return jsonify({"success": True, "semester": semester, "subject": db['subject'],
+                    "subject_id": current_subject(db), "subjects": subjects_of(db)})
 
 
 @app.route('/api/cabinet-reset', methods=['POST'])
@@ -620,9 +643,7 @@ def cabinet_reset():
     if not name:
         return jsonify({"error": "Kursant adı göstərilməyib."}), 400
     db = load_db()
-    db.get('selections', {}).pop(name, None)
-    for team, taken in db.get('work_taken_by', {}).items():
-        db['work_taken_by'][team] = {wid: n for wid, n in taken.items() if n != name}
+    reset_selection(db, name)
     save_db(db)
     return jsonify({"success": True, "selections": db.get('selections', {}), "work_taken_by": db.get('work_taken_by', {})})
 
@@ -634,10 +655,9 @@ def cabinet_reset_all():
     if not cid or CREDENTIALS.get(cid, {}).get('role') != 'teacher':
         return jsonify({"error": "İcazə yoxdur."}), 401
     db = load_db()
-    db['selections'] = {}
-    db['work_taken_by'] = {t: {} for t in db.get('teams', {})}
+    reset_all_selections(db)
     save_db(db)
-    return jsonify({"success": True, "selections": {}, "work_taken_by": db['work_taken_by']})
+    return jsonify({"success": True, "selections": db.get('selections', {}), "work_taken_by": db['work_taken_by']})
 
 
 # ─── E-Kollokvium Firebase yazma proxy-si ─────────────────
@@ -1006,17 +1026,9 @@ def get_works():
     if not cid or not resolve_cred(cid, db):
         return jsonify({"error": "Giriş tələb olunur."}), 401
     team = request.args.get('team', '')
-    team_taken = db["work_taken_by"].get(team, {})
-    works = []
-    for i, w in enumerate(db["works"]):
-        taken_by = team_taken.get(str(i))
-        works.append({
-            "id": i,
-            "title": w,
-            "taken": taken_by is not None,
-            "taken_by": taken_by
-        })
-    return jsonify({"works": works})
+    # Yalnız cari fənnə aid işlər; subject/pick — kursant tərəfi üçün
+    return jsonify({"works": works_payload(db, team), "subject": current_subject(db),
+                    "pick": current_pick(db), "subjects": subjects_of(db)})
 
 
 @app.route('/api/status', methods=['POST'])
@@ -1076,25 +1088,11 @@ def select_works():
         record_failed_attempt(ip)
         return jsonify({"error": "Açar yanlışdır!"}), 403
     clear_rate_limit(ip)
-    if name in db["selections"] and len(db["selections"][name]) >= 2:
-        return jsonify({"error": "Siz artıq 2 sərbəst iş seçmisiniz!"}), 400
-    if len(work_ids) != 2:
-        return jsonify({"error": "Tam olaraq 2 sərbəst iş seçməlisiniz!"}), 400
-
-    team_taken = db["work_taken_by"].get(team, {})
-    for wid in work_ids:
-        taken = team_taken.get(str(wid))
-        if taken and taken != name:
-            title = db["works"][wid] if wid < len(db["works"]) else "?"
-            return jsonify({"error": f"'{title}' artıq başqası tərəfindən seçilib!"}), 409
-
-    db["selections"][name] = work_ids
-    for wid in work_ids:
-        db["work_taken_by"].setdefault(team, {})[str(wid)] = name
-    save_db(db)
-
-    selected_titles = [db["works"][wid] for wid in work_ids]
-    return jsonify({"success": True, "message": "Seçimləriniz uğurla qeydə alındı!", "selected": selected_titles})
+    # Fənn və iş sayı cari fənndən gəlir (s1 → 2 iş, s2 → 1 mövzu)
+    ok, resp, code = select_works(db, name, team, work_ids)
+    if ok:
+        save_db(db)
+    return jsonify(resp), code
 
 
 @app.route('/api/admin/login', methods=['POST'])

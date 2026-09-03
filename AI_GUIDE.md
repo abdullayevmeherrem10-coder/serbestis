@@ -55,6 +55,7 @@ Dil: **Azərbaycan dili** (bütün UI və kod şərhləri AZ dilindədir).
 ├── api/_credentials.py     # Kabinet girişləri: {ID: {hash, name, team|role}} (SHA-256 hash)
 ├── api/_results.py         # Statik kollokvium/mənimsəmə/imtahan nəticələri (2 YT qrupu)
 ├── api/_roster.py          # Taqım/kursant idarəetmə məntiqi (əlavə/redaktə/sil/şifrə yeniləmə)
+├── api/_subjects.py        # Sərbəst iş fənnləri — cari fənn semestr parametri (s1: 2 iş, s2: 1 mövzu), seçim məntiqi (bax §22)
 ├── api/_fbauth.py          # Firebase service-account OAuth token generatoru
 ├── api/_b2.py              # Backblaze B2 SigV4 imzalama (stdlib, boto3 YOX): presign PUT/GET,
 │                           #   server-side HEAD/GET/PUT/DELETE, key_prefix() (dev/canlı ayrımı)
@@ -151,7 +152,7 @@ Dil: **Azərbaycan dili** (bütün UI və kod şərhləri AZ dilindədir).
 ## 6. API Endpointləri (hamısı `api/index.py` + `server.py`)
 
 ### Açıq (autentifikasiyasız)
-- `GET /api/semester-info` → `{semester, subject}` (giriş səhifəsində göstərmək üçün).
+- `GET /api/semester-info` → `{semester, subject, subject_id, subjects}` (giriş səhifəsi üçün; bax §22).
 
 ### Autentifikasiya
 - `POST /api/cabinet-login` `{id, password}` → `{token, id, name, role, team?}`.
@@ -162,8 +163,10 @@ Dil: **Azərbaycan dili** (bütün UI və kod şərhləri AZ dilindədir).
 
 ### Kursant əməliyyatları
 - `GET /api/teams` (token) → taqım→kursantlar (yalnız daxil olanlara).
-- `GET /api/works?team=X` (token) → işlər + kim götürüb.
+- `GET /api/works?team=X` (token) → `{works: [{id, num, subject, title, taken, taken_by}], subject, pick, subjects}`.
+  YALNIZ cari fənnə aid işlər; `id` qlobal indeks, `num` fənn daxilində sıra (1..N), `pick` seçiləcək say (bax §22).
 - `POST /api/select` `{name, key, team, work_ids}` → sərbəst iş seçimi (təsdiq açarı yoxlanılır).
+  Fənn və iş sayı cari fənndən gəlir: s1 → tam 2 iş, s2 → tam 1 mövzu; bir dəfə seçilir.
 - `GET /api/student-status?name&key` → seçim statusu (rate-limitli).
 
 ### Müəllim əməliyyatları (hamısı `role != teacher → 401`)
@@ -173,7 +176,8 @@ Dil: **Azərbaycan dili** (bütün UI və kod şərhləri AZ dilindədir).
   düzəlişi. `null`/boş → manual bal silinir, avtomatik (canlı/statik) bala qayıdır.
   Saxlanma: `db["kollok_scores"][ad]["1|2|3"]`. UI-də manual ballar MAVİ göstərilir.
 - `POST /api/cabinet-deadline` `{name, deadline}` → fərdi son tarix (boş = silmə).
-- `POST /api/cabinet-semester` `{semester, subject}` → semestr/fənn adı.
+- `POST /api/cabinet-semester` `{semester, subject_id: s1|s2}` → semestr + fənn (siyahıdan); server `db.subject`
+  adını da yazır. Köhnə forma `{semester, subject}` (sərbəst mətn) hələ qəbul olunur. Cavab: `subject, subject_id, subjects`.
 - `POST /api/cabinet-reset` `{name}` → bir kursantın seçimini sıfırla.
 - `POST /api/cabinet-reset-all` → bütün seçimləri sıfırla.
 - `POST /api/cabinet-roster` `{action, ...}` → taqım/kursant/iş idarəetmə (bax §9).
@@ -209,9 +213,12 @@ Dil: **Azərbaycan dili** (bütün UI və kod şərhləri AZ dilindədir).
 {
   "roster_version": "2023-qebul",              // qəbul ili markeri (bax §7.1)
   "teams": { "YT23A1": ["Ad Soyad oğlu", ...], "YT23A2": [...], "HFT23A1": [...], "HFT23A2": [...] },
-  "works": ["Sərbəst iş adı 1", ...],          // 50 iş
+  "works": ["Sərbəst iş adı 1", ...],          // 50 iş (s1) + 25 mövzu (s2) — bax §22
+  "work_subjects": ["s1", ..., "s2", ...],     // works ilə eyni indeks; çatışmayan = s1
+  "subject_id": "s2",                          // cari fənn (s1|s2) — sərbəst iş siyahısı buna görə (bax §22)
+  "s2_topics_added": true,                     // s2 mövzuları bir dəfə əlavə olunub (miqrasiya bayrağı)
   "keys":  { "Ad Soyad": "ACAR6" },            // sərbəst iş təsdiq açarları
-  "selections": { "Ad Soyad": [4, 7] },        // seçdiyi 2 işin indeksi
+  "selections": { "Ad Soyad": [4, 7] },        // seçilən işlərin indeksləri (cari fənnə görə 2 və ya 1)
   "work_taken_by": { "YT23A1": { "4": "Ad Soyad" } },  // taqım→{işİndeks: kursant}
   "scores": { "Ad Soyad": { "serbest": 8, "defter": 9 } },  // mənimsəmə komponentləri
   "exam_scores": { "Ad Soyad": 74 },           // müəllimin manual imtahan balı
@@ -273,6 +280,7 @@ Dil: **Azərbaycan dili** (bütün UI və kod şərhləri AZ dilindədir).
   Frontend-də `mergedKollokFor()` bu qaydanı tətbiq edir; müəllim cədvəlində ballar redaktə
   olunan inputlardır (`saveKollokScore`). Manual bal Firebase-dəki orijinala TOXUNMUR.
 - **Sərbəst iş** və **Dəftər/İntizam** — müəllim `cabinet-scores` ilə əl ilə yazır.
+  Düstur hər fənn üçün eynidir; sərbəst iş cari fənnin siyahısındandır (bax §22).
 - Kursant kabinetində bölgü + cəm avtomatik göstərilir. Müəllimin bal yazması dərhal əks olunur.
 
 ### İmtahan qiyməti (baldan avtomatik)
@@ -298,7 +306,8 @@ Dil: **Azərbaycan dili** (bütün UI və kod şərhləri AZ dilindədir).
   (`raw_cred()` override-ı `_credentials.py`-dakı hash-dən üstün tutur).
 - `reset_all_passwords` `{team}` — taqımın BÜTÜN kursantlarına yeni şifrələr; cavabda
   `creds: [{name, id, password}]` (UI bunu txt fayl kimi endirir).
-- `add_work` / `edit_work` / `delete_work` — iş siyahısı idarəsi.
+- `add_work` `{title, subject: s1|s2}` / `edit_work` / `delete_work` — iş siyahısı idarəsi
+  (`work_subjects` də sinxron yenilənir; cavabda qaytarılır). UI cari fənnlə əlavə edir.
   - Seçilmiş işi silmək **bloklanır** (əvvəl seçim sıfırlanmalı).
   - İş silinəndə bütün seçim indeksləri avtomatik yenidən hesablanır.
 
@@ -328,7 +337,8 @@ Dil: **Azərbaycan dili** (bütün UI və kod şərhləri AZ dilindədir).
    "Ədəbiyyata bax" keçidi), fərdi deadline banneri (+geri sayım, §20), **"Nəticələrim"** kartı
    (`#cabResults`, `buildPersonalCards()`: Kollokvium K1-K3 çipləri + cəm/30, Sərbəst iş/10,
    Dəftər/10, Mənimsəmə/50, İmtahan/100 + qiymət; canlı ballar yaşıl nöqtə, detallar `.cab-subrow`),
-   **"Sərbəst iş"** kartı — 3 addım: 1) Mövzu seçimi (`#cabSerbest`, `renderCabSerbest()`),
+   **"Sərbəst iş"** kartı — 3 addım: 1) Mövzu seçimi (`#cabSerbest`, `renderCabSerbest()` — cari fənn
+   `.cb-subj-name` ilə göstərilir; `startSerbestFlow()` → `/api/works` yalnız o fənnin işlərini verir, `flowPick`),
    2) Hazırlıq (titul vərəqi + hazırlanma qaydası), 3) Təhvil (fayl yükləmə + müəllim rəyi, §18).
    Köhnə KPI kartları və ayrı nəticə kartları ləğv edilib — bütün məlumat "Nəticələrim"-dədir.
    - Sərbəst iş seçmək üçün `startSerbestFlow()` → `#appView` (student-mode).
@@ -343,7 +353,10 @@ Dil: **Azərbaycan dili** (bütün UI və kod şərhləri AZ dilindədir).
    - **Ballar tabı:** bir cədvəl: K1 K2 K3 | Koll. | Sərbəst | Dəftər | Mənimsəmə | İmtahan | Qiymət
      (`renderBallar`, `fillScoreInputs`, `updateBalRow` yerində hesablayır, `syncScoreViews` panel/cədvəl/sətri
      sinxronlaşdırır). Manual kollokvium balı mavi (§8). Bütün taqımlar (HFT daxil) görünür.
-   - **Sərbəst işlər tabı:** işlərin bölgüsü (əlavə/redaktə/sil).
+   - **Sərbəst işlər tabı:** cari fənnə aid işlərin bölgüsü (`curSubj()`; əlavə/redaktə/sil), nömrə fənn
+     daxilində, başlıqda fənn adı. Kursantlar tabında "Seçim" nişanı `n/pick` (cari fənnə görə).
+   - **Parametrlər → Semestr və fənn:** "Fənn" `select`-dir (`#tpSubject`, `cabinet-semester {subject_id}`);
+     dəyişəndə başlıqdakı ad və sərbəst iş siyahısı birlikdə dəyişir.
    - **Parametrlər tabı:** semestr/fənn, dəftər mövzuları, taqımlar (ad dəyiş / şifrələri yenilə / sil / yeni),
      Arxiv kartı (§21), "Təhlükəli əməliyyatlar" (bütün seçimləri sıfırla).
 - Əsas render funksiyaları: `showCabinet()`, `showTeacherApp()`, `buildPersonalCards()`,
@@ -544,3 +557,33 @@ Vercel serverless funksiyaları maks ~4.5 MB sorğu qəbul edir, ona görə axı
 - **Firebase-ə toxunulmur:** kollokvium sessiyaları qrup açarı ilə (`K1_YT_23A1`) saxlanır; yeni semestrdə
   müəllim yeni kollokvium keçirəndə üstünə yazılır. Arxiv snapshot-u dəyərləri artıq saxladığı üçün
   bu, arxivə təsir etmir.
+
+---
+
+## 22. Sərbəst iş fənnləri — cari fənn semestr parametridir (`api/_subjects.py`, 2026-09-03)
+
+Müəllim Parametrlər → "Semestr və fənn" kartında fənni siyahıdan seçir; bütün taqımlar həmin fənnin
+sərbəst iş siyahısını görür. Taqım və ya kurs üzrə ayrı fənn YOXDUR (istifadəçi sadəliyi seçdi).
+
+| id | Ad (sabit, `SUBJECTS`) | İşlər | Seçim | Kim |
+|----|----|----|----|----|
+| `s1` | Hərbi Mühəndis Texnikası | 50 iş (köhnə siyahı) | hər kursant **2 iş** | 2-ci kurs (gələcək) |
+| `s2` | Hərbi Mühəndis Hazırlığı | 25 mövzu (`S2_TOPICS`) | hər kursant **1 mövzu** | 4-cü kurs (hazırkı taqımlar) |
+
+- **Cari fənn:** `current_subject(db)` → `db.subject_id`; yoxdursa `db.subject` adına görə; o da yoxdursa `s2`.
+  `set_current_subject(db, sid)` id ilə birlikdə `db.subject` adını da yazır (başlıq, imtahan etiketi, arxiv).
+  Canlıda deploy-dan sonra `subject_id` olmayacaq — ad uyğun gəlirsə ondan tapılır; müəllim bir dəfə
+  Parametrlərdə seçib "Yadda saxla" etsə kifayətdir.
+- **İşin fənni:** `db.work_subjects[i]` (works ilə eyni indeks; yoxdursa `s1`). `work_subjects(db)` həmişə
+  works uzunluğunda siyahı qaytarır; `delete_work` hər iki siyahını sinxron pop edir; `add_work {subject}`.
+- `/api/works?team=X` yalnız cari fənnə aid işləri qaytarır (`subject`, `pick` ilə); `select_works` fənni və
+  sayı cari fənndən götürür, işlərin həmin fənnə aid olduğunu yoxlayır. `selections[ad]` düz indeks siyahısı
+  olaraq qalır. Hər iş taqım daxilində bir kursanta verilir (`work_taken_by`).
+- **Fənn dəyişəndə** köhnə seçimlər (digər fənnin indeksləri) yerində qalır, kabinetdə "Sərbəst iş #N" kimi
+  görünə bilər — semestr başlayanda "Bütün seçimləri sıfırla" məsləhətdir.
+- **Ballar:** hər kursantın bir sərbəst iş balı var (`scores.serbest`); mənimsəmə düsturu hər fənn üçün eynidir.
+- **Miqrasiya:** `ensure_subject2_topics(db)` `load_db()`-də bir dəfə işləyir — `S2_TOPICS` (25 mövzu) works-a
+  `s2` ilə əlavə olunur, `s2_topics_added=true`. Canlıda ilk sorğuda avtomatik baş verir.
+- UI: kursant kabinetində "Mövzu seçimi" cari fənnin adını göstərir; müəllimin işlər tabı cari fənnin
+  siyahısını göstərir (HMT siyahısına baxmaq üçün fənni HMT-yə keçirmək lazımdır). Fənn adları sabitdir.
+- Fayl təhvili (docx/pptx) kursant başına bir dəstdir.

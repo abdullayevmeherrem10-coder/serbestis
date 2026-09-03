@@ -1857,6 +1857,8 @@
         .cb-topics { margin: 0 0 6px; padding-left: 18px; color: var(--text); font-size: 0.86rem; line-height: 1.55; }
         .cb-ok { color: var(--success); font-weight: 800; font-size: 0.8rem; }
         .cb-muted { color: var(--text-muted); }
+        /* Mövzu seçimi: taqımın fənni */
+        .cb-subj-name { font-weight: 800; color: var(--text); font-size: 0.84rem; margin-bottom: 5px; }
         @media (max-width: 768px) {
             .cb-stats { grid-template-columns: 1fr; }
             .cb-stat { padding: 10px 0; border-left: none; border-top: 1px solid var(--border); }
@@ -1994,6 +1996,7 @@
         }
         .btn-reset:hover { background: rgba(198,40,40,0.06); border-color: var(--danger); }
         .tp-tools { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+        .tp-subjsel { padding: 6px 10px; border-radius: 8px; border: 1px solid var(--input-border); background: var(--surface-solid); color: var(--text); font: inherit; font-size: 0.82rem; font-weight: 700; }
         .btn-mini {
             padding: 8px 16px;
             border-radius: 10px;
@@ -2098,6 +2101,9 @@
         .dr-sec h4 { margin: 0 0 10px; font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-dim); font-weight: 800; }
         .dr-sec.dr-danger h4 { color: var(--danger); }
         .dr-list { margin: 0; padding-left: 20px; font-size: 0.86rem; line-height: 1.5; color: var(--text); }
+        .dr-subj { margin-bottom: 10px; }
+        .dr-subj > b { display: block; font-size: 0.78rem; color: var(--text-muted); margin-bottom: 4px; }
+        .dr-subj .btn-mini { margin-top: 6px; }
         .dr-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
         .dr-file { padding: 10px 12px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface-90); margin-bottom: 10px; }
         .dr-file-name { font-weight: 700; font-size: 0.86rem; word-break: break-word; color: var(--text); }
@@ -2135,6 +2141,11 @@
         .tp-table td { padding: 8px 14px; }
         .tp-table .dim, .tp-drawer .dim { color: var(--text-dim); font-weight: 500; }
         .tp-table td:nth-child(2) { white-space: nowrap; }
+        /* İşlərin bölgüsü: uzun mövzu adları sətirə sığsın (Götürən/Əməliyyat sütunları kənara çıxmasın) */
+        #tpWorks td:nth-child(2) { white-space: normal; }
+        /* Ballar: 12 sütun (o cümlədən 2-ci fənnin sərbəst işi) bir ekrana sığsın */
+        #tab-ballar .tp-table th, #tab-ballar .tp-table td { padding-left: 8px; padding-right: 8px; }
+        #tab-ballar .results-table .col-bal { width: 66px; }
         .doc-ico { display: inline-block; font-size: 0.95rem; opacity: 0.28; margin: 0 2px; }
         .dl-text { cursor: pointer; font-size: 0.8rem; font-weight: 600; color: var(--text); border-bottom: 1px dashed transparent; padding: 2px 0; white-space: nowrap; }
         .dl-text:hover { color: var(--accent-ink); border-bottom-color: var(--accent-ink); }
@@ -2675,14 +2686,14 @@
                 <span style="color:var(--text-dim);font-size:0.8rem;margin-left:8px" id="currentTeamBadge"></span>
             </div>
             <div class="selection-count">
-                Seçilən: <strong><span id="selCount">0</span> / 2</strong>
+                Seçilən: <strong><span id="selCount">0</span> / <span id="selMax">2</span></strong>
             </div>
         </div>
 
         <div class="card">
             <div class="card-title">
                 <div class="icon">&#128218;</div>
-                Sərbəst işləri seçin (2 ədəd)
+                <span id="worksTitle">Sərbəst işləri seçin (2 ədəd)</span>
             </div>
             <div class="search-wrapper">
                 <input type="text" class="search-box" id="workSearch" placeholder="Axtarış...">
@@ -2805,7 +2816,7 @@
                 </div>
                 <div class="input-wrapper" style="flex:1;min-width:220px;margin-bottom:0;">
                     <label>Fənn</label>
-                    <input type="text" id="tpSubject" maxlength="60" placeholder="Məs: Hərbi Mühəndis Texnikası">
+                    <div class="select-wrapper" style="margin:0;"><select id="tpSubject" title="Fənn — sərbəst iş siyahısı da buna görə dəyişir"></select></div>
                 </div>
                 <button class="btn btn-primary" onclick="tpSaveSemester()">Yadda saxla</button>
             </div>
@@ -2962,6 +2973,34 @@
     let selectedStudent = '';
     let studentKey = '';
     let selectedWorks = new Set();
+    let flowSubject = 's2';      // kursantın seçim etdiyi fənn — taqımının fənni (/api/works-dən gəlir)
+    let flowPick = 1;            // həmin fənn üzrə seçiləcək iş sayı
+    let worksSubjects = null;    // /api/works cavabındakı fənn siyahısı
+
+    // ===== Fənnlər (taqıma bağlı): s1 — HMT, 2 iş; s2 — HMH, 1 mövzu =====
+    function subjList() {
+        if (cabData && cabData.subjects) return cabData.subjects;
+        if (worksSubjects) return worksSubjects;
+        if (semInfo.subjects) return semInfo.subjects;
+        return [{ id: 's1', name: 'Hərbi Mühəndis Texnikası', pick: 2 }, { id: 's2', name: 'Hərbi Mühəndis Hazırlığı', pick: 1 }];
+    }
+    function subjName(sid) { const x = subjList().find(o => o.id === sid); return x ? x.name : sid; }
+    function subjPick(sid) { const x = subjList().find(o => o.id === sid); return x ? x.pick : 1; }
+    // Cari fənn (Parametrlər → Fənn): bütün taqımlar bu fənnin sərbəst işlərini görür
+    function curSubj() { return (cabData && cabData.subject_id) || semInfo.subjectId || 's2'; }
+    function curPick() { return subjPick(curSubj()); }
+    // İşin fənni (müəllim datası: work_subjects)
+    function workSubj(i) { const ws = (cabData && cabData.work_subjects) || []; return ws[i] || 's1'; }
+    // Cari fənnə aid işlər (+ fənn və seçiləcək iş sayı)
+    async function loadWorksList() {
+        try {
+            const res = await fetch(`/api/works?team=${encodeURIComponent(selectedTeam)}`, { headers: { 'Authorization': 'Bearer ' + session.token } }).then(r => r.json());
+            if (res.works) works = res.works;
+            if (res.subjects) worksSubjects = res.subjects;
+            if (res.subject) flowSubject = res.subject;
+            if (res.pick) flowPick = res.pick;
+        } catch(e) {}
+    }
     let currentStep = 1;
 
     // XSS qoruması: HTML/atribut kontekstində istifadəçi mətnini təhlükəsizləşdirir
@@ -3052,16 +3091,16 @@
             selectedStudent = name;
             studentKey = key;
 
-            // If already selected, show success
-            if (data.selections && data.selections.length >= 2) {
-                showAlreadySelected(data.selections);
+            // Taqımın fənni üzrə artıq seçibsə — nəticə səhifəsi
+            await loadWorksList();
+            if ((data.selections || []).length >= flowPick) {
+                showAlreadySelected(data.selections || []);
                 btn.disabled = false;
                 btn.innerHTML = 'Daxil ol &#8594;';
                 return;
             }
-
             document.getElementById('currentStudentName').textContent = name;
-            document.getElementById('currentTeamBadge').textContent = selectedTeam;
+            document.getElementById('currentTeamBadge').textContent = selectedTeam + ' \u00B7 ' + subjName(flowSubject);
             renderWorks();
             goToStep(3);
 
@@ -3074,17 +3113,12 @@
     }
 
     async function showAlreadySelected(workIds) {
-        // Load works if not loaded yet
-        if (!works.length) {
-            try {
-                const res = await fetch(`/api/works?team=${encodeURIComponent(selectedTeam)}`, { headers: { 'Authorization': 'Bearer ' + session.token } }).then(r => r.json());
-                works = res.works;
-            } catch(e) {}
-        }
+        if (!works.length) await loadWorksList();
         const list = document.getElementById('successList');
         list.innerHTML = '';
         workIds.forEach((id, i) => {
-            const title = works[id] ? works[id].title : `Sərbəst iş #${id + 1}`;
+            const w = works.find(x => x.id === id);
+            const title = w ? w.title : `Sərbəst iş #${id + 1}`;
             const li = document.createElement('li');
             li.innerHTML = `<span style="color:var(--accent);font-weight:700;">${i+1}.</span> ${esc(title)}`;
             list.appendChild(li);
@@ -3094,17 +3128,21 @@
 
     // Render works
     async function renderWorks() {
-        // Refresh works data
-        try {
-            const res = await fetch(`/api/works?team=${encodeURIComponent(selectedTeam)}`, { headers: { 'Authorization': 'Bearer ' + session.token } }).then(r => r.json());
-            works = res.works;
-        } catch(e) {}
+        await loadWorksList();
 
         selectedWorks.clear();
+        const pick = flowPick;
+        const title = document.getElementById('worksTitle');
+        if (title) title.textContent = subjName(flowSubject) + ' \u2014 sərbəst iş seçin (' + pick + ' ədəd)';
+        const lw = document.getElementById('limitWarn');
+        if (lw) lw.textContent = 'Maks. ' + pick + ' iş!';
+        const ws = document.getElementById('workSearch');
+        if (ws) ws.value = '';
         updateSelCount();
         const grid = document.getElementById('worksGrid');
         grid.innerHTML = '';
 
+        // Server yalnız taqımın fənninə aid işləri qaytarır; nömrə fənn daxilində (1..N)
         works.forEach((w, i) => {
             const div = document.createElement('div');
             div.className = 'work-item' + (w.taken ? ' taken' : '');
@@ -3116,7 +3154,7 @@
             }
 
             div.innerHTML = `
-                <div class="work-num">${w.id + 1}</div>
+                <div class="work-num">${w.num || (w.id + 1)}</div>
                 <div class="work-title">${esc(w.title)}</div>
                 ${badge}
             `;
@@ -3137,11 +3175,12 @@
             const badge = el.querySelector('.work-selected-badge');
             if (badge) badge.remove();
         } else {
-            if (selectedWorks.size >= 2) {
+            const pick = flowPick;
+            if (selectedWorks.size >= pick) {
                 if (window.innerWidth <= 768) {
                     // mobil/planşet - yalnız inline warning
                 } else {
-                    showToast('Yalnız 2 sərbəst iş seçə bilərsiniz!', 'error');
+                    showToast('Yalnız ' + pick + ' sərbəst iş seçə bilərsiniz!', 'error');
                 }
                 const warn = document.getElementById('limitWarn');
                 warn.classList.add('show');
@@ -3159,8 +3198,11 @@
     }
 
     function updateSelCount() {
+        const pick = flowPick;
         document.getElementById('selCount').textContent = selectedWorks.size;
-        document.getElementById('btnConfirm').disabled = selectedWorks.size !== 2;
+        const mx = document.getElementById('selMax');
+        if (mx) mx.textContent = pick;
+        document.getElementById('btnConfirm').disabled = selectedWorks.size !== pick;
     }
 
     // Search works
@@ -3189,7 +3231,8 @@
         let i = 1;
         selectedWorks.forEach(id => {
             const li = document.createElement('li');
-            li.innerHTML = `<span class="cab-sel-num">${i++}</span><span>${esc(works[id].title)}</span>`;
+            const w = works.find(x => x.id === id);
+            li.innerHTML = `<span class="cab-sel-num">${i++}</span><span>${esc(w ? w.title : '')}</span>`;
             list.appendChild(li);
         });
         const inp = document.getElementById('confirmKeyInput');
@@ -3403,6 +3446,8 @@
             session = { token: tok, role: cabData.role, id: cabData.id, name: cabData.name, team: cabData.team };
             if (cabData.semester) semInfo.semester = cabData.semester;
             if (cabData.subject) semInfo.subject = cabData.subject;
+            if (cabData.subjects) semInfo.subjects = cabData.subjects;
+            if (cabData.subject_id) semInfo.subjectId = cabData.subject_id;
             applySemesterInfo();
             if (session.role === 'teacher') showTeacherApp(); else showCabinet();
             return true;
@@ -3467,6 +3512,8 @@
         cabData = await res.json();
         if (cabData.semester) semInfo.semester = cabData.semester;
         if (cabData.subject) semInfo.subject = cabData.subject;
+        if (cabData.subjects) semInfo.subjects = cabData.subjects;
+        if (cabData.subject_id) semInfo.subjectId = cabData.subject_id;
         applySemesterInfo();
     }
 
@@ -3687,21 +3734,25 @@
                 : '<span class="cb-muted">Dəftər mövzuları hələ təyin edilməyib</span>';
         });
     }
+    // Mövzu seçimi: cari fənnin işləri (s1 — 2 iş, s2 — 1 mövzu)
     async function renderCabSerbest() {
         const el = document.getElementById('cabSerbest');
+        const sid = curSubj();
+        const pick = subjPick(sid);
         const sel = cabData.selections || [];
-        if (sel.length >= 2) {
+        const label = `<div class="cb-subj-name">${esc(subjName(sid))}</div>`;
+        if (sel.length >= pick) {
             el.innerHTML = '<span class="spinner"></span>';
-            let titles = sel.map(i => `Sərbəst iş #${i + 1}`);
+            const titles = {};
             try {
                 const wres = await fetch(`/api/works?team=${encodeURIComponent(cabData.team)}`, { headers: { 'Authorization': 'Bearer ' + session.token } }).then(r => r.json());
-                titles = sel.map(i => wres.works[i] ? wres.works[i].title : `Sərbəst iş #${i + 1}`);
+                (wres.works || []).forEach(w => { titles[w.id] = w.title; });
             } catch(e) {}
-            el.innerHTML = '<ol class="cb-topics">' + titles.map(t => `<li>${esc(t)}</li>`).join('') + '</ol><span class="cb-ok">&#10003; Seçim qeydə alınıb</span>';
+            el.innerHTML = label + '<ol class="cb-topics">' + sel.map(i => `<li>${esc(titles[i] || ('Sərbəst iş #' + (i + 1)))}</li>`).join('') + '</ol><span class="cb-ok">&#10003; Seçim qeydə alınıb</span>';
         } else if (!cabData.key) {
-            el.innerHTML = '<span class="cb-muted">Seçim üçün təsdiq açarı hələ təyin edilməyib — müəllimlə əlaqə saxlayın.</span>';
+            el.innerHTML = label + '<span class="cb-muted">Seçim üçün təsdiq açarı hələ təyin edilməyib — müəllimlə əlaqə saxlayın.</span>';
         } else {
-            el.innerHTML = `<div class="cb-row"><span class="cb-muted">Siyahıdan 2 mövzu seçin.</span><button class="cb-btn cb-btn-primary" onclick="startSerbestFlow()">Mövzu seç &#8594;</button></div>`;
+            el.innerHTML = label + `<div class="cb-row"><span class="cb-muted">Siyahıdan ${pick} mövzu seçin.</span><button class="cb-btn cb-btn-primary" onclick="startSerbestFlow()">Mövzu seç &#8594;</button></div>`;
         }
         updateStepStates();
     }
@@ -3710,7 +3761,7 @@
     function updateStepStates() {
         const s = [1, 2, 3].map(i => document.getElementById('cbStep' + i));
         if (s.some(x => !x) || !cabData) return;
-        const sel = (cabData.selections || []).length >= 2;
+        const sel = (cabData.selections || []).length >= curPick();
         const ups = cabData.uploads || {};
         const both = !!(ups.docx && ups.pptx);
         s.forEach(x => x.classList.remove('active', 'done'));
@@ -3721,6 +3772,8 @@
         if (hint) hint.textContent = both ? 'Hər şey təhvil verilib' : sel ? (ups.docx || ups.pptx ? 'Bir fayl qalıb' : 'Növbəti: hazırlayıb təhvil verin') : 'Növbəti: mövzu seçin';
     }
     function startSerbestFlow() {
+        flowSubject = curSubj();
+        flowPick = curPick();
         selectedTeam = cabData.team;
         selectedStudent = cabData.name;
         studentKey = cabData.key;
@@ -3732,7 +3785,7 @@
         av.style.display = '';
         switchTab('serbest');
         document.getElementById('currentStudentName').textContent = selectedStudent;
-        document.getElementById('currentTeamBadge').textContent = selectedTeam;
+        document.getElementById('currentTeamBadge').textContent = selectedTeam + ' \u00B7 ' + subjName(flowSubject);
         renderWorks();
         goToStep(3);
     }
@@ -3764,7 +3817,7 @@
     }
 
     // ===== Semestr və fənn (müəllim təyin edir) =====
-    let semInfo = { semester: '2025/2026 yaz semestri', subject: 'Hərbi Mühəndis Texnikası' };
+    let semInfo = { semester: '2025/2026 yaz semestri', subject: 'Hərbi Mühəndis Texnikası', subjectId: 's2', subjects: null };
 
     function applySemesterInfo() {
         const full = semInfo.semester + ' \u2022 ' + semInfo.subject;
@@ -3779,7 +3832,8 @@
         const si = document.getElementById('tpSemester');
         const su = document.getElementById('tpSubject');
         if (si && document.activeElement !== si) si.value = semInfo.semester;
-        if (su && document.activeElement !== su) su.value = semInfo.subject;
+        // Fənn siyahıdan seçilir — sərbəst iş siyahısı (50 iş / 25 mövzu) buna görə dəyişir
+        if (su && document.activeElement !== su) su.innerHTML = subjList().map(x => `<option value="${x.id}"${x.id === semInfo.subjectId ? ' selected' : ''}>${esc(x.name)}</option>`).join('');
     }
 
     async function loadSemesterInfo() {
@@ -3789,25 +3843,30 @@
             const d = await res.json();
             if (d.semester) semInfo.semester = d.semester;
             if (d.subject) semInfo.subject = d.subject;
+            if (d.subject_id) semInfo.subjectId = d.subject_id;
+            if (d.subjects) semInfo.subjects = d.subjects;
             applySemesterInfo();
         } catch(e) {}
     }
 
     async function tpSaveSemester() {
         const semester = document.getElementById('tpSemester').value.trim();
-        const subject = document.getElementById('tpSubject').value.trim();
-        if (!semester || !subject) { showToast('Semestr və fənn boş ola bilməz!', 'error'); return; }
+        const subjectId = document.getElementById('tpSubject').value;
+        if (!semester || !subjectId) { showToast('Semestr və fənn boş ola bilməz!', 'error'); return; }
         try {
             const res = await fetch('/api/cabinet-semester', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.token },
-                body: JSON.stringify({ semester: semester, subject: subject })
+                body: JSON.stringify({ semester: semester, subject_id: subjectId })
             });
             if (res.status === 401) { cabinetLogout(); showToast('Sessiya bitib — yenidən daxil olun.', 'error'); return; }
-            if (!res.ok) { const d = await res.json(); showToast(d.error || 'Xəta!', 'error'); return; }
+            const d = await res.json();
             semInfo.semester = semester;
-            semInfo.subject = subject;
+            if (d.subject) semInfo.subject = d.subject;
+            if (d.subject_id) semInfo.subjectId = d.subject_id;
+            if (cabData) { cabData.subject = d.subject; cabData.subject_id = d.subject_id; if (d.subjects) cabData.subjects = d.subjects; }
             applySemesterInfo();
+            if (cabData && cabData.teams) renderTeacherPanel();
             showToast('Semestr və fənn yeniləndi — hamıda görünəcək', 'success');
         } catch(e) {
             showToast('Yadda saxlanıla bilmədi!', 'error');
@@ -3950,7 +4009,8 @@
     function tpSelStat(team) {
         const members = (cabData.teams || {})[team] || [];
         const sels = cabData.selections || {};
-        const done = members.filter(n => (sels[n] || []).length >= 2).length;
+        const pick = curPick();
+        const done = members.filter(n => (sels[n] || []).length >= pick).length;
         return { done: done, total: members.length };
     }
     function tpUpdateTeamLabels() {
@@ -4029,10 +4089,11 @@
         tb.innerHTML = '';
         members.forEach((name, i) => {
             const sel = sels[name] || [];
+            const pick = curPick();   // cari fənnə görə 2 və ya 1
             const titles = sel.map(id => works[id] || ('Sərbəst iş #' + (id + 1))).join(' | ');
-            const selHtml = sel.length >= 2
-                ? `<span class="bal bal-high" title="${esc(titles)}">2/2 &#10003;</span>`
-                : sel.length ? `<span class="bal bal-mid" title="${esc(titles)}">${sel.length}/2</span>`
+            const selHtml = sel.length >= pick
+                ? `<span class="bal bal-high" title="${esc(titles)}">${sel.length}/${pick}</span>`
+                : sel.length ? `<span class="bal bal-mid" title="${esc(titles)}">${sel.length}/${pick}</span>`
                 : '<span class="dim" title="Hələ seçməyib">&#8212;</span>';
             const up = ups[name] || {};
             const t = studentTotals(name, tpTeam);
@@ -4061,13 +4122,18 @@
         if (cells[5]) cells[5].innerHTML = examCellHtml(t.exam);
     }
 
+    // İşlərin bölgüsü: cari fənnə aid işlər, nömrə fənn daxilində
     function renderTpWorks() {
-        document.getElementById('tpWorksTeam').textContent = tpTeam;
+        const sid = curSubj();
+        document.getElementById('tpWorksTeam').textContent = tpTeam + ' \u00B7 ' + subjName(sid);
         const works = cabData.works || [];
         const taken = (cabData.work_taken_by || {})[tpTeam] || {};
+        let n = 0;
         document.getElementById('tpWorks').innerHTML = works.map((w, i) => {
+            if (workSubj(i) !== sid) return '';
+            n++;
             const owner = taken[String(i)];
-            return `<tr data-id="${i}"><td class="col-num">${i + 1}</td><td>${esc(w)} <button class="row-edit" title="Adı dəyiş" onclick="tpEditWork(this)">&#9998;</button></td><td>${owner ? `<span class="bal bal-high" style="font-size:0.75rem;cursor:pointer;" title="Kursantın panelini aç" onclick="openDrawer(this.dataset.n)" data-n="${esc(owner)}">${esc(owner)}</span>` : '<span class="bal bal-none">Boş</span>'}</td><td class="col-bal"><button class="btn-reset" title="İşi sil" onclick="tpDeleteWork(this)">&#128465;</button></td></tr>`;
+            return `<tr data-id="${i}"><td class="col-num">${n}</td><td>${esc(w)} <button class="row-edit" title="Adı dəyiş" onclick="tpEditWork(this)">&#9998;</button></td><td>${owner ? `<span class="bal bal-high" style="font-size:0.75rem;cursor:pointer;" title="Kursantın panelini aç" onclick="openDrawer(this.dataset.n)" data-n="${esc(owner)}">${esc(owner)}</span>` : '<span class="bal bal-none">Boş</span>'}</td><td class="col-bal"><button class="btn-reset" title="İşi sil" onclick="tpDeleteWork(this)">&#128465;</button></td></tr>`;
         }).join('');
         tpFilter();
     }
@@ -4179,7 +4245,7 @@
             <div class="tp-drawer-body">
                 <div class="dr-sec">
                     <h4>Sərbəst iş seçimi</h4>
-                    ${sel.length ? '<ol class="dr-list">' + sel.map(id => `<li>${esc(works[id] || ('Sərbəst iş #' + (id + 1)))}</li>`).join('') + '</ol>' : '<span class="bal bal-none">Hələ seçməyib</span>'}
+                    <div class="dr-subj"><b>${esc(subjName(curSubj()))}</b>${sel.length ? '<ol class="dr-list">' + sel.map(id => `<li>${esc(works[id] || ('Sərbəst iş #' + (id + 1)))}</li>`).join('') + '</ol>' : '<span class="bal bal-none">Hələ seçməyib</span>'}</div>
                     <div class="dr-row">
                         ${sel.length ? '<button class="btn-mini" onclick="tpResetStudent(this)">&#8635; Seçimi sıfırla</button>' : ''}
                         <label style="display:flex;align-items:center;gap:6px;font-size:0.76rem;font-weight:700;color:var(--text-muted);">Son tarix <input type="text" class="dl-input dl-inp-cell" value="${esc(dl)}" placeholder="məs: 20.05.2026" maxlength="40" onchange="saveStudentDeadline(this)"></label>
@@ -4328,16 +4394,16 @@
         enrichTeacherLive();
     }
     function applyRoster(d) {
-        ['teams', 'works', 'work_taken_by', 'selections', 'scores', 'deadlines', 'exam_scores'].forEach(k => {
+        ['teams', 'works', 'work_subjects', 'work_taken_by', 'selections', 'scores', 'deadlines', 'exam_scores'].forEach(k => {
             if (d[k] !== undefined) cabData[k] = d[k];
         });
     }
 
     async function tpAddWork() {
-        const t = prompt('Yeni sərbəst işin adı:');
+        const t = prompt('“' + subjName(curSubj()) + '” fənni üçün yeni sərbəst işin adı:');
         if (!t || !t.trim()) return;
         try {
-            applyRoster(await rosterPost({ action: 'add_work', title: t.trim() }));
+            applyRoster(await rosterPost({ action: 'add_work', title: t.trim(), subject: curSubj() }));
             renderTeacherPanel();
             showToast('İş əlavə edildi', 'success');
         } catch(e) {}

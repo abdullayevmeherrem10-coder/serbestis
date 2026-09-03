@@ -9,6 +9,8 @@ import hashlib
 import secrets
 import string
 
+from _subjects import work_subjects, SUBJECT_IDS
+
 try:
     import _b2
 except Exception:
@@ -73,6 +75,7 @@ def _payload(db):
         "teams": db.get("teams", {}),
         "works": db.get("works", []),
         "work_taken_by": db.get("work_taken_by", {}),
+        "work_subjects": work_subjects(db),
         "selections": db.get("selections", {}),
         "scores": db.get("scores", {}),
         "deadlines": db.get("deadlines", {}),
@@ -233,10 +236,16 @@ def roster_action(db, body, static_credentials):
         title = (body.get("title") or "").strip()[:200]
         if not title:
             return False, {"error": "İşin adı boş ola bilməz."}, 400
+        sid = body.get("subject") or "s1"
+        if sid not in SUBJECT_IDS:
+            return False, {"error": "Fənn tapılmadı."}, 400
         works = db.setdefault("works", [])
         if title in works:
             return False, {"error": "Bu adda iş artıq var."}, 400
+        ws = work_subjects(db)
         works.append(title)
+        ws.append(sid)
+        db["work_subjects"] = ws
         return True, _payload(db), 200
 
     if action == "edit_work":
@@ -265,7 +274,10 @@ def roster_action(db, body, static_credentials):
         for taken in db.get("work_taken_by", {}).values():
             if str(wid) in taken:
                 return False, {"error": f"Bu iş {taken[str(wid)]} tərəfindən seçilib — əvvəlcə onun seçimini sıfırlayın."}, 400
+        ws = work_subjects(db)
         works.pop(wid)
+        ws.pop(wid)
+        db["work_subjects"] = ws
         # indekslər sürüşür: bütün istinadlar yenidən hesablanır
         for name, sel in db.get("selections", {}).items():
             db["selections"][name] = [i - 1 if i > wid else i for i in sel if i != wid]
