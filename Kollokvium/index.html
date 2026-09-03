@@ -1669,7 +1669,7 @@ function firebaseToArray(obj) {
 
 function autoLoadPreviousResults() {
     if (!firebaseReady || !database) return;
-    var sessionKey = selectedGroup ? 'sessions/K' + currentKollokvium + '_' + selectedGroup.replace(/\s/g, '_') : 'sessions/current';
+    var sessionKey = selectedGroup ? 'sessions/' + kPrefix() + 'K' + currentKollokvium + '_' + selectedGroup.replace(/\s/g, '_') : 'sessions/current';
     database.ref(sessionKey).once('value', function(snapshot) {
         if (!snapshot.exists()) return;
         var data = snapshot.val();
@@ -1720,7 +1720,7 @@ function saveResults(examFinished) {
             currentStudentIndex: currentStudentIndex
         };
         // Həmişə eyni key ilə yaz — köhnəsinin üstünə yazılsın
-        var sessionKey = selectedGroup ? 'sessions/K' + currentKollokvium + '_' + selectedGroup.replace(/\s/g, '_') : 'sessions/current';
+        var sessionKey = selectedGroup ? 'sessions/' + kPrefix() + 'K' + currentKollokvium + '_' + selectedGroup.replace(/\s/g, '_') : 'sessions/current';
         fbWrite(sessionKey, data).catch(function(e) { console.warn('Firebase yazma:', e.message); });
     } catch (e) {
         console.warn('Firebase-ə yazma xətası:', e.message);
@@ -1778,9 +1778,11 @@ function loadTopics() {
         .then(function(r) { return r.json(); })
         .then(function(d) {
             if (d) {
-                kollokTopics[1] = (d.K1 && d.K1.length) ? d.K1 : null;
-                kollokTopics[2] = (d.K2 && d.K2.length) ? d.K2 : null;
-                kollokTopics[3] = (d.K3 && d.K3.length) ? d.K3 : null;
+                // s1: topics/K1..K3, s2: topics/s2_K1..s2_K3
+                [1, 2, 3].forEach(function(k) {
+                    var t = d[kPrefix() + 'K' + k];
+                    kollokTopics[k] = (t && t.length) ? t : null;
+                });
             }
             renderTopicCheckboxes();
         })
@@ -1797,7 +1799,7 @@ function editTopics() {
     if (input === null) return;
     var arr = input.split(',').map(function(s) { return s.trim(); }).filter(Boolean).slice(0, 30);
     if (!arr.length) { alert('Ən azı bir mövzu yazın!'); return; }
-    fbWrite('topics/K' + currentKollokvium, arr).then(function() {
+    fbWrite('topics/' + kPrefix() + 'K' + currentKollokvium, arr).then(function() {
         kollokTopics[currentKollokvium] = arr;
         renderTopicCheckboxes();
         alert('Kollokvium ' + currentKollokvium + ' üçün mövzular yadda saxlanıldı!');
@@ -1961,7 +1963,7 @@ function loadGroupResults(group) {
         document.getElementById('resultsModalOverlay').classList.add('active');
         return;
     }
-    var sessionKey = 'sessions/K' + currentKollokvium + '_' + group.replace(/\s/g, '_');
+    var sessionKey = 'sessions/' + kPrefix() + 'K' + currentKollokvium + '_' + group.replace(/\s/g, '_');
     database.ref(sessionKey).once('value', function(snapshot) {
         var tbody = document.getElementById('allResultsBody');
         tbody.innerHTML = '';
@@ -1994,7 +1996,7 @@ function selectGroup(group) {
 
     // Firebase-dən əvvəlki nəticələri yoxla, varsa xəbərdarlıq göstər
     if (firebaseReady && database) {
-        var sessionKey = 'sessions/K' + currentKollokvium + '_' + group.replace(/\s/g, '_');
+        var sessionKey = 'sessions/' + kPrefix() + 'K' + currentKollokvium + '_' + group.replace(/\s/g, '_');
         database.ref(sessionKey).once('value', function(snapshot) {
             var hasExistingResults = false;
             if (snapshot.exists()) {
@@ -2049,6 +2051,12 @@ function proceedWithGroup(group, snapshot) {
 }
 
 var currentKollokvium = 1;
+// Fənn: əsas saytın Parametrlər → Fənn seçimindən gəlir (/api/semester-info → subject_id).
+// s1 = Hərbi Mühəndis Texnikası (Firebase açarları əvvəlki kimi: sessions/K1_YT_23A1, topics/K1),
+// s2 = Hərbi Mühəndis Hazırlığı (açarlar 's2_' prefiksli: sessions/s2_K1_YT_23A1, topics/s2_K1) —
+// beləcə HMT nəticələri ilə toqquşmur.
+var currentSubject = 's1';
+function kPrefix() { return currentSubject === 's2' ? 's2_' : ''; }
 
 const questionsK1 = {
     "Mövzu 1": [
@@ -2496,7 +2504,7 @@ const questionsK3 = {
 };
 
 // Aktiv kollokviumun sualları
-var questions = questionsK1;
+var questions = questionsK1;   // applySubject() fənnə görə dəyişir
 
 var topicFullNamesK1 = {
     "Mövzu 1": "Mövzu 1. Həyat fəaliyyəti və yanğın təhlükəsizliyi işində mühəndis maşınlarının rolu",
@@ -2514,7 +2522,42 @@ var topicFullNamesK3 = {
     "Mövzu 14": "Mövzu 14. Birtəknəli ekskovatorlar, Texniki təhlükəsizliyin əsasları",
     "Mövzu 15": "Mövzu 15. Səyyar Elektrostansiyalar"
 };
-var topicFullNamesAll = { 1: topicFullNamesK1, 2: topicFullNamesK2, 3: topicFullNamesK3 };
+// ==================== HƏRBİ MÜHƏNDİS HAZIRLIĞI (s2) SUALLARI ====================
+// Hər 3 kollokvium üçün ayrı suallar — müəllim verəndə BURA yerləşdirilir.
+// Format HMT ilə eynidir: { "Mövzu N": [ {q: "sual", a: "cavab"}, ... ] }
+// Boş olduqca tətbiq "bu kollokvium üçün sual yoxdur" xəbərdarlığı göstərir.
+const questionsS2K1 = {};
+const questionsS2K2 = {};
+const questionsS2K3 = {};
+var topicFullNamesS2K1 = {};
+var topicFullNamesS2K2 = {};
+var topicFullNamesS2K3 = {};
+
+// Fənn üzrə sual bankları (currentSubject ilə seçilir)
+var QUESTION_BANKS = {
+    s1: { 1: questionsK1, 2: questionsK2, 3: questionsK3,
+          names: { 1: topicFullNamesK1, 2: topicFullNamesK2, 3: topicFullNamesK3 } },
+    s2: { 1: questionsS2K1, 2: questionsS2K2, 3: questionsS2K3,
+          names: { 1: topicFullNamesS2K1, 2: topicFullNamesS2K2, 3: topicFullNamesS2K3 } }
+};
+function bankQuestions(k) { return (QUESTION_BANKS[currentSubject] || QUESTION_BANKS.s1)[k] || {}; }
+function bankNames(k) { return (QUESTION_BANKS[currentSubject] || QUESTION_BANKS.s1).names[k] || {}; }
+
+function updateEmptyWarning() {
+    var isEmpty = Object.keys(questions).length === 0;
+    var msg1 = document.getElementById('emptyKollokviumMsg');
+    var msg2 = document.getElementById('emptyKollokviumMsg2');
+    if (msg1) msg1.style.display = isEmpty ? 'block' : 'none';
+    if (msg2) msg2.style.display = isEmpty ? 'block' : 'none';
+}
+
+// Fənn dəyişəndə (səhifə açılanda /api/semester-info-dan): sual bankı, mövzular, xəbərdarlıq
+function applySubject(sid) {
+    currentSubject = (sid === 's2') ? 's2' : 's1';
+    questions = bankQuestions(currentKollokvium);
+    updateEmptyWarning();
+    loadTopics();
+}
 
 function switchKollokvium(num) {
     if (num === currentKollokvium) return;
@@ -2523,9 +2566,7 @@ function switchKollokvium(num) {
         saveResults();
     }
     currentKollokvium = num;
-    if (num === 1) questions = questionsK1;
-    else if (num === 2) questions = questionsK2;
-    else if (num === 3) questions = questionsK3;
+    questions = bankQuestions(num);   // cari fənnin sualları
 
     // State sıfırla
     allResults = [];
@@ -2543,11 +2584,7 @@ function switchKollokvium(num) {
     if (panel) panel.style.display = 'none';
 
     // Boş kollokvium üçün xəbərdarlıq
-    var isEmpty = Object.keys(questions).length === 0;
-    var msg1 = document.getElementById('emptyKollokviumMsg');
-    var msg2 = document.getElementById('emptyKollokviumMsg2');
-    if (msg1) msg1.style.display = isEmpty ? 'block' : 'none';
-    if (msg2) msg2.style.display = isEmpty ? 'block' : 'none';
+    updateEmptyWarning();
 }
 
 function updateKollokviumTabs() {
@@ -3000,7 +3037,7 @@ function loadQuestion() {
     document.getElementById('qTopic').style.display = 'block';
     updateQuestionIndicators();
     document.getElementById('qNumber').textContent = 'Sual ' + (currentQuestionIndex + 1) + ' / 5';
-    var topicFullNames = topicFullNamesAll[currentKollokvium] || topicFullNamesK1;
+    var topicFullNames = bankNames(currentKollokvium);
     document.getElementById('qTopic').textContent = topicFullNames[q.topic] || q.topic;
     document.getElementById('qText').textContent = q.q;
     document.getElementById('answerText').textContent = q.a;
@@ -3698,7 +3735,7 @@ function saveEditResult() {
     if (firebaseReady && database) {
         var group = isViewing ? window._viewingGroupName : (selectedGroup || null);
         if (group) {
-            var sessionKey = 'sessions/K' + currentKollokvium + '_' + group.replace(/\s/g, '_');
+            var sessionKey = 'sessions/' + kPrefix() + 'K' + currentKollokvium + '_' + group.replace(/\s/g, '_');
             fbWrite(sessionKey + '/results/' + index, r).catch(function(e) { console.warn('Firebase yazma:', e.message); });
         }
     }
@@ -3728,7 +3765,7 @@ function resetStudentResult(index) {
 
     // Yalnız həmin kursantın nəticəsini Firebase-də yeniləyirik
     if (firebaseReady && database && group) {
-        var sessionKey = 'sessions/K' + currentKollokvium + '_' + group.replace(/\s/g, '_');
+        var sessionKey = 'sessions/' + kPrefix() + 'K' + currentKollokvium + '_' + group.replace(/\s/g, '_');
         fbWrite(sessionKey + '/results/' + index, results[index]).catch(function(e) { console.warn('Firebase yazma:', e.message); });
     }
 
@@ -3750,7 +3787,7 @@ function resetAllResults() {
     if (!confirm(group + ' nəticələri silinəcək. Əminsiniz?')) return;
     if (!confirm('Bu əməliyyat geri qaytarıla bilməz! Davam etmək istəyirsiniz?')) return;
 
-    var sessionKey = 'sessions/K' + currentKollokvium + '_' + group.replace(/\s/g, '_');
+    var sessionKey = 'sessions/' + kPrefix() + 'K' + currentKollokvium + '_' + group.replace(/\s/g, '_');
     fbWrite(sessionKey, null).then(function() {
         // Dəyişənləri təmizlə
         allResults = [];
@@ -3778,7 +3815,7 @@ function restartExam() {
     if (!confirm(group + ' kollokvium yenidən başladılacaq. Nəticələr silinəcək. Əminsiniz?')) return;
     if (!confirm('Bu əməliyyat geri qaytarıla bilməz! Davam etmək istəyirsiniz?')) return;
 
-    var sessionKey = 'sessions/K' + currentKollokvium + '_' + group.replace(/\s/g, '_');
+    var sessionKey = 'sessions/' + kPrefix() + 'K' + currentKollokvium + '_' + group.replace(/\s/g, '_');
     fbWrite(sessionKey, null).then(function() {
         // Modalı bağla
         document.getElementById('resultsModalOverlay').classList.remove('active');
@@ -4159,11 +4196,14 @@ document.addEventListener('keydown', function(e) {
 
 
 <script>
-// Fənn adı əsas saytın müəllim panelindən idarə olunur — /api/semester-info
+// Fənn əsas saytın müəllim panelindən (Parametrlər → Fənn) idarə olunur — /api/semester-info:
+// subject_id sual bankını və Firebase açarlarını, subject adı başlıqdakı mətni dəyişir
 (function() {
     var DEFAULT_SUBJECT = 'Hərbi Mühəndis Texnikası';
     fetch('/api/semester-info').then(function(r) { return r.json(); }).then(function(d) {
-        if (!d || !d.subject || d.subject === DEFAULT_SUBJECT) return;
+        if (!d) return;
+        if (d.subject_id) applySubject(d.subject_id);
+        if (!d.subject || d.subject === DEFAULT_SUBJECT) return;
         var walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
         var nodes = [];
         while (walker.nextNode()) nodes.push(walker.currentNode);

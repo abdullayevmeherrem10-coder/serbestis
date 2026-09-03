@@ -77,7 +77,7 @@ python server.py        # http://localhost:8080/  (database.json istifadə edir)
 | Verilənlər sxemi, roster_version, statik nəticələr | §7 |
 | Mənimsəmə balı / imtahan qiyməti düsturu | §8 |
 | Roster idarəetmə (`_roster.py`) | §9 |
-| Kollokvium ↔ Firebase | §10 |
+| Kollokvium ↔ Firebase, fənn üzrə suallar (questionsS2K1..3) və açarlar | §10 |
 | Frontend axını (`index.html` daxili) | §11 |
 | Təhlükəsizlik modeli | §12 |
 | Vercel mühit dəyişənləri | §13 |

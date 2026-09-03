@@ -2816,7 +2816,7 @@
                 </div>
                 <div class="input-wrapper" style="flex:1;min-width:220px;margin-bottom:0;">
                     <label>Fənn</label>
-                    <div class="select-wrapper" style="margin:0;"><select id="tpSubject" title="Fənn — sərbəst iş siyahısı da buna görə dəyişir"></select></div>
+                    <div class="select-wrapper" style="margin:0;"><select id="tpSubject" title="Fənn — sərbəst iş siyahısı və Elektron Kollokvium sualları buna görə dəyişir"></select></div>
                 </div>
                 <button class="btn btn-primary" onclick="tpSaveSemester()">Yadda saxla</button>
             </div>
@@ -2989,6 +2989,8 @@
     // Cari fənn (Parametrlər → Fənn): bütün taqımlar bu fənnin sərbəst işlərini görür
     function curSubj() { return (cabData && cabData.subject_id) || semInfo.subjectId || 's2'; }
     function curPick() { return subjPick(curSubj()); }
+    // Kollokvium Firebase açarları: s1 → sessions/K1_YT_23A1, topics/K1; s2 → sessions/s2_K1_YT_23A1, topics/s2_K1
+    function kPre() { return curSubj() === 's2' ? 's2_' : ''; }
     // İşin fənni (müəllim datası: work_subjects)
     function workSubj(i) { const ws = (cabData && cabData.work_subjects) || []; return ws[i] || 's1'; }
     // Cari fənnə aid işlər (+ fənn və seçiləcək iş sayı)
@@ -3553,7 +3555,7 @@
             try {
                 const ctl = new AbortController();
                 const tm = setTimeout(() => ctl.abort(), 5000);
-                const res = await fetch('https://kollokvium1-default-rtdb.firebaseio.com/sessions/K' + k + '_' + group + '/results.json', { signal: ctl.signal });
+                const res = await fetch('https://kollokvium1-default-rtdb.firebaseio.com/sessions/' + kPre() + 'K' + k + '_' + group + '/results.json', { signal: ctl.signal });
                 clearTimeout(tm);
                 if (!res.ok) return;
                 const data = await res.json();
@@ -3728,7 +3730,7 @@
         [1, 2, 3].forEach(k => {
             const el = document.getElementById('cabTopics' + k);
             if (!el) return;
-            const t = cabTopics['K' + k];
+            const t = cabTopics[kPre() + 'K' + k];
             el.innerHTML = (t && t.length)
                 ? '<span class="cb-kd-lbl">Dəftər mövzuları:</span> ' + t.map(esc).join(', ')
                 : '<span class="cb-muted">Dəftər mövzuları hələ təyin edilməyib</span>';
@@ -3866,7 +3868,7 @@
             if (d.subject_id) semInfo.subjectId = d.subject_id;
             if (cabData) { cabData.subject = d.subject; cabData.subject_id = d.subject_id; if (d.subjects) cabData.subjects = d.subjects; }
             applySemesterInfo();
-            if (cabData && cabData.teams) renderTeacherPanel();
+            if (cabData && cabData.teams) { renderTeacherPanel(); enrichTeacherLive(); loadKollokTopics(); }
             showToast('Semestr və fənn yeniləndi — hamıda görünəcək', 'success');
         } catch(e) {
             showToast('Yadda saxlanıla bilmədi!', 'error');
@@ -4331,11 +4333,10 @@
         try {
             const res = await fetch('https://kollokvium1-default-rtdb.firebaseio.com/topics.json');
             const d = await res.json();
-            if (d) {
-                kollokTopics[1] = (d.K1 && d.K1.length) ? d.K1 : null;
-                kollokTopics[2] = (d.K2 && d.K2.length) ? d.K2 : null;
-                kollokTopics[3] = (d.K3 && d.K3.length) ? d.K3 : null;
-            }
+            [1, 2, 3].forEach(k => {
+                const t = d ? d[kPre() + 'K' + k] : null;
+                kollokTopics[k] = (t && t.length) ? t : null;
+            });
         } catch(e) {}
         renderKollokTopics();
     }
@@ -4362,7 +4363,7 @@
             const res = await fetch('/api/kollok-write', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.token },
-                body: JSON.stringify({ path: 'topics/K' + k, data: arr })
+                body: JSON.stringify({ path: 'topics/' + kPre() + 'K' + k, data: arr })
             });
             if (res.status === 401) { cabinetLogout(); showToast('Sessiya bitib — yenidən daxil olun.', 'error'); return; }
             if (!res.ok) throw 0;
@@ -4781,7 +4782,7 @@
             try {
                 const ctl = new AbortController();
                 const tm = setTimeout(() => ctl.abort(), 6000);
-                const res = await fetch('https://kollokvium1-default-rtdb.firebaseio.com/sessions/K' + k + '_' + gkey + '/results.json', { signal: ctl.signal });
+                const res = await fetch('https://kollokvium1-default-rtdb.firebaseio.com/sessions/' + kPre() + 'K' + k + '_' + gkey + '/results.json', { signal: ctl.signal });
                 clearTimeout(tm);
                 if (!res.ok) return;
                 const data = await res.json();

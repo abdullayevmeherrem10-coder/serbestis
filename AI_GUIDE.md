@@ -317,6 +317,14 @@ Dil: **Azərbaycan dili** (bütün UI və kod şərhləri AZ dilindədir).
 
 - Kollokvium tətbiqi (`public/kollokvium/index.html`) imtahan nəticələrini
   **Firebase Realtime DB**-yə yazır. Yol formatı: `sessions/K{1|2|3}_{QRUP}` (məs. `K1_YT_23A1`).
+- **Fənn üzrə (2026-09-03):** tətbiq açılanda `/api/semester-info` → `subject_id` oxuyur (`applySubject`).
+  - `s1` (Hərbi Mühəndis Texnikası): suallar `questionsK1..K3`, açarlar əvvəlki kimi (`sessions/K1_YT_23A1`, `topics/K1`).
+  - `s2` (Hərbi Mühəndis Hazırlığı): suallar `questionsS2K1..K3` + `topicFullNamesS2K1..K3` (hələ BOŞ —
+    müəllim verəndə bura yerləşdirilir, format eyni: `{"Mövzu N": [{q, a}, ...]}`), açarlar `'s2_'` prefiksli
+    (`sessions/s2_K1_YT_23A1`, `topics/s2_K1`) — HMT nəticələri ilə toqquşmur. `kPrefix()` / `QUESTION_BANKS`.
+  - Əsas sayt da eyni prefiksi işlədir (`kPre()`: `fetchLiveKollok`, `fetchGroupLiveKollok`, `loadCabTopics`,
+    `loadKollokTopics`, `editKollokTopics`); fənn dəyişəndə müəllim paneli canlı balları yenidən oxuyur.
+  - Fənn seçimi yalnız bir yerdədir: əsas sayt → Parametrlər → "Fənn" (bax §22).
 - **Firebase qaydaları:** `.read: true, .write: false` — heç kim birbaşa yaza bilmir.
 - Yazma yalnız **`/api/kollok-write` proxy-si** üzərindən gedir:
   - `fbWrite(path, data)` funksiyası tətbiqdə (data=null → silmə).
@@ -584,6 +592,7 @@ sərbəst iş siyahısını görür. Taqım və ya kurs üzrə ayrı fənn YOXDU
 - **Ballar:** hər kursantın bir sərbəst iş balı var (`scores.serbest`); mənimsəmə düsturu hər fənn üçün eynidir.
 - **Miqrasiya:** `ensure_subject2_topics(db)` `load_db()`-də bir dəfə işləyir — `S2_TOPICS` (25 mövzu) works-a
   `s2` ilə əlavə olunur, `s2_topics_added=true`. Canlıda ilk sorğuda avtomatik baş verir.
+- Fənn seçimi Elektron Kollokvium tətbiqinə də təsir edir: sual bankı və Firebase açarları (bax §10).
 - UI: kursant kabinetində "Mövzu seçimi" cari fənnin adını göstərir; müəllimin işlər tabı cari fənnin
   siyahısını göstərir (HMT siyahısına baxmaq üçün fənni HMT-yə keçirmək lazımdır). Fənn adları sabitdir.
 - Fayl təhvili (docx/pptx) kursant başına bir dəstdir.
