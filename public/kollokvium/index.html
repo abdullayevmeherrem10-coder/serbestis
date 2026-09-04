@@ -1059,18 +1059,15 @@
                 <div style="max-width:960px; width:100%; text-align:center;">
 
                     <!-- Kollokvium tabları -->
-                    <div style="display:flex; gap:12px; margin-bottom:24px; flex-wrap:wrap; justify-content:center;">
+                    <div style="display:flex; gap:12px; margin-bottom:0; flex-wrap:wrap; justify-content:center;">
                         <button id="kTab1" onclick="switchKollokvium(1)" style="padding:12px 28px; border-radius:12px; font-size:16px; font-weight:800; cursor:pointer; border:2px solid #455f51; background:#455f51; color:#fff; transition:all 0.3s; letter-spacing:0.5px;">Kollokvium 1</button>
                         <button id="kTab2" onclick="switchKollokvium(2)" style="padding:12px 28px; border-radius:12px; font-size:16px; font-weight:800; cursor:pointer; border:2px solid #8fa69b; background:rgba(255,255,255,0.9); color:#455f51; transition:all 0.3s; letter-spacing:0.5px;">Kollokvium 2</button>
                         <button id="kTab3" onclick="switchKollokvium(3)" style="padding:12px 28px; border-radius:12px; font-size:16px; font-weight:800; cursor:pointer; border:2px solid #8fa69b; background:rgba(255,255,255,0.9); color:#455f51; transition:all 0.3s; letter-spacing:0.5px;">Kollokvium 3</button>
                     </div>
 
                     <!-- Boş kollokvium mesajı -->
-                    <div id="emptyKollokviumMsg" style="display:none; text-align:center; padding:40px 20px; background:rgba(255,255,255,0.9); border-radius:16px; border:2px dashed #8fa69b;">
-                        <div style="font-size:48px; margin-bottom:16px; opacity:0.5;">&#128218;</div>
-                        <h3 style="color:#2e4a3e; margin-bottom:8px;">Bu kollokvium hələ hazır deyil</h3>
-                        <p style="color:#666; font-size:14px;">Suallar əlavə edildikdən sonra avtomatik aktivləşəcək</p>
-                    </div>
+                    <!-- Tablar ilə kartlar arasındakı 24px boşluqda tək sətir: hündürlük dəyişmir, loqo/tab düzülüşü fənndən asılı olmayaraq sabit qalır -->
+                    <div id="emptyKollokviumMsg" style="visibility:hidden; min-height:24px; line-height:24px; font-size:13px; font-weight:700; color:#6b8f7b; text-align:center; letter-spacing:0.3px;">&#128218; Bu kollokvium hələ hazır deyil &middot; suallar əlavə edildikdən sonra avtomatik aktivləşəcək</div>
 
                     <!-- Fakültə kartları -->
                     <div style="display:flex; flex-direction:column; gap:24px; align-items:center;">
@@ -1151,18 +1148,15 @@
                 <div style="max-width:960px; width:100%; text-align:center;">
 
                     <!-- Kollokvium tabları -->
-                    <div style="display:flex; gap:12px; margin-bottom:24px; flex-wrap:wrap; justify-content:center;">
+                    <div style="display:flex; gap:12px; margin-bottom:0; flex-wrap:wrap; justify-content:center;">
                         <button id="kTab2_1" onclick="switchKollokvium(1)" style="padding:12px 28px; border-radius:12px; font-size:16px; font-weight:800; cursor:pointer; border:2px solid #455f51; background:#455f51; color:#fff; transition:all 0.3s; letter-spacing:0.5px;">Kollokvium 1</button>
                         <button id="kTab2_2" onclick="switchKollokvium(2)" style="padding:12px 28px; border-radius:12px; font-size:16px; font-weight:800; cursor:pointer; border:2px solid #8fa69b; background:rgba(255,255,255,0.9); color:#455f51; transition:all 0.3s; letter-spacing:0.5px;">Kollokvium 2</button>
                         <button id="kTab2_3" onclick="switchKollokvium(3)" style="padding:12px 28px; border-radius:12px; font-size:16px; font-weight:800; cursor:pointer; border:2px solid #8fa69b; background:rgba(255,255,255,0.9); color:#455f51; transition:all 0.3s; letter-spacing:0.5px;">Kollokvium 3</button>
                     </div>
 
                     <!-- Boş kollokvium mesajı (groupStartScreen) -->
-                    <div id="emptyKollokviumMsg2" style="display:none; text-align:center; padding:40px 20px; background:rgba(255,255,255,0.9); border-radius:16px; border:2px dashed #8fa69b;">
-                        <div style="font-size:48px; margin-bottom:16px; opacity:0.5;">&#128218;</div>
-                        <h3 style="color:#2e4a3e; margin-bottom:8px;">Bu kollokvium hələ hazır deyil</h3>
-                        <p style="color:#666; font-size:14px;">Suallar əlavə edildikdən sonra avtomatik aktivləşəcək</p>
-                    </div>
+                    <!-- Tablar ilə kartlar arasındakı 24px boşluqda tək sətir: hündürlük dəyişmir, loqo/tab düzülüşü fənndən asılı olmayaraq sabit qalır -->
+                    <div id="emptyKollokviumMsg2" style="visibility:hidden; min-height:24px; line-height:24px; font-size:13px; font-weight:700; color:#6b8f7b; text-align:center; letter-spacing:0.3px;">&#128218; Bu kollokvium hələ hazır deyil &middot; suallar əlavə edildikdən sonra avtomatik aktivləşəcək</div>
 
                     <!-- Fakültə kartları -->
                     <div style="display:flex; flex-direction:column; gap:24px; align-items:center; margin-bottom:28px;">
@@ -2547,8 +2541,9 @@ function updateEmptyWarning() {
     var isEmpty = Object.keys(questions).length === 0;
     var msg1 = document.getElementById('emptyKollokviumMsg');
     var msg2 = document.getElementById('emptyKollokviumMsg2');
-    if (msg1) msg1.style.display = isEmpty ? 'block' : 'none';
-    if (msg2) msg2.style.display = isEmpty ? 'block' : 'none';
+    // Xəbərdarlıq sabit 24px slotdadır: display yox, visibility dəyişir ki, tablar/kartlar yerindən oynamasın
+    if (msg1) msg1.style.visibility = isEmpty ? 'visible' : 'hidden';
+    if (msg2) msg2.style.visibility = isEmpty ? 'visible' : 'hidden';
 }
 
 // Fənn dəyişəndə (səhifə açılanda /api/semester-info-dan): sual bankı, mövzular, xəbərdarlıq
