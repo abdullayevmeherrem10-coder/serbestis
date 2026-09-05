@@ -213,10 +213,13 @@ Dil: **Azərbaycan dili** (bütün UI və kod şərhləri AZ dilindədir).
 {
   "roster_version": "2023-qebul",              // qəbul ili markeri (bax §7.1)
   "teams": { "YT23A1": ["Ad Soyad oğlu", ...], "YT23A2": [...], "HFT23A1": [...], "HFT23A2": [...] },
-  "works": ["Sərbəst iş adı 1", ...],          // 50 iş (s1) + 25 mövzu (s2) — bax §22
+  "works": ["Sərbəst iş adı 1", ...],          // 50 iş (s1) + 25 yeni + 38 köhnə mövzu (s2) — bax §22
   "work_subjects": ["s1", ..., "s2", ...],     // works ilə eyni indeks; çatışmayan = s1
+  "work_groups": ["", ..., "new", "old", ...], // works ilə eyni indeks; s2 mövzu qrupu (new|old), s1 = ""
   "subject_id": "s2",                          // cari fənn (s1|s2) — sərbəst iş siyahısı buna görə (bax §22)
-  "s2_topics_added": true,                     // s2 mövzuları bir dəfə əlavə olunub (miqrasiya bayrağı)
+  "s2_topics_added": true,                     // s2 yeni mövzuları bir dəfə əlavə olunub (miqrasiya bayrağı)
+  "s2_old_topics_added": true,                 // s2 köhnə mövzuları + work_groups bir dəfə əlavə olunub
+  "s2_group": "new",                           // s2 aktiv mövzu siyahısı (new|old) — müəllim seçir, kursant yalnız onu görür
   "keys":  { "Ad Soyad": "ACAR6" },            // sərbəst iş təsdiq açarları
   "selections": { "Ad Soyad": [4, 7] },        // seçilən işlərin indeksləri (cari fənnə görə 2 və ya 1)
   "work_taken_by": { "YT23A1": { "4": "Ad Soyad" } },  // taqım→{işİndeks: kursant}
@@ -576,7 +579,28 @@ sərbəst iş siyahısını görür. Taqım və ya kurs üzrə ayrı fənn YOXDU
 | id | Ad (sabit, `SUBJECTS`) | İşlər | Seçim | Kim |
 |----|----|----|----|----|
 | `s1` | Hərbi Mühəndis Texnikası | 50 iş (köhnə siyahı) | hər kursant **2 iş** | 2-ci kurs (gələcək) |
-| `s2` | Hərbi Mühəndis Hazırlığı | 25 mövzu (`S2_TOPICS`) | hər kursant **1 mövzu** | 4-cü kurs (hazırkı taqımlar) |
+| `s2` | Hərbi Mühəndis Hazırlığı | 25 yeni (`S2_TOPICS`) + 38 köhnə (`S2_OLD_TOPICS`) mövzu | hər kursant **1 mövzu** | 4-cü kurs (hazırkı taqımlar) |
+
+### 22.1 s2 mövzu qrupları — Yeni / Köhnə (2026-09-06)
+- `db.work_groups[i]` (works ilə eyni indeks): `"new"` — Yeni mövzular, `"old"` — Köhnə mövzular, `""` — qrupsuz (s1).
+  `work_groups(db)` həmişə works uzunluğunda; `add_work {group}` (s2 üçün default `new`), `delete_work` sinxron pop.
+- **Yeni mövzular** əvvəlki kimi: hər mövzu taqım daxilində bir kursanta (`work_taken_by[taqım]`).
+- **Köhnə mövzular** BÜTÜN taqımlar üzrə birdir: bir mövzunu yalnız bir kursant götürə bilər (hansı taqımdan
+  olsa da) və cəmi `OLD_LIMIT = 25` kursant köhnə mövzu seçə bilər. 25 dolanda qalan köhnə mövzular
+  `/api/works`-də `locked: true` gəlir, `select_works` 409 qaytarır. Sayğac `_old_taken(db)` —
+  `work_taken_by`-dakı bütün taqımların `old` qruplu açarları. Seçim sıfırlananda yer boşalır.
+- **Aktiv siyahını müəllim seçir:** Parametrlər → "Semestr və fənn" kartında "Sərbəst iş mövzuları" (`#tpGroup`,
+  yalnız fənn s2 olanda görünür) → `cabinet-semester {s2_group}` → `db.s2_group` (`current_group`, default `new`).
+  `/api/works` s2-də yalnız aktiv qrupun işlərini qaytarır, `select_works` başqa qrupdan seçimi 400 ilə rədd edir.
+  Kursant qrup adını GÖRMÜR — sadəcə siyahını görür; köhnə siyahıda limit dolanda mövzular "Bağlıdır" nişanı
+  ilə gəlir və başlıqda "seçim limiti dolub — müəllimlə əlaqə saxlayın" yazılır (müəllim siyahını yeniyə keçirir).
+- `/api/works` cavabına `old_used`, `old_limit`, `groups`, `group` (aktiv) (`old_topics_meta`) əlavə olunur;
+  hər işdə `group`, `locked`; `num` siyahı daxilində sıra (1..N).
+- Müəllimin "Sərbəst işlər" tabı da yalnız aktiv siyahını göstərir (başlıqda "· Yeni mövzular"/"· Köhnə mövzular");
+  digər qrupu görmək üçün Parametrlərdə siyahını dəyişmək lazımdır. Köhnə mövzunun sahibi hansı taqımdan olursa
+  olsun göstərilir. "Yeni iş" düyməsi s2-də mövzunu aktiv siyahıya əlavə edir.
+- Müəllimin verdiyi 40 köhnə addan 2-si təkrar idi (Mühəndis kəşfiyyatının məqsədi…; Səngərin yerinin seçilməsi) —
+  bir dəfə saxlanılıb → 38.
 
 - **Cari fənn:** `current_subject(db)` → `db.subject_id`; yoxdursa `db.subject` adına görə; o da yoxdursa `s2`.
   `set_current_subject(db, sid)` id ilə birlikdə `db.subject` adını da yazır (başlıq, imtahan etiketi, arxiv).
@@ -590,8 +614,9 @@ sərbəst iş siyahısını görür. Taqım və ya kurs üzrə ayrı fənn YOXDU
 - **Fənn dəyişəndə** köhnə seçimlər (digər fənnin indeksləri) yerində qalır, kabinetdə "Sərbəst iş #N" kimi
   görünə bilər — semestr başlayanda "Bütün seçimləri sıfırla" məsləhətdir.
 - **Ballar:** hər kursantın bir sərbəst iş balı var (`scores.serbest`); mənimsəmə düsturu hər fənn üçün eynidir.
-- **Miqrasiya:** `ensure_subject2_topics(db)` `load_db()`-də bir dəfə işləyir — `S2_TOPICS` (25 mövzu) works-a
-  `s2` ilə əlavə olunur, `s2_topics_added=true`. Canlıda ilk sorğuda avtomatik baş verir.
+- **Miqrasiya:** `ensure_subject2_topics(db)` `load_db()`-də işləyir — (1) `S2_TOPICS` (25 mövzu) works-a
+  `s2` ilə əlavə olunur, `s2_topics_added=true`; (2) mövcud s2 işləri `new` qrupuna, `S2_OLD_TOPICS` (38)
+  `s2`/`old` ilə əlavə olunur, `s2_old_topics_added=true`. Canlıda ilk sorğuda avtomatik baş verir.
 - Fənn seçimi Elektron Kollokvium tətbiqinə də təsir edir: sual bankı və Firebase açarları (bax §10).
 - UI: kursant kabinetində "Mövzu seçimi" cari fənnin adını göstərir; müəllimin işlər tabı cari fənnin
   siyahısını göstərir (HMT siyahısına baxmaq üçün fənni HMT-yə keçirmək lazımdır). Fənn adları sabitdir.

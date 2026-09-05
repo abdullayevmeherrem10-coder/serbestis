@@ -718,6 +718,46 @@
             flex-shrink: 0;
         }
 
+        /* Mövzu qrupu başlığı (Yeni / Köhnə mövzular) — grid-in tam enində */
+        .work-group-head {
+            grid-column: 1 / -1;
+            display: flex;
+            align-items: baseline;
+            gap: 10px;
+            margin-top: 8px;
+            padding: 0 2px 4px;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: var(--accent-ink);
+            letter-spacing: 0.02em;
+        }
+        .work-group-head:first-child { margin-top: 0; }
+        .work-group-head small { font-weight: 500; color: var(--text-muted); }
+        .work-group-head small.full { color: var(--danger); }
+        .work-item.locked {
+            opacity: 0.45;
+            cursor: not-allowed;
+        }
+        .work-locked-badge {
+            font-size: 0.7rem;
+            padding: 3px 8px;
+            border-radius: 4px;
+            background: var(--surface-hover);
+            color: var(--text-muted);
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        .tp-table tr.tp-group td {
+            padding: 12px 14px 6px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: var(--accent-ink);
+            background: transparent;
+            border-bottom: 1px solid var(--border);
+        }
+        .tp-table tr.tp-group td small { font-weight: 500; color: var(--text-muted); margin-left: 8px; }
+
         .work-selected-badge {
             font-size: 0.7rem;
             padding: 3px 8px;
@@ -2816,7 +2856,14 @@
                 </div>
                 <div class="input-wrapper" style="flex:1;min-width:220px;margin-bottom:0;">
                     <label>Fənn</label>
-                    <div class="select-wrapper" style="margin:0;"><select id="tpSubject" title="Fənn — sərbəst iş siyahısı və Elektron Kollokvium sualları buna görə dəyişir"></select></div>
+                    <div class="select-wrapper" style="margin:0;"><select id="tpSubject" title="Fənn — sərbəst iş siyahısı və Elektron Kollokvium sualları buna görə dəyişir" onchange="tpToggleGroupSel()"></select></div>
+                </div>
+                <div class="input-wrapper" id="tpGroupWrap" style="flex:1;min-width:220px;margin-bottom:0;">
+                    <label>Sərbəst iş mövzuları</label>
+                    <div class="select-wrapper" style="margin:0;"><select id="tpGroup" title="Kursantlar yalnız seçilmiş siyahının mövzularını görür">
+                        <option value="new">Yeni mövzular</option>
+                        <option value="old">Köhnə mövzular</option>
+                    </select></div>
                 </div>
                 <button class="btn btn-primary" onclick="tpSaveSemester()">Yadda saxla</button>
             </div>
@@ -2976,6 +3023,7 @@
     let flowSubject = 's2';      // kursantın seçim etdiyi fənn — taqımının fənni (/api/works-dən gəlir)
     let flowPick = 1;            // həmin fənn üzrə seçiləcək iş sayı
     let worksSubjects = null;    // /api/works cavabındakı fənn siyahısı
+    let worksMeta = { old_used: 0, old_limit: 25, groups: { new: 'Yeni mövzular', old: 'Köhnə mövzular' } }; // köhnə mövzu limiti
 
     // ===== Fənnlər (taqıma bağlı): s1 — HMT, 2 iş; s2 — HMH, 1 mövzu =====
     function subjList() {
@@ -2993,6 +3041,9 @@
     function kPre() { return curSubj() === 's2' ? 's2_' : ''; }
     // İşin fənni (müəllim datası: work_subjects)
     function workSubj(i) { const ws = (cabData && cabData.work_subjects) || []; return ws[i] || 's1'; }
+    // İşin qrupu (yalnız s2): 'new' | 'old' | '' (müəllim datası: work_groups)
+    function workGroup(i) { const wg = (cabData && cabData.work_groups) || []; return wg[i] || ''; }
+    function groupName(g) { return (worksMeta.groups || {})[g] || (g === 'old' ? 'Köhnə mövzular' : 'Yeni mövzular'); }
     // Cari fənnə aid işlər (+ fənn və seçiləcək iş sayı)
     async function loadWorksList() {
         try {
@@ -3001,6 +3052,7 @@
             if (res.subjects) worksSubjects = res.subjects;
             if (res.subject) flowSubject = res.subject;
             if (res.pick) flowPick = res.pick;
+            if (res.old_limit) worksMeta = { old_used: res.old_used || 0, old_limit: res.old_limit, groups: res.groups || worksMeta.groups };
         } catch(e) {}
     }
     let currentStep = 1;
@@ -3144,15 +3196,24 @@
         const grid = document.getElementById('worksGrid');
         grid.innerHTML = '';
 
-        // Server yalnız taqımın fənninə aid işləri qaytarır; nömrə fənn daxilində (1..N)
-        works.forEach((w, i) => {
+        // Server yalnız cari fənnə və müəllimin seçdiyi siyahıya (s2: yeni/köhnə) aid işləri qaytarır;
+        // kursant qrup adını görmür. Köhnə siyahıda limit dolanda qalan mövzular locked gəlir.
+        if (works.length && works.every(w => w.locked)) {
+            const h = document.createElement('div');
+            h.className = 'work-group-head';
+            h.innerHTML = '<small class="full">Bu siyahı üzrə seçim limiti dolub \u2014 müəllimlə əlaqə saxlayın.</small>';
+            grid.appendChild(h);
+        }
+        works.forEach((w) => {
             const div = document.createElement('div');
-            div.className = 'work-item' + (w.taken ? ' taken' : '');
+            div.className = 'work-item' + (w.taken ? ' taken' : '') + (w.locked ? ' locked' : '');
             div.dataset.id = w.id;
 
             let badge = '';
             if (w.taken) {
                 badge = `<span class="work-taken-badge">Tutulub</span>`;
+            } else if (w.locked) {
+                badge = `<span class="work-locked-badge">Bağlıdır</span>`;
             }
 
             div.innerHTML = `
@@ -3161,7 +3222,7 @@
                 ${badge}
             `;
 
-            if (!w.taken) {
+            if (!w.taken && !w.locked) {
                 div.onclick = () => toggleWork(w.id, div);
             }
 
@@ -3836,6 +3897,15 @@
         if (si && document.activeElement !== si) si.value = semInfo.semester;
         // Fənn siyahıdan seçilir — sərbəst iş siyahısı (50 iş / 25 mövzu) buna görə dəyişir
         if (su && document.activeElement !== su) su.innerHTML = subjList().map(x => `<option value="${x.id}"${x.id === semInfo.subjectId ? ' selected' : ''}>${esc(x.name)}</option>`).join('');
+        // s2: aktiv mövzu siyahısı (yeni/köhnə) — müəllim seçir, kursant yalnız onu görür
+        const sg = document.getElementById('tpGroup');
+        if (sg && document.activeElement !== sg) sg.value = curGroup();
+        tpToggleGroupSel();
+    }
+    function curGroup() { return (cabData && cabData.s2_group) || semInfo.s2Group || 'new'; }
+    function tpToggleGroupSel() {
+        const su = document.getElementById('tpSubject'), w = document.getElementById('tpGroupWrap');
+        if (su && w) w.style.display = su.value === 's2' ? '' : 'none';
     }
 
     async function loadSemesterInfo() {
@@ -3854,19 +3924,21 @@
     async function tpSaveSemester() {
         const semester = document.getElementById('tpSemester').value.trim();
         const subjectId = document.getElementById('tpSubject').value;
+        const s2Group = document.getElementById('tpGroup').value;
         if (!semester || !subjectId) { showToast('Semestr və fənn boş ola bilməz!', 'error'); return; }
         try {
             const res = await fetch('/api/cabinet-semester', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.token },
-                body: JSON.stringify({ semester: semester, subject_id: subjectId })
+                body: JSON.stringify({ semester: semester, subject_id: subjectId, s2_group: s2Group })
             });
             if (res.status === 401) { cabinetLogout(); showToast('Sessiya bitib — yenidən daxil olun.', 'error'); return; }
             const d = await res.json();
             semInfo.semester = semester;
             if (d.subject) semInfo.subject = d.subject;
             if (d.subject_id) semInfo.subjectId = d.subject_id;
-            if (cabData) { cabData.subject = d.subject; cabData.subject_id = d.subject_id; if (d.subjects) cabData.subjects = d.subjects; }
+            if (d.s2_group) semInfo.s2Group = d.s2_group;
+            if (cabData) { cabData.subject = d.subject; cabData.subject_id = d.subject_id; if (d.subjects) cabData.subjects = d.subjects; if (d.s2_group) cabData.s2_group = d.s2_group; }
             applySemesterInfo();
             if (cabData && cabData.teams) { renderTeacherPanel(); enrichTeacherLive(); loadKollokTopics(); }
             showToast('Semestr və fənn yeniləndi — hamıda görünəcək', 'success');
@@ -4126,15 +4198,20 @@
 
     // İşlərin bölgüsü: cari fənnə aid işlər, nömrə fənn daxilində
     function renderTpWorks() {
+        // Yalnız cari fənnin və (s2-də) Parametrlərdə seçilmiş aktiv siyahının işləri — kursantların gördüyü eyni siyahı
         const sid = curSubj();
-        document.getElementById('tpWorksTeam').textContent = tpTeam + ' \u00B7 ' + subjName(sid);
+        const cg = sid === 's2' ? curGroup() : '';
+        document.getElementById('tpWorksTeam').textContent = tpTeam + ' · ' + subjName(sid) + (cg ? ' · ' + groupName(cg) : '');
         const works = cabData.works || [];
-        const taken = (cabData.work_taken_by || {})[tpTeam] || {};
+        const allTaken = cabData.work_taken_by || {};
+        const taken = allTaken[tpTeam] || {};
+        // Köhnə mövzular bütün taqımlar üzrə birdir — sahibi hansı taqımdan olsa da göstərilir
+        const oldOwner = (i) => { for (const t in allTaken) { const o = allTaken[t][String(i)]; if (o) return o; } return null; };
         let n = 0;
         document.getElementById('tpWorks').innerHTML = works.map((w, i) => {
-            if (workSubj(i) !== sid) return '';
+            if (workSubj(i) !== sid || workGroup(i) !== cg) return '';
             n++;
-            const owner = taken[String(i)];
+            const owner = cg === 'old' ? oldOwner(i) : taken[String(i)];
             return `<tr data-id="${i}"><td class="col-num">${n}</td><td>${esc(w)} <button class="row-edit" title="Adı dəyiş" onclick="tpEditWork(this)">&#9998;</button></td><td>${owner ? `<span class="bal bal-high" style="font-size:0.75rem;cursor:pointer;" title="Kursantın panelini aç" onclick="openDrawer(this.dataset.n)" data-n="${esc(owner)}">${esc(owner)}</span>` : '<span class="bal bal-none">Boş</span>'}</td><td class="col-bal"><button class="btn-reset" title="İşi sil" onclick="tpDeleteWork(this)">&#128465;</button></td></tr>`;
         }).join('');
         tpFilter();
@@ -4395,16 +4472,18 @@
         enrichTeacherLive();
     }
     function applyRoster(d) {
-        ['teams', 'works', 'work_subjects', 'work_taken_by', 'selections', 'scores', 'deadlines', 'exam_scores'].forEach(k => {
+        ['teams', 'works', 'work_subjects', 'work_groups', 'work_taken_by', 'selections', 'scores', 'deadlines', 'exam_scores'].forEach(k => {
             if (d[k] !== undefined) cabData[k] = d[k];
         });
     }
 
     async function tpAddWork() {
-        const t = prompt('“' + subjName(curSubj()) + '” fənni üçün yeni sərbəst işin adı:');
+        const t = prompt('“' + subjName(curSubj()) + '”' + (curSubj() === 's2' ? ' \u2014 ' + groupName(curGroup()) : '') + ' üçün yeni sərbəst işin adı:');
         if (!t || !t.trim()) return;
+        // s2: yeni mövzu aktiv siyahıya (Parametrlər → Mövzu siyahısı) əlavə olunur
+        const group = curSubj() === 's2' ? curGroup() : '';
         try {
-            applyRoster(await rosterPost({ action: 'add_work', title: t.trim(), subject: curSubj() }));
+            applyRoster(await rosterPost({ action: 'add_work', title: t.trim(), subject: curSubj(), group: group }));
             renderTeacherPanel();
             showToast('İş əlavə edildi', 'success');
         } catch(e) {}

@@ -23,7 +23,7 @@ api/index.py        Flask — BÜTÜN endpointlər (canlı)
 api/_credentials.py Girişlər {ID: {hash, name, team|role}} (SHA-256)
 api/_results.py     Statik kollokvium/mənimsəmə/imtahan nəticələri
 api/_roster.py      Taqım/kursant idarəetmə
-api/_subjects.py    Sərbəst iş fənnləri (cari fənn = semestr parametri): s1 (2 iş) / s2 (1 mövzu), seçim məntiqi
+api/_subjects.py    Sərbəst iş fənnləri (cari fənn = semestr parametri): s1 (2 iş) / s2 (1 mövzu; yeni/köhnə siyahını müəllim seçir, köhnə limit 25), seçim məntiqi
 api/_fbauth.py      Firebase service-account token
 api/_b2.py          B2 SigV4 imzalama (stdlib), key_prefix() → lokalda "dev/"
 api/_uploads.py     Fayl yükləmə: url/confirm/link/delete/review + VT

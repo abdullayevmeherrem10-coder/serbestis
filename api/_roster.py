@@ -9,7 +9,7 @@ import hashlib
 import secrets
 import string
 
-from _subjects import work_subjects, SUBJECT_IDS
+from _subjects import work_subjects, work_groups, SUBJECT_IDS, WORK_GROUPS
 
 try:
     import _b2
@@ -76,6 +76,7 @@ def _payload(db):
         "works": db.get("works", []),
         "work_taken_by": db.get("work_taken_by", {}),
         "work_subjects": work_subjects(db),
+        "work_groups": work_groups(db),
         "selections": db.get("selections", {}),
         "scores": db.get("scores", {}),
         "deadlines": db.get("deadlines", {}),
@@ -243,9 +244,14 @@ def roster_action(db, body, static_credentials):
         if title in works:
             return False, {"error": "Bu adda iş artıq var."}, 400
         ws = work_subjects(db)
+        wg = work_groups(db)
+        # s2 işinin qrupu: body.group (new|old), yoxdursa "new"; s1 — qrupsuz
+        grp = body.get("group") if body.get("group") in WORK_GROUPS else ("new" if sid == "s2" else "")
         works.append(title)
         ws.append(sid)
+        wg.append(grp)
         db["work_subjects"] = ws
+        db["work_groups"] = wg
         return True, _payload(db), 200
 
     if action == "edit_work":
@@ -275,9 +281,12 @@ def roster_action(db, body, static_credentials):
             if str(wid) in taken:
                 return False, {"error": f"Bu iş {taken[str(wid)]} tərəfindən seçilib — əvvəlcə onun seçimini sıfırlayın."}, 400
         ws = work_subjects(db)
+        wg = work_groups(db)
         works.pop(wid)
         ws.pop(wid)
+        wg.pop(wid)
         db["work_subjects"] = ws
+        db["work_groups"] = wg
         # indekslər sürüşür: bütün istinadlar yenidən hesablanır
         for name, sel in db.get("selections", {}).items():
             db["selections"][name] = [i - 1 if i > wid else i for i in sel if i != wid]

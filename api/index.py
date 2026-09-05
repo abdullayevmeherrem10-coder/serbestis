@@ -14,8 +14,9 @@ from _arxiv import (ARXIV_IMTAHAN, arxiv_entries, arxiv_clean_rows,
                     arxiv_add, arxiv_delete, arxiv_clear_semester)
 from _roster import roster_action
 from _subjects import (subjects_of, current_subject, set_current_subject, current_pick,
-                       work_subjects, works_payload, select_works, reset_selection,
-                       reset_all_selections, ensure_subject2_topics)
+                       work_subjects, work_groups, old_topics_meta, works_payload, select_works,
+                       reset_selection, reset_all_selections, ensure_subject2_topics,
+                       current_group, set_current_group)
 from _uploads import (upload_url_action, upload_confirm_action,
                       upload_link_action, upload_delete_action,
                       upload_review_action, vt_check_action, vt_status_action)
@@ -566,6 +567,8 @@ def cabinet_data():
             "works": db.get('works', []),
             "work_taken_by": db.get('work_taken_by', {}),
             "work_subjects": work_subjects(db),
+            "work_groups": work_groups(db),
+            "s2_group": current_group(db),
             "subjects": subjects_of(db),
             "subject_id": current_subject(db),
             "semester": db.get('semester', '2025/2026 yaz semestri'),
@@ -620,6 +623,9 @@ def cabinet_semester():
         return jsonify({"error": "Semestr və fənn boş ola bilməz."}), 400
     db = load_db()
     db['semester'] = semester
+    # s2 aktiv mövzu siyahısı (new|old) — kursantlar yalnız bu siyahını görür
+    if body.get('s2_group') and not set_current_group(db, body.get('s2_group')):
+        return jsonify({"error": "Mövzu siyahısı tapılmadı."}), 400
     if subject_id:
         # Fənn siyahıdan seçilir: adı və sərbəst iş siyahısı (s1 / s2) birlikdə dəyişir
         if not set_current_subject(db, subject_id):
@@ -629,7 +635,8 @@ def cabinet_semester():
         db.pop('subject_id', None)
     save_db(db)
     return jsonify({"success": True, "semester": semester, "subject": db['subject'],
-                    "subject_id": current_subject(db), "subjects": subjects_of(db)})
+                    "subject_id": current_subject(db), "subjects": subjects_of(db),
+                    "s2_group": current_group(db)})
 
 
 @app.route('/api/cabinet-reset', methods=['POST'])
@@ -1028,7 +1035,7 @@ def get_works():
     team = request.args.get('team', '')
     # Yalnız cari fənnə aid işlər; subject/pick — kursant tərəfi üçün
     return jsonify({"works": works_payload(db, team), "subject": current_subject(db),
-                    "pick": current_pick(db), "subjects": subjects_of(db)})
+                    "pick": current_pick(db), "subjects": subjects_of(db), **old_topics_meta(db)})
 
 
 @app.route('/api/status', methods=['POST'])
