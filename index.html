@@ -2147,6 +2147,15 @@
         .dr-subj > b { display: block; font-size: 0.78rem; color: var(--text-muted); margin-bottom: 4px; }
         .dr-subj .btn-mini { margin-top: 6px; }
         .dr-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+        /* Fayl arxivi (müəllim paneli, Arxiv kartı) */
+        .fa-wrap { margin-top: 16px; padding-top: 14px; border-top: 1px dashed var(--card-border); }
+        .fa-batch { border: 1px solid var(--card-border); border-radius: 12px; padding: 8px 12px; margin-bottom: 8px; background: var(--surface-90); }
+        .fa-batch summary { cursor: pointer; font-weight: 700; font-size: 0.86rem; color: var(--text); display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+        .fa-batch summary small { font-weight: 600; color: var(--text-muted); }
+        .fa-list { list-style: none; margin: 8px 0 0; padding: 0; font-size: 0.8rem; }
+        .fa-list li { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; padding: 4px 0; border-top: 1px solid var(--card-border); }
+        .fa-list li small { color: var(--text-dim); }
+        .fa-list li .fa-name { flex: 1; min-width: 160px; font-weight: 600; }
         .dr-file { padding: 10px 12px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface-90); margin-bottom: 10px; }
         .dr-file-name { font-weight: 700; font-size: 0.86rem; word-break: break-word; color: var(--text); }
         .dr-file-meta { font-size: 0.75rem; color: var(--text-muted); margin-top: 2px; }
@@ -2919,6 +2928,16 @@
                     <span class="cab-scale" id="arxivInfo" style="margin:0;"></span>
                     <button class="btn-mini btn-mini-danger" id="arxivDelBtn" style="display:none;" onclick="tpArchiveDelete()">&#128465; Bu arxivi sil</button>
                 </div>
+            </div>
+            <!-- Fayl arxivi: kursantların yüklədiyi faylları B2-də arxiv qovluğuna köçür / endir / həmişəlik sil -->
+            <div class="fa-wrap">
+                <p class="cab-scale" style="margin:0 0 10px;"><strong>Fayl arxivi.</strong> Semestr bitəndə kursantların yüklədiyi Word və PowerPoint faylları anbarda arxiv qovluğuna köçürülür: kursant kabinetində "Yüklənməyib" olur və yeni semestrdə yenidən yükləmək mümkün olur. Arxivdəki faylları sonradan endirmək, yer boşaltmaq üçün isə həmişəlik silmək olar.</p>
+                <div class="tp-tools" style="align-items:center;">
+                    <span class="cab-scale" id="fileArxivStat" style="margin:0;">&#8230;</span>
+                    <button class="btn-mini" onclick="tpFileArchiveMove()">&#128230; Cari faylları arxivə köçür</button>
+                    <button class="btn-mini" onclick="toggleFileArxiv()">&#128193; Fayl arxivinə bax <span id="fileArxivChev">&#9662;</span></button>
+                </div>
+                <div id="fileArxivBody" style="display:none;"></div>
             </div>
         </div>
         <div class="card card-danger">
@@ -3876,6 +3895,7 @@
         renderTeacherPanel();
         enrichTeacherLive();
         loadKollokTopics();
+        loadFileArxiv(true);
     }
     function appBack() {
         if (session && session.role === 'student') {
@@ -5084,6 +5104,94 @@
             showToast('Bal yadda saxlanıla bilmədi!', 'error');
         }
     }
+    // ===== Fayl arxivi (müəllim): db["file_arxiv"], B2 "arxiv/<partiya>/" qovluğu; /api/upload-arxiv =====
+    let fileArxiv = null;
+    async function fileArxivApi(body) {
+        const res = await fetch('/api/upload-arxiv', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.token },
+            body: JSON.stringify(body)
+        });
+        if (res.status === 401) { cabinetLogout(); showToast('Sessiya bitib — yenidən daxil olun.', 'error'); throw new Error('Sessiya bitib'); }
+        const d = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(d.error || 'Server xətası');
+        return d;
+    }
+    async function loadFileArxiv(force) {
+        if (fileArxiv && !force) return fileArxiv;
+        try { fileArxiv = await fileArxivApi({ op: 'list' }); }
+        catch(e) { const st = document.getElementById('fileArxivStat'); if (st) st.textContent = 'Fayl arxivi yüklənə bilmədi'; return null; }
+        renderFileArxiv();
+        return fileArxiv;
+    }
+    function renderFileArxiv() {
+        const st = document.getElementById('fileArxivStat');
+        const body = document.getElementById('fileArxivBody');
+        if (!fileArxiv || !st || !body) return;
+        const c = fileArxiv.current || { count: 0, size: 0 };
+        const bs = fileArxiv.batches || [];
+        const an = bs.reduce((a, b) => a + b.count, 0), asz = bs.reduce((a, b) => a + b.size, 0);
+        st.textContent = `Cari: ${c.count} fayl (${fmtSize(c.size)}) \u2022 Arxivdə: ${an} fayl (${fmtSize(asz)})`;
+        if (!bs.length) { body.innerHTML = '<p class="cab-scale" style="margin:0 0 8px;">Fayl arxivi boşdur.</p>'; return; }
+        body.innerHTML = bs.map(b => `<details class="fa-batch">
+            <summary>&#128230; ${esc(b.label || 'Adsız partiya')} <small>${esc(b.ts)} \u2022 ${b.count} fayl \u2022 ${fmtSize(b.size)}</small></summary>
+            <ul class="fa-list">${b.files.map(f => `<li><span class="fa-name">${esc(f.name)}</span><span>${f.kind === 'pptx' ? '&#128202; PPT' : '&#128196; Word'}</span><small>${esc(f.fname || '')} \u2022 ${fmtSize(f.size || 0)} \u2022 ${esc(f.ts || '')}</small><button class="btn-mini" onclick="tpFileArxivDownload('${esc(b.id)}', ${f.i})">&#11015; Endir</button></li>`).join('')}</ul>
+            <div class="dr-row" style="justify-content:flex-end;"><button class="btn-mini btn-mini-danger" onclick="tpFileArchiveDelete('${esc(b.id)}')">&#128465; Bu arxivi həmişəlik sil</button></div>
+        </details>`).join('');
+    }
+    async function toggleFileArxiv() {
+        const body = document.getElementById('fileArxivBody');
+        const open = body.style.display === 'none';
+        body.style.display = open ? '' : 'none';
+        document.getElementById('fileArxivChev').innerHTML = open ? '&#9652;' : '&#9662;';
+        if (open) await loadFileArxiv(false);
+    }
+    async function tpFileArxivDownload(bid, i) {
+        try { const d = await fileArxivApi({ op: 'link', batch: bid, i: i }); triggerDownload(d.url); }
+        catch(e) { showToast(e.message, 'error'); }
+    }
+    // Cari faylları arxivə köçür — hissə-hissə (server hər çağırışda ~15 fayl köçürür)
+    async function tpFileArchiveMove() {
+        const fa = await loadFileArxiv(true);
+        if (!fa) { showToast('Fayl arxivi yüklənə bilmədi!', 'error'); return; }
+        if (!fa.current.count) { showToast('Arxivə köçürməyə fayl yoxdur.', 'error'); return; }
+        const label = semInfo.semester + ' · ' + semInfo.subject;
+        if (!confirm(`${fa.current.count} fayl (${fmtSize(fa.current.size)}) "${label}" adı ilə fayl arxivinə köçürülsün?\n\nKursantların kabinetində fayllar "Yüklənməyib" olacaq və yenidən yükləyə biləcəklər. Arxivdəki faylları sonra endirmək və ya həmişəlik silmək olar.`)) return;
+        let batch = null, moved = 0, failed = 0;
+        showToast('Fayllar arxivə köçürülür, gözləyin…', 'success');
+        try {
+            for (let guard = 0; guard < 300; guard++) {
+                const d = await fileArxivApi({ op: 'move', batch: batch, label: label, limit: 15 });
+                batch = d.batch; moved += d.moved; failed += d.failed;
+                if (!d.remaining || !d.moved) break;
+                showToast(`Köçürülür… ${moved} hazır, ${d.remaining} qalıb`, 'success');
+            }
+        } catch(e) { showToast(e.message, 'error'); }
+        showToast(failed ? `${moved} fayl köçürüldü, ${failed} fayl köçürülə bilmədi — yenidən cəhd edin.` : `${moved} fayl arxivə köçürüldü.`, failed ? 'error' : 'success');
+        await tpRefreshAll();
+        await loadFileArxiv(true);
+        const body = document.getElementById('fileArxivBody');
+        if (body.style.display === 'none') { body.style.display = ''; document.getElementById('fileArxivChev').innerHTML = '&#9652;'; }
+    }
+    // Arxiv partiyasını B2-dən həmişəlik sil — hissə-hissə
+    async function tpFileArchiveDelete(bid) {
+        const b = ((fileArxiv && fileArxiv.batches) || []).find(x => x.id === bid);
+        if (!b) return;
+        if (!confirm(`"${b.label || bid}" arxivi (${b.count} fayl, ${fmtSize(b.size)}) HƏMİŞƏLİK silinsin?\n\nFayllar anbardan silinəcək və bərpa edilə bilməyəcək. Lazım olanları əvvəlcədən endirin.`)) return;
+        if (!confirm('Son təsdiq: bu arxivdəki bütün fayllar həmişəlik silinəcək. Davam edilsin?')) return;
+        let deleted = 0, failed = 0;
+        try {
+            for (let guard = 0; guard < 300; guard++) {
+                const d = await fileArxivApi({ op: 'delete', batch: bid, limit: 15 });
+                deleted += d.deleted; failed += d.failed;
+                if (!d.remaining || !d.deleted) break;
+                showToast(`Silinir… ${deleted} hazır, ${d.remaining} qalıb`, 'success');
+            }
+        } catch(e) { showToast(e.message, 'error'); }
+        showToast(failed ? `${deleted} fayl silindi, ${failed} fayl silinə bilmədi — yenidən cəhd edin.` : `${deleted} fayl həmişəlik silindi.`, failed ? 'error' : 'success');
+        await loadFileArxiv(true);
+    }
+
     // ===== Arxiv: keçmiş semestrlər (müəllim yazır, db["arxiv"]) + repo-dakı statik 2024 =====
     let arxivData = null, arxivSem = null, arxivGroup = null;
     let liveReady = Promise.resolve();   // enrichTeacherLive: canlı kollokvium ballarının gəlməsi

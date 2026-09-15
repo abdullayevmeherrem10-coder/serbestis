@@ -222,3 +222,129 @@ def upload_delete_action(db, body, role, requester_name):
     if not db["uploads"][name]:
         db["uploads"].pop(name, None)
     return True, {"success": True, "uploads": db.get("uploads", {}).get(name, {})}, 200
+
+
+# ===== Fayl arxivi (müəllim): semestr sonunda faylları B2-də arxiv qovluğuna köçür / həmişəlik sil =====
+# db["file_arxiv"] = [ {id, label, ts, files: [{name, kind, key, fname, size, ts, review?}]}, ... ]
+# Köçürmə/silmə hissə-hissə (limit) gedir — Vercel funksiyasının 60 s vaxtına sığmaq üçün;
+# brauzer "remaining" 0 olana qədər təkrar çağırır.
+ARXIV_BATCH_LIMIT = 15
+
+
+def _arxiv_batches(db):
+    return db.setdefault("file_arxiv", [])
+
+
+def _arxiv_find(db, bid):
+    for b in _arxiv_batches(db):
+        if b.get("id") == bid:
+            return b
+    return None
+
+
+def _arxiv_summary(db):
+    cur_n, cur_sz = 0, 0
+    for kinds in db.get("uploads", {}).values():
+        for m in kinds.values():
+            cur_n += 1
+            cur_sz += int(m.get("size") or 0)
+    batches = []
+    for b in _arxiv_batches(db):
+        files = b.get("files", [])
+        batches.append({
+            "id": b["id"], "label": b.get("label", ""), "ts": b.get("ts", ""),
+            "count": len(files), "size": sum(int(f.get("size") or 0) for f in files),
+            "files": [{"i": i, "name": f.get("name"), "kind": f.get("kind"), "fname": f.get("fname"),
+                       "size": f.get("size"), "ts": f.get("ts")} for i, f in enumerate(files)],
+        })
+    return {"current": {"count": cur_n, "size": cur_sz}, "batches": batches}
+
+
+def upload_arxiv_action(db, body, role, requester_name):
+    """Yalnız müəllim. op: list | move | link | delete."""
+    if role != "teacher":
+        return False, {"error": "İcazə yoxdur."}, 401
+    op = body.get("op") or "list"
+    if op == "list":
+        return False, _arxiv_summary(db), 200
+    if not _b2.is_configured():
+        return False, {"error": "Fayl anbarı konfiqurasiya olunmayıb."}, 503
+    try:
+        limit = max(1, min(int(body.get("limit") or ARXIV_BATCH_LIMIT), 50))
+    except (TypeError, ValueError):
+        limit = ARXIV_BATCH_LIMIT
+
+    if op == "move":
+        # Cari faylları arxiv partiyasına köçür (kopyala + orijinalı sil); partiya id-si davam etdirilə bilər
+        bid = (body.get("batch") or "").strip()
+        batch = _arxiv_find(db, bid) if bid else None
+        if not batch:
+            bid = time.strftime("%Y%m%d-%H%M%S")
+            batch = {"id": bid, "label": (body.get("label") or "").strip()[:80],
+                     "ts": time.strftime("%d.%m.%Y %H:%M"), "files": []}
+            _arxiv_batches(db).insert(0, batch)
+        moved, failed = 0, 0
+        ups = db.get("uploads", {})
+        for name in list(ups.keys()):
+            if moved + failed >= limit:
+                break
+            for kind in list(ups[name].keys()):
+                if moved + failed >= limit:
+                    break
+                meta = ups[name][kind]
+                src = meta.get("key")
+                dst = f"{_b2.key_prefix()}arxiv/{bid}/{src.rsplit('/', 1)[-1]}" if src else None
+                if not src or not _b2.copy_object(src, dst):
+                    failed += 1
+                    continue
+                _b2.delete_object(src)
+                batch["files"].append({
+                    "name": name, "kind": kind, "key": dst, "fname": meta.get("fname"),
+                    "size": meta.get("size"), "ts": meta.get("ts"), "review": meta.get("review"),
+                })
+                ups[name].pop(kind, None)
+                moved += 1
+            if not ups.get(name):
+                ups.pop(name, None)
+        remaining = sum(len(k) for k in ups.values())
+        if not batch["files"] and remaining == 0 and moved == 0:
+            _arxiv_batches(db).remove(batch)
+            return True, {"success": True, "batch": None, "moved": 0, "failed": failed, "remaining": 0}, 200
+        return True, {"success": True, "batch": bid, "moved": moved, "failed": failed,
+                      "remaining": remaining, "total": len(batch["files"])}, 200
+
+    if op == "link":
+        batch = _arxiv_find(db, (body.get("batch") or "").strip())
+        try:
+            f = batch["files"][int(body.get("i"))] if batch else None
+        except (TypeError, ValueError, IndexError):
+            f = None
+        if not f:
+            return False, {"error": "Fayl tapılmadı."}, 404
+        spec = KINDS.get(f.get("kind")) or KINDS["docx"]
+        url = _b2.presign_get(f["key"], expires=3600, filename=f.get("fname") or f"serbest-is{spec['ext']}",
+                              content_type=spec["ct"], inline=False)
+        return False, {"url": url, "fname": f.get("fname"), "size": f.get("size")}, 200
+
+    if op == "delete":
+        # Arxiv partiyasını həmişəlik sil (B2-dən də) — hissə-hissə
+        batch = _arxiv_find(db, (body.get("batch") or "").strip())
+        if not batch:
+            return False, {"error": "Arxiv partiyası tapılmadı."}, 404
+        deleted, failed = 0, 0
+        keep = []
+        for f in batch["files"]:
+            if deleted + failed >= limit:
+                keep.append(f)
+            elif _b2.delete_object(f.get("key") or ""):
+                deleted += 1
+            else:
+                failed += 1
+                keep.append(f)
+        batch["files"] = keep
+        remaining = len(keep)
+        if remaining == 0:
+            _arxiv_batches(db).remove(batch)
+        return True, {"success": True, "deleted": deleted, "failed": failed, "remaining": remaining}, 200
+
+    return False, {"error": "Əməliyyat yanlışdır."}, 400

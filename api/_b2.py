@@ -136,8 +136,9 @@ def presign_get(key, expires=3600, filename=None, content_type=None, inline=Fals
     return presign("GET", key, expires, extra)
 
 
-def _signed_request(method, key, range_header=None, timeout=15, data=None):
-    """Server tərəfdən imzalı sorğu (HEAD/GET/PUT/DELETE) — header-based SigV4."""
+def _signed_request(method, key, range_header=None, timeout=15, data=None, extra_headers=None):
+    """Server tərəfdən imzalı sorğu (HEAD/GET/PUT/DELETE) — header-based SigV4.
+    extra_headers: əlavə imzalanan başlıqlar (məs. x-amz-copy-source)."""
     cfg = _config()
     if not cfg:
         return None
@@ -156,6 +157,8 @@ def _signed_request(method, key, range_header=None, timeout=15, data=None):
     }
     if range_header:
         headers["range"] = range_header
+    for k, v in (extra_headers or {}).items():
+        headers[k.lower()] = v
     signed_names = ";".join(sorted(headers))
     canonical_headers = "".join(f"{k}:{headers[k]}\n" for k in sorted(headers))
     canonical = "\n".join([method, uri, "", canonical_headers, signed_names, _UNSIGNED])
@@ -211,6 +214,21 @@ def read_object(key, timeout=45):
             return r.read()
     except Exception:
         return None
+
+
+def copy_object(src_key, dst_key, timeout=45):
+    """Server tərəfdən fayl kopyalayır (S3 CopyObject; fayl arxivi üçün). Uğur/uğursuzluq."""
+    cfg = _config()
+    if not cfg:
+        return False
+    src = "/" + cfg["bucket"] + "/" + _quote(src_key, safe="/-_.~")
+    try:
+        with _signed_request("PUT", dst_key, timeout=timeout,
+                             extra_headers={"x-amz-copy-source": src}) as r:
+            r.read()
+        return True
+    except Exception:
+        return False
 
 
 def delete_object(key):

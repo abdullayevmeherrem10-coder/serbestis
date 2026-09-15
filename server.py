@@ -30,7 +30,8 @@ from _subjects import (subjects_of, current_subject, set_current_subject, curren
                        current_group, set_current_group)
 from _uploads import (upload_url_action, upload_confirm_action,
                       upload_link_action, upload_delete_action,
-                      upload_review_action, vt_check_action, vt_status_action)
+                      upload_review_action, vt_check_action, vt_status_action,
+                      upload_arxiv_action)
 from _backup import run_backup, read_backup, save_prerestore
 
 # Admin şifrəsi koda yazılmır: əvvəlcə ENV dəyişəni, sonra gitignore-lanmış
@@ -497,7 +498,8 @@ class Handler(http.server.BaseHTTPRequestHandler):
             self.send_json({"success": True, "date": date})
 
         elif path in ("/api/upload-url", "/api/upload-confirm", "/api/upload-link",
-                      "/api/upload-delete", "/api/upload-review", "/api/vt-check", "/api/vt-status"):
+                      "/api/upload-delete", "/api/upload-review", "/api/vt-check", "/api/vt-status",
+                      "/api/upload-arxiv"):
             auth = self.headers.get("Authorization", "")
             cid = verify_token(auth[7:].strip()) if auth.startswith("Bearer ") else None
             db = load_db()
@@ -519,6 +521,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
                     "/api/upload-review": upload_review_action,
                     "/api/vt-check": vt_check_action,
                     "/api/vt-status": vt_status_action,
+                    "/api/upload-arxiv": upload_arxiv_action,
                 }[path]
                 changed, resp, code = action(db, body, cred.get("role"), cred.get("name"))
             if changed:

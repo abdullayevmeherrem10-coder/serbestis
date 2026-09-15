@@ -19,7 +19,8 @@ from _subjects import (subjects_of, current_subject, set_current_subject, curren
                        current_group, set_current_group)
 from _uploads import (upload_url_action, upload_confirm_action,
                       upload_link_action, upload_delete_action,
-                      upload_review_action, vt_check_action, vt_status_action)
+                      upload_review_action, vt_check_action, vt_status_action,
+                      upload_arxiv_action)
 from _backup import run_backup, read_backup, save_prerestore
 
 app = Flask(__name__)
@@ -789,6 +790,19 @@ def upload_delete():
     if not cred:
         return jsonify({"error": "Giriş tələb olunur."}), 401
     changed, resp, code = upload_delete_action(
+        db, request.get_json(silent=True) or {}, cred.get('role'), cred.get('name'))
+    if changed:
+        save_db(db)
+    return jsonify(resp), code
+
+
+@app.route('/api/upload-arxiv', methods=['POST'])
+def upload_arxiv():
+    """Müəllim: fayl arxivi — op: list | move | link | delete (hissə-hissə, bax _uploads.upload_arxiv_action)."""
+    db, cred = _upload_auth()
+    if not cred:
+        return jsonify({"error": "Giriş tələb olunur."}), 401
+    changed, resp, code = upload_arxiv_action(
         db, request.get_json(silent=True) or {}, cred.get('role'), cred.get('name'))
     if changed:
         save_db(db)

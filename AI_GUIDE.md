@@ -200,6 +200,7 @@ Dil: **Azərbaycan dili** (bütün UI və kod şərhləri AZ dilindədir).
 - `POST /api/upload-link` `{name?, kind, mode: view|download}` → presigned GET URL
   (kursant yalnız özününkü; müəllim hamısını).
 - `POST /api/upload-delete` `{name?, kind}` → fayl silmə (kursant özününkü; müəllim hamısını).
+- `POST /api/upload-arxiv` `{op: list|move|link|delete, batch?, label?, i?, limit?}` → fayl arxivi (yalnız müəllim). `move`: cari faylları B2-də `arxiv/<partiya>/`-ə köçürür (kopyala + sil), `db["file_arxiv"]`-ə yazır; `delete`: partiyanı B2-dən həmişəlik silir. Hər çağırış ən çoxu `limit` (default 15) fayl emal edir, `remaining` 0 olana qədər brauzer təkrar çağırır (Vercel 60 s).
 
 ### Köhnə admin endpointləri (hələ mövcud, `ADMIN_PASSWORD` ilə qorunur)
 - `/api/status`, `/api/admin/*` — köhnə admin panel üçün idi (`admin.html` silinib),
