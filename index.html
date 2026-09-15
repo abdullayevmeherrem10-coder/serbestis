@@ -1836,6 +1836,8 @@
         .cb-btn:disabled { opacity: 0.6; cursor: default; transform: none; }
         .cb-hero-btn { color: #fff; border-color: rgba(255,255,255,0.35); background: rgba(255,255,255,0.12); }
         .cb-hero-btn:hover { color: #fff; border-color: rgba(255,255,255,0.6); background: rgba(255,255,255,0.22); }
+        .cb-lit-note { display: inline-flex; align-items: center; gap: 6px; padding: 8px 12px; border-radius: 10px; font-size: 13px; font-weight: 600; color: #fff; border: 1px dashed rgba(255,255,255,0.45); background: rgba(255,255,255,0.10); }
+        .lit-note { width: 100%; margin-top: 8px; padding: 12px 14px; border-radius: 12px; font-size: 14px; font-weight: 600; text-align: center; color: var(--accent-ink); border: 1px dashed var(--card-border); background: var(--surface-90); }
         .cb-dl {
             display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 10px 16px; border-radius: 14px;
             margin-bottom: 14px; font-size: 0.84rem; color: var(--text);
@@ -2545,7 +2547,8 @@
             <h2 id="cabName"></h2>
             <div class="cb-meta"><span id="cabTeamBadge"></span><span class="cb-dot"></span><span id="cabIdBadge"></span></div>
         </div>
-        <a href="kitab.html" class="cb-btn cb-hero-btn" title="Fənn üzrə ədəbiyyat (elektron kitab)">&#128214; Ədəbiyyat</a>
+        <a href="kitab.html" class="cb-btn cb-hero-btn" id="cabLitBtn" title="Fənn üzrə ədəbiyyat (elektron kitab)">&#128214; Ədəbiyyat</a>
+        <span class="cb-lit-note" id="cabLitNote" style="display:none">&#128218; Fənlə əlaqəli ədəbiyyatı kitabxanadan əldə et</span>
     </div>
 
     <div class="cb-dl" role="alert" id="cabDeadlineBanner" style="display:none">
@@ -2603,7 +2606,7 @@
                                 <button class="cb-btn cb-btn-danger" onclick="upDelete('pptx')" id="upDel-pptx" style="display:none">Sil</button>
                             </span>
                         </div>
-                        <p class="cb-note">Word .docx (maks 10 MB) və PowerPoint .pptx (maks 20 səhifə, 25 MB).</p>
+                        <p class="cb-note" id="upNote">Word .docx (maks 10 MB) və PowerPoint .pptx (maks 20 səhifə, 25 MB).</p>
                         <input type="file" id="upFile-docx" accept=".docx" style="display:none" onchange="upSelected('docx', this)">
                         <input type="file" id="upFile-pptx" accept=".pptx" style="display:none" onchange="upSelected('pptx', this)">
                     </div>
@@ -2685,9 +2688,10 @@
             </div>
             <div style="flex:1;min-width:250px;">
                 <p>İstifadə ediləcək ədəbiyyat</p>
-                <a href="kitab.html" class="btn btn-book" style="width:100%;margin-top:8px;">
+                <a href="kitab.html" class="btn btn-book" id="pubLitBtn" style="width:100%;margin-top:8px;">
                     &#128214; Ədəbiyyata bax
                 </a>
+                <div class="lit-note" id="pubLitNote" style="display:none">&#128218; Fənlə əlaqəli ədəbiyyatı kitabxanadan əldə et</div>
             </div>
         </div>
     </div>
@@ -2950,9 +2954,10 @@
 
         <div class="warning">&#9888; Kursant tərəfindən mövzunun dəyişdirilməsinə qətiyyən icazə verilmir və fərqli mövzu üzrə sərbəst iş təqdim etmək istəyən kursantın işi müəllim tərəfindən qəbul edilməyəcəkdir!</div>
 
-        <p>Hər bir kursant fənn müəllimi tərəfindən əvvəlcədən yerləşdirilmiş mövzulardan <strong>ikisini</strong> seçib hazırlayaraq təqdim etməlidir.</p>
+        <p>Hər bir kursant fənn müəllimi tərəfindən əvvəlcədən yerləşdirilmiş mövzulardan <strong data-subj="s1">ikisini</strong><strong data-subj="s2" style="display:none">birini</strong> seçib hazırlayaraq təqdim etməlidir.</p>
 
-        <p>Kursantlar sərbəst işin nəticəsini, müəllimin tələbinə uyğun olaraq, <strong>təqdimat (slaydlar)</strong> və ya <strong>mətn şəklində</strong> (yaxud hər iki formada) təqdim etməlidir.</p>
+        <p data-subj="s1">Kursantlar sərbəst işin nəticəsini, müəllimin tələbinə uyğun olaraq, <strong>təqdimat (slaydlar)</strong> və ya <strong>mətn şəklində</strong> (yaxud hər iki formada) təqdim etməlidir.</p>
+        <p data-subj="s2" style="display:none">Kursantlar sərbəst işin nəticəsini <strong>mətn şəklində</strong> təqdim etməlidir. Təqdimat (slaydlar) tələb olunmur.</p>
 
         <div class="rule-section">
             <p><strong>Mətn tələbləri:</strong></p>
@@ -2962,7 +2967,7 @@
             <p>Kənar boşluqları: soldan <strong>3 sm</strong>, digər yanlardan <strong>2 sm</strong></p>
         </div>
 
-        <div class="rule-section">
+        <div class="rule-section" data-subj="s1">
             <p><strong>Təqdimat tələbləri:</strong></p>
             <p>Slayd sayı <strong>5-10</strong> arasında olmalıdır. Slaydlar yığcam olmalı və mövzunu tam əhatə etməlidir.</p>
         </div>
@@ -2975,9 +2980,10 @@
             <li>Köçürmə ("copy-paste") olmaması</li>
             <li>Mövzunu əhatə etmə səviyyəsi</li>
             <li>Kursantın mövzunu mənimsəmə və axıcı şəkildə çatdırma dərəcəsi</li>
-            <li>Təqdimat zamanı verilən sualları cavablandırma səviyyəsi</li>
+            <li data-subj="s1">Təqdimat zamanı verilən sualları cavablandırma səviyyəsi</li>
+            <li data-subj="s2" style="display:none">Müdafiə zamanı verilən sualları cavablandırma səviyyəsi</li>
             <li>Mətnlərin tələblərə uyğunluğu</li>
-            <li>Slaydların keyfiyyəti</li>
+            <li data-subj="s1">Slaydların keyfiyyəti</li>
         </ul>
 
         <div class="note">&#128221; <strong>Qeyd 1:</strong> Süni intellekt yoxlaması aparılacaqdır.</div>
@@ -3036,6 +3042,8 @@
     function subjPick(sid) { const x = subjList().find(o => o.id === sid); return x ? x.pick : 1; }
     // Cari fənn (Parametrlər → Fənn): bütün taqımlar bu fənnin sərbəst işlərini görür
     function curSubj() { return (cabData && cabData.subject_id) || semInfo.subjectId || 's2'; }
+    // s2 (Hərbi Mühəndis Hazırlığı) — təqdimat (pptx) tələb olunmur; yalnız Word
+    function needsPptx() { return curSubj() !== 's2'; }
     function curPick() { return subjPick(curSubj()); }
     // Kollokvium Firebase açarları: s1 → sessions/K1_YT_23A1, topics/K1; s2 → sessions/s2_K1_YT_23A1, topics/s2_K1
     function kPre() { return curSubj() === 's2' ? 's2_' : ''; }
@@ -3826,13 +3834,13 @@
         if (s.some(x => !x) || !cabData) return;
         const sel = (cabData.selections || []).length >= curPick();
         const ups = cabData.uploads || {};
-        const both = !!(ups.docx && ups.pptx);
+        const both = !!(ups.docx && (ups.pptx || !needsPptx()));
         s.forEach(x => x.classList.remove('active', 'done'));
         if (sel) s[0].classList.add('done'); else s[0].classList.add('active');
         if (both) { s[1].classList.add('done'); s[2].classList.add('done'); }
         else if (sel) { s[1].classList.add('active'); s[2].classList.add('active'); }
         const hint = document.getElementById('cabStepHint');
-        if (hint) hint.textContent = both ? 'Hər şey təhvil verilib' : sel ? (ups.docx || ups.pptx ? 'Bir fayl qalıb' : 'Növbəti: hazırlayıb təhvil verin') : 'Növbəti: mövzu seçin';
+        if (hint) hint.textContent = both ? 'Hər şey təhvil verilib' : sel ? (needsPptx() && (ups.docx || ups.pptx) ? 'Bir fayl qalıb' : 'Növbəti: hazırlayıb təhvil verin') : 'Növbəti: mövzu seçin';
     }
     function startSerbestFlow() {
         flowSubject = curSubj();
@@ -3889,6 +3897,15 @@
         document.querySelectorAll('.app-sem-label').forEach(el => { el.textContent = full; });
         const chip = document.getElementById('cabSemChip');
         if (chip) chip.textContent = semInfo.semester;
+        // Ədəbiyyat: s1 (Hərbi Mühəndis Texnikası) → elektron kitab linki; s2 (Hərbi Mühəndis Hazırlığı) → kitabxana qeydi
+        const litIsLib = curSubj() === 's2';
+        // Hazırlanma qaydası modalı: data-subj="s1|s2" olan hissələr yalnız həmin fənndə görünür
+        document.querySelectorAll('#rulesModal [data-subj]').forEach(el => { el.style.display = el.dataset.subj === curSubj() ? '' : 'none'; });
+        [['cabLitBtn','cabLitNote'],['pubLitBtn','pubLitNote']].forEach(([b,n]) => {
+            const be = document.getElementById(b), ne = document.getElementById(n);
+            if (be) be.style.display = litIsLib ? 'none' : '';
+            if (ne) ne.style.display = litIsLib ? '' : 'none';
+        });
         document.querySelectorAll('.imt-desc').forEach(el => {
             el.textContent = '\u201C' + semInfo.subject + '\u201D fənni üzrə imtahan nəticələri \u2022 ' + semInfo.semester;
         });
@@ -4176,7 +4193,7 @@
                 <td class="col-num">${i + 1}</td>
                 <td><span class="tp-row-name" title="Ətraflı panel" onclick="openDrawer(ctxName(this))">${esc(name)}</span></td>
                 <td class="col-bal">${selHtml}</td>
-                <td class="col-bal"><div class="doc-pills">${docPill(up.docx, 'Word')}${docPill(up.pptx, 'PPT')}</div></td>
+                <td class="col-bal"><div class="doc-pills">${docPill(up.docx, 'Word')}${(needsPptx() || up.pptx) ? docPill(up.pptx, 'PPT') : ''}</div></td>
                 <td class="col-bal">${menCellHtml(t.total)}</td>
                 <td class="col-bal">${examCellHtml(t.exam)}</td>
                 <td class="col-bal"><span class="dl-text${dl ? '' : ' dl-empty'}" title="Son tarixi dəyişmək üçün klik" onclick="editDeadlineInline(this)">${esc(dl || '—')}</span></td>
@@ -4332,7 +4349,7 @@
                 </div>
                 <div class="dr-sec">
                     <h4>Sənədlər</h4>
-                    ${fileBox('docx', 'Word')}${fileBox('pptx', 'Təqdimat')}
+                    ${fileBox('docx', 'Word')}${(needsPptx() || up.pptx) ? fileBox('pptx', 'Təqdimat') : ''}
                 </div>
                 <div class="dr-sec">
                     <h4>Ballar</h4>
@@ -4615,6 +4632,11 @@
 
     function renderUploads() {
         if (!cabData || cabData.role !== 'student') return;
+        const pptxOn = needsPptx() || !!((cabData.uploads || {}).pptx);
+        const pr = document.getElementById('upRow-pptx');
+        if (pr) pr.style.display = pptxOn ? '' : 'none';
+        const un = document.getElementById('upNote');
+        if (un) un.textContent = pptxOn ? 'Word .docx (maks 10 MB) və PowerPoint .pptx (maks 20 səhifə, 25 MB).' : 'Word .docx (maks 10 MB). Bu fənn üzrə təqdimat tələb olunmur.';
         ['docx', 'pptx'].forEach(k => {
             const meta = (cabData.uploads || {})[k];
             const st = document.getElementById('upStatus-' + k);
