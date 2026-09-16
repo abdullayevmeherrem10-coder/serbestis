@@ -1959,10 +1959,6 @@
             .cb-stats { grid-template-columns: 1fr; }
             .cb-stat { padding: 10px 0; border-left: none; border-top: 1px solid var(--border); }
             .cb-stat:first-child { border-top: none; padding-top: 0; }
-            .cb-hero { padding: 20px 18px; gap: 14px; }
-            .cb-hero-side { margin-left: 0; width: 100%; }
-            .cb-hero-btn, .cb-lit-note { width: 100%; max-width: none; justify-content: center; }
-            .cb-who h2 { font-size: 1.25rem; }
             .cb-card { padding: 18px; }
             .cb-step { gap: 12px; }
         }
@@ -2638,8 +2634,39 @@
         @media (min-width: 769px) and (max-width: 1024px) {
             .tp-table th, .tp-table td { padding-left: 10px; padding-right: 10px; }
             .app-sem-label { position: static; transform: none; flex: 1 0 100%; order: 5; text-align: center; white-space: normal; font-size: 0.8rem; margin-top: 2px; }
-            .cb-hero-side { margin-left: 0; width: 100%; }
-            .cb-lit-note { max-width: none; width: 100%; }
+        }
+        /* Kabinet başlığı — mobil və planşet: şaquli, mərkəzləşmiş, sadə */
+        @media (max-width: 1024px) {
+            .cb-hero {
+                flex-direction: column; align-items: center; text-align: center;
+                gap: 0; padding: 28px 20px 20px; border-radius: 22px;
+                background: linear-gradient(160deg, #3f5a4b 0%, #4a6a58 55%, #5f8370 100%);
+            }
+            .cb-hero::before {
+                background:
+                    radial-gradient(360px 200px at 50% -40%, rgba(255,255,255,0.22), transparent 70%),
+                    radial-gradient(rgba(255,255,255,0.09) 1px, transparent 1.4px);
+                background-size: auto, 20px 20px;
+            }
+            .cb-hero::after { display: none; }
+            .cb-avatar { width: 78px; height: 78px; font-size: 1.5rem; margin-bottom: 14px; }
+            .cb-who { width: 100%; min-width: 0; display: flex; flex-direction: column; align-items: center; }
+            .cb-eyebrow { font-size: 0.62rem; letter-spacing: 0.2em; margin-bottom: 6px; }
+            .cb-who h2 { font-size: 1.35rem; margin: 0 0 12px; line-height: 1.25; }
+            .cb-meta { justify-content: center; gap: 8px; width: 100%; }
+            .cb-chip { padding: 6px 12px; font-size: 0.74rem; }
+            .cb-chip-sem {
+                flex: 1 0 100%; justify-content: center; margin-top: 4px; padding: 8px 12px;
+                background: rgba(0,0,0,0.16); border-color: rgba(255,255,255,0.14); line-height: 1.35;
+            }
+            .cb-hero-side { margin: 16px 0 0; width: 100%; }
+            .cb-hero-btn { width: 100%; justify-content: center; padding: 13px 18px; font-size: 0.9rem; }
+            .cb-lit-note { width: 100%; max-width: none; text-align: left; padding: 12px 14px; }
+            .cb-lit-txt span { font-size: 0.76rem; }
+        }
+        @media (min-width: 600px) and (max-width: 1024px) {
+            .cb-chip-sem { flex: 0 1 auto; max-width: 92%; }
+            .cb-hero-side { max-width: 560px; }
         }
         /* Telefon */
         @media (max-width: 768px) {
