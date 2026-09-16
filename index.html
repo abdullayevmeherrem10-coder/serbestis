@@ -2651,7 +2651,7 @@
     <div class="cb-hero">
         <div class="cb-avatar" id="cabAvatar"></div>
         <div class="cb-who">
-            <div class="cb-eyebrow" id="cabGreeting">Kursant kabineti</div>
+            <div class="cb-eyebrow" id="cabGreeting">Şəxsi kabinet</div>
             <h2 id="cabName"></h2>
             <div class="cb-meta">
                 <span class="cb-chip"><span class="cb-chip-ico">&#128101;</span><span id="cabTeamBadge"></span></span>
@@ -3016,6 +3016,7 @@
         <div class="card">
             <div class="card-title"><div class="icon">&#128451;</div> <span>Paylaşılanlar <span class="bal bal-mid" id="tpPostsCount"></span></span></div>
             <div class="post-list" id="tpPostsList"></div>
+            <input type="file" id="pfFileRetry" accept=".docx,.pptx,.pdf" style="display:none" onchange="tpPostAttachChosen(this)">
         </div>
     </div>
     <div class="tab-panel" id="tab-parametrler">
@@ -3781,8 +3782,6 @@
         document.getElementById('cabAvatar').textContent = name.split(' ').slice(0, 2).map(w => w[0] || '').join('');
         document.getElementById('cabTeamBadge').textContent = cabData.team || '';
         document.getElementById('cabIdBadge').textContent = 'ID ' + (session.id || '');
-        const h = new Date().getHours();
-        document.getElementById('cabGreeting').textContent = (h < 12 ? 'Sabahınız xeyir' : h < 18 ? 'Xoş gördük' : 'Axşamınız xeyir') + ' \u2022 Kursant kabineti';
         let liveK = [null, null, null];
         try { liveK = await fetchLiveKollok(cabData.team, name); } catch(e) {}
         buildPersonalCards(cabData.results || {}, liveK);
@@ -5295,7 +5294,7 @@
         const foot = (p.deadline || f || teacher) ? `<div class="post-foot">
                 ${p.deadline ? `<span class="post-dl">&#9200; Son tarix: <b>${esc(p.deadline)}</b></span>` : ''}
                 ${f ? `<button class="post-file" onclick="postOpen('${esc(p.id)}', 'view')" title="Bax">${fileIco} <span>${esc(f.fname || '')}</span><small>${fmtSize(f.size || 0)}</small></button><button class="post-file post-file-dl" onclick="postOpen('${esc(p.id)}', 'download')" title="Endir">&#11015;</button>` : ''}
-                ${teacher ? `<button class="btn-mini btn-mini-danger post-del" onclick="tpPostDelete('${esc(p.id)}')">&#128465; Sil</button>` : ''}
+                ${teacher ? `<button class="btn-mini post-del" onclick="tpPostAttach('${esc(p.id)}')">&#128206; ${f ? 'Faylı dəyiş' : 'Fayl əlavə et'}</button><button class="btn-mini btn-mini-danger" onclick="tpPostDelete('${esc(p.id)}')">&#128465; Sil</button>` : ''}
             </div>` : '';
         return `<article class="post post-${esc(p.type)}${isNew ? ' post-is-new' : ''}">
             <div class="post-body">
@@ -5382,40 +5381,61 @@
             const d = await r.json();
             if (!r.ok) throw d.error || 0;
             let fileErr = null;
-            if (pfFileObj) {
-                const f = pfFileObj, kind = (f.name.split('.').pop() || '').toLowerCase();
-                try {
-                    btn.textContent = 'Fayl yüklənir… 0%';
-                    const r1 = await fetch('/api/post-file-url', { method: 'POST', headers: postAuthHeaders(), body: JSON.stringify({ id: d.post.id, kind: kind, fname: f.name, size: f.size }) });
-                    const d1 = await r1.json();
-                    if (!r1.ok) throw d1.error || 0;
-                    await new Promise((resolve, reject) => {
-                        const xhr = new XMLHttpRequest();
-                        xhr.open('PUT', d1.url);
-                        xhr.upload.onprogress = e => { if (e.lengthComputable) btn.textContent = 'Fayl yüklənir… ' + Math.round(e.loaded / e.total * 100) + '%'; };
-                        xhr.onload = () => (xhr.status >= 200 && xhr.status < 300) ? resolve() : reject(0);
-                        xhr.onerror = () => reject(0);
-                        xhr.send(f);
-                    });
-                    btn.textContent = 'Yoxlanılır…';
-                    const r2 = await fetch('/api/post-file-confirm', { method: 'POST', headers: postAuthHeaders(), body: JSON.stringify({ id: d.post.id, kind: kind, fname: f.name }) });
-                    const d2 = await r2.json();
-                    if (!r2.ok) throw d2.error || 0;
-                } catch(e) { fileErr = typeof e === 'string' ? e : 'fayl yüklənə bilmədi'; }
-            }
+            if (pfFileObj) fileErr = await postUploadFile(d.post.id, pfFileObj, t => { btn.textContent = t; });
             document.getElementById('pfTitle').value = '';
             document.getElementById('pfText').value = '';
             document.getElementById('pfDeadline').value = '';
             tpPostFileClear();
             pfTeams.clear();
             await loadPosts();
-            showToast(fileErr ? 'Paylaşım yaradıldı, amma ' + fileErr : 'Paylaşıldı — kursantlar artıq görür', fileErr ? 'error' : 'success');
+            showToast(fileErr ? 'Paylaşım yaradıldı, amma fayl yüklənmədi: ' + fileErr + ' — kartdakı "Fayl əlavə et" ilə yenidən cəhd edin.' : 'Paylaşıldı — kursantlar artıq görür', fileErr ? 'error' : 'success');
         } catch(e) {
             showToast(typeof e === 'string' ? e : 'Paylaşıla bilmədi!', 'error');
         } finally {
             btn.disabled = false;
             btn.innerHTML = '&#128227; Paylaş';
         }
+    }
+    // Fayl yükləməsi: post-file-url → presigned PUT (birbaşa B2) → post-file-confirm. Xəta mətni qaytarır (uğurda null).
+    async function postUploadFile(postId, f, progress) {
+        const kind = (f.name.split('.').pop() || '').toLowerCase();
+        try {
+            progress('Fayl yüklənir… 0%');
+            const r1 = await fetch('/api/post-file-url', { method: 'POST', headers: postAuthHeaders(), body: JSON.stringify({ id: postId, kind: kind, fname: f.name, size: f.size }) });
+            const d1 = await r1.json().catch(() => ({}));
+            if (!r1.ok) throw (d1.error || ('server ' + r1.status)) + ' (1)';
+            await new Promise((resolve, reject) => {
+                const xhr = new XMLHttpRequest();
+                xhr.open('PUT', d1.url);
+                xhr.upload.onprogress = e => { if (e.lengthComputable) progress('Fayl yüklənir… ' + Math.round(e.loaded / e.total * 100) + '%'); };
+                xhr.onload = () => (xhr.status >= 200 && xhr.status < 300) ? resolve() : reject('anbar ' + xhr.status + ' cavab verdi (2)');
+                xhr.onerror = () => reject('anbara qoşulmaq alınmadı (2)');
+                xhr.send(f);
+            });
+            progress('Yoxlanılır…');
+            const r2 = await fetch('/api/post-file-confirm', { method: 'POST', headers: postAuthHeaders(), body: JSON.stringify({ id: postId, kind: kind, fname: f.name }) });
+            const d2 = await r2.json().catch(() => ({}));
+            if (!r2.ok) throw (d2.error || ('server ' + r2.status)) + ' (3)';
+            return null;
+        } catch(e) { return typeof e === 'string' ? e : 'naməlum xəta'; }
+    }
+    // Mövcud paylaşıma fayl əlavə et / dəyiş (kartdakı düymə)
+    function tpPostAttach(id) {
+        const inp = document.getElementById('pfFileRetry');
+        inp.dataset.post = id;
+        inp.value = '';
+        inp.click();
+    }
+    async function tpPostAttachChosen(input) {
+        const f = input.files[0], id = input.dataset.post;
+        if (!f || !id) return;
+        const ext = (f.name.split('.').pop() || '').toLowerCase();
+        if (!POST_FILE_LIMITS[ext]) { showToast('Yalnız .docx, .pptx və .pdf faylı qəbul edilir!', 'error'); return; }
+        if (f.size > POST_FILE_LIMITS[ext]) { showToast('Fayl ' + (POST_FILE_LIMITS[ext] / 1048576) + ' MB limitindən böyükdür!', 'error'); return; }
+        showToast('Fayl yüklənir…', 'success');
+        const err = await postUploadFile(id, f, t => showToast(t, 'success'));
+        await loadPosts();
+        showToast(err ? 'Fayl yüklənmədi: ' + err : 'Fayl əlavə edildi', err ? 'error' : 'success');
     }
     async function tpPostDelete(id) {
         const p = (postsData || []).find(x => x.id === id);
