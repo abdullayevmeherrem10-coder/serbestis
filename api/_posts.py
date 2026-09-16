@@ -6,10 +6,11 @@ db["posts"] = [ {id, type, title, text, teams ([] = hamı), deadline, ts, ts_epo
 (Köhnə qeydlərdə tək "file" sahəsi ola bilər — _files_of() onu siyahıya çevirir.)
 
 Fayl əlavəsi kursant faylları kimi B2-yə presigned PUT ilə birbaşa gedir
-(post-file-url → PUT → post-file-confirm: yalnız ölçü yoxlanışı, məzmun yoxlanmır — müəllimin öz faylıdır). Açar: posts/<id>-<fid><ext>.
-Bir paylaşıma ən çoxu POST_FILES_MAX fayl. docx/pptx makrosuz formatlardır, .doc yalnız müəllimdən gəlir;
-pdf brauzerdə yeni vərəqdə açılır (viewer iframe yalnız Office üçündür).
+(post-file-url → PUT → post-file-confirm). İstənilən format qəbul edilir, məzmun yoxlanmır — müəllimin öz
+faylıdır; yalnız say (POST_FILES_MAX) və texniki ölçü həddi (POST_FILE_MAX). Açar: posts/<id>-<fid>.<ext>.
+Kursant faylı yalnız endirir (saytdaxili baxış yoxdur).
 """
+import mimetypes
 import re
 import secrets
 import time
@@ -17,21 +18,11 @@ import time
 import _b2
 
 POSTS_MAX = 60
-POST_FILES_MAX = 10
+POST_FILES_MAX = 20                 # bir paylaşıma fayl sayı
+POST_FILE_MAX = 200 * 1024 * 1024   # texniki hədd (anbar); format/məzmun yoxlanmır
 POST_TYPES = ("elan", "tapsiriq", "muhazire")
 _FID_RE = re.compile(r"^[0-9a-f]{8}$")
 
-POST_FILE_KINDS = {
-    "docx": {"ext": ".docx", "max": 30 * 1024 * 1024, "magic": b"PK",
-             "ct": "application/vnd.openxmlformats-officedocument.wordprocessingml.document"},
-    # .doc (köhnə Word, OLE konteyner) — müəllimin öz faylıdır; kursant saytda Office viewer ilə baxır
-    "doc": {"ext": ".doc", "max": 30 * 1024 * 1024, "magic": bytes([0xD0, 0xCF, 0x11, 0xE0]),
-            "ct": "application/msword"},
-    "pptx": {"ext": ".pptx", "max": 50 * 1024 * 1024, "magic": b"PK",
-             "ct": "application/vnd.openxmlformats-officedocument.presentationml.presentation"},
-    "pdf": {"ext": ".pdf", "max": 30 * 1024 * 1024, "magic": b"%PDF",
-            "ct": "application/pdf"},
-}
 
 
 def _posts(db):
@@ -152,17 +143,23 @@ def post_delete_action(db, body):
     return True, {"success": True}, 200
 
 
-def _spec_for(body):
-    kind = (body.get("kind") or "").strip().lower()
-    return kind, POST_FILE_KINDS.get(kind)
+def _ext_of(fname):
+    """Fayl uzantısı (yalnız a-z0-9, ≤10 simvol); yoxdursa boş."""
+    ext = fname.rsplit(".", 1)[1].lower() if "." in fname else ""
+    return "".join(ch for ch in ext if ch.isalnum())[:10]
 
 
-def _key(pid, fid, spec):
-    return f"{_b2.key_prefix()}posts/{pid}-{fid}{spec['ext']}"
+def _ct_for(fname):
+    return mimetypes.guess_type(fname)[0] or "application/octet-stream"
+
+
+def _key(pid, fid, ext):
+    return f"{_b2.key_prefix()}posts/{pid}-{fid}" + (f".{ext}" if ext else "")
 
 
 def post_file_url_action(db, body):
-    """Müəllim paylaşıma fayl əlavə etmək üçün presigned PUT alır; fid qaytarılır, confirm-də göndərilir."""
+    """Müəllim paylaşıma fayl əlavə etmək üçün presigned PUT alır — format/məzmun yoxlanmır
+    (müəllimin öz faylıdır); yalnız say və texniki ölçü həddi. fid qaytarılır, confirm-də göndərilir."""
     if not _b2.is_configured():
         return False, {"error": "Fayl anbarı konfiqurasiya olunmayıb."}, 503
     p = _find(db, (body.get("id") or "").strip())
@@ -170,50 +167,39 @@ def post_file_url_action(db, body):
         return False, {"error": "Paylaşım tapılmadı."}, 404
     if len(_files_of(p)) >= POST_FILES_MAX:
         return False, {"error": f"Bir paylaşıma ən çoxu {POST_FILES_MAX} fayl qoymaq olar."}, 400
-    kind, spec = _spec_for(body)
-    if not spec:
-        return False, {"error": "Yalnız .docx, .doc, .pptx və .pdf faylı qəbul edilir."}, 400
-    fname = (body.get("fname") or "").strip()[:120]
-    if not fname.lower().endswith(spec["ext"]):
-        return False, {"error": f"Yalnız {spec['ext']} faylı qəbul edilir."}, 400
+    fname = (body.get("fname") or "").strip()[:160] or "fayl"
     try:
-        size = int(body.get("size"))
+        size = int(body.get("size") or 0)
     except (TypeError, ValueError):
-        return False, {"error": "Fayl ölçüsü göstərilməyib."}, 400
-    if size <= 0:
-        return False, {"error": "Fayl boşdur."}, 400
-    if size > spec["max"]:
-        return False, {"error": f"Fayl {spec['max'] // (1024 * 1024)} MB-dan böyük ola bilməz."}, 400
+        size = 0
+    if size > POST_FILE_MAX:
+        return False, {"error": f"Fayl {POST_FILE_MAX // (1024 * 1024)} MB-dan böyük ola bilməz."}, 400
     fid = secrets.token_hex(4)
-    key = _key(p["id"], fid, spec)
-    return False, {"url": _b2.presign_put(key, spec["ct"], expires=900), "fid": fid}, 200
+    key = _key(p["id"], fid, _ext_of(fname))
+    return False, {"url": _b2.presign_put(key, _ct_for(fname), expires=1800), "fid": fid}, 200
 
 
 def post_file_confirm_action(db, body):
-    """Yükləmə bitdi: fayl anbardadır və ölçü limitdədir — siyahıya əlavə edilir."""
+    """Yükləmə bitdi: fayl anbardadırsa siyahıya əlavə edilir (məzmun yoxlanmır)."""
     if not _b2.is_configured():
         return False, {"error": "Fayl anbarı konfiqurasiya olunmayıb."}, 503
     p = _find(db, (body.get("id") or "").strip())
     if not p:
         return False, {"error": "Paylaşım tapılmadı."}, 404
-    kind, spec = _spec_for(body)
     fid = (body.get("fid") or "").strip()
-    if not spec or not _FID_RE.match(fid):
-        return False, {"error": "Fayl növü və ya identifikatoru yanlışdır."}, 400
-    key = _key(p["id"], fid, spec)
+    if not _FID_RE.match(fid):
+        return False, {"error": "Fayl identifikatoru yanlışdır."}, 400
+    fname = (body.get("fname") or "").strip()[:160] or "fayl"
+    ext = _ext_of(fname)
+    key = _key(p["id"], fid, ext)
     size, ok = _b2.head_object(key)
     if not ok:
         return False, {"error": "Fayl anbarda tapılmadı — yükləmə tamamlanmayıb."}, 400
-    if size > spec["max"]:
-        _b2.delete_object(key)
-        return False, {"error": f"Fayl {spec['max'] // (1024 * 1024)} MB limitini aşır — silindi."}, 400
-    # Müəllimin öz faylıdır — məzmun (magic) yoxlaması aparılmır; yalnız mövcudluq və ölçü
     files = _files_of(p)
     if len(files) >= POST_FILES_MAX:
         _b2.delete_object(key)
         return False, {"error": f"Bir paylaşıma ən çoxu {POST_FILES_MAX} fayl qoymaq olar."}, 400
-    fname = (body.get("fname") or "").strip()[:120] or f"material{spec['ext']}"
-    files.append({"fid": fid, "key": key, "kind": kind, "fname": fname, "size": size})
+    files.append({"fid": fid, "key": key, "kind": ext or "file", "fname": fname, "size": size})
     return True, {"success": True, "post": _public(p)}, 200
 
 
@@ -244,8 +230,6 @@ def post_file_link_action(db, body, role, team):
     f = next((x for x in _files_of(p) if x.get("fid") == fid), None)
     if not f:
         return False, {"error": "Fayl tapılmadı."}, 404
-    spec = POST_FILE_KINDS.get(f.get("kind")) or POST_FILE_KINDS["pdf"]
-    inline = (body.get("mode") or "view") == "view"
-    url = _b2.presign_get(f["key"], expires=3600, filename=f.get("fname") or f"material{spec['ext']}",
-                          content_type=spec["ct"], inline=inline)
+    fname = f.get("fname") or "fayl"
+    url = _b2.presign_get(f["key"], expires=3600, filename=fname, content_type=_ct_for(fname), inline=False)
     return False, {"url": url, "fname": f.get("fname"), "kind": f.get("kind"), "size": f.get("size")}, 200
