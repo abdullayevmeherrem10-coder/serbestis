@@ -5300,7 +5300,7 @@
         const m = POST_TYPE_META[p.type] || POST_TYPE_META.elan;
         const isNew = !teacher && seenTs != null && (p.ts_epoch || 0) > seenTs;
         const files = p.files || [];
-        const filesHtml = files.length ? `<div class="post-files">${files.map(f => `<div class="post-file-row"><button class="post-file" onclick="postOpen('${esc(p.id)}', '${esc(f.fid)}', 'view')" title="Bax">${postFileIco(f.kind)} <span>${esc(f.fname || '')}</span><small>${fmtSize(f.size || 0)}</small></button><button class="post-file post-file-dl" onclick="postOpen('${esc(p.id)}', '${esc(f.fid)}', 'download')" title="Endir">&#11015;</button></div>`).join('')}</div>` : '';
+        const filesHtml = files.length ? `<div class="post-files">${files.map(f => `<div class="post-file-row"><button class="post-file" onclick="postOpen('${esc(p.id)}', '${esc(f.fid)}', 'download')" title="Endir">${postFileIco(f.kind)} <span>${esc(f.fname || '')}</span><small>${fmtSize(f.size || 0)}</small> &#11015;</button></div>`).join('')}</div>` : '';
         const tl = p.teams || [];
         const teamHtml = teacher
             ? `<span class="post-team">${tl.length ? esc(tl.join(', ')) : 'Bütün taqımlar'}</span>`
@@ -5511,7 +5511,7 @@
             showToast('Paylaşım silindi', 'success');
         } catch(e) { showToast(typeof e === 'string' ? e : 'Silinə bilmədi!', 'error'); }
     }
-    // Fayl: docx/pptx saytdaxili Office viewer-də, pdf yeni vərəqdə; endirmə presigned GET ilə
+    // Elan faylları yalnız endirilir (saytdaxili baxış yoxdur); presigned GET ilə
     async function postOpen(id, fid, mode) {
         try {
             const r = await fetch('/api/post-file-link', { method: 'POST', headers: postAuthHeaders(), body: JSON.stringify({ id: id, fid: fid, mode: mode }) });
