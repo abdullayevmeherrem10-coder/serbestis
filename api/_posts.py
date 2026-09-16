@@ -1,26 +1,31 @@
 # -*- coding: utf-8 -*-
 """Elanlar və materiallar — müəllim paylaşır (elan / tapşırıq / mühazirə), kursant kabinetində görür.
 
-db["posts"] = [ {id, type, title, text, teams ([] = hamı), deadline, ts, ts_epoch,
-                 file: {key, kind, fname, size} | None}, ... ]  — ən yenisi əvvəldə, ən çoxu POSTS_MAX.
+db["posts"] = [ {id, type, title, text, teams ([] = hamı), deadline, ts, ts_epoch, edited?,
+                 files: [ {fid, key, kind, fname, size}, ... ]}, ... ]  — ən yenisi əvvəldə, ən çoxu POSTS_MAX.
+(Köhnə qeydlərdə tək "file" sahəsi ola bilər — _files_of() onu siyahıya çevirir.)
 
 Fayl əlavəsi kursant faylları kimi B2-yə presigned PUT ilə birbaşa gedir
-(post-file-url → PUT → post-file-confirm: ölçü + magic yoxlanışı). Açar: posts/<id><ext>.
-docx/pptx makrosuz formatlardır, .doc yalnız müəllimdən gəlir; pdf brauzerdə yeni vərəqdə açılır (viewer iframe yalnız Office üçündür).
+(post-file-url → PUT → post-file-confirm: ölçü + magic yoxlanışı). Açar: posts/<id>-<fid><ext>.
+Bir paylaşıma ən çoxu POST_FILES_MAX fayl. docx/pptx makrosuz formatlardır, .doc yalnız müəllimdən gəlir;
+pdf brauzerdə yeni vərəqdə açılır (viewer iframe yalnız Office üçündür).
 """
+import re
 import secrets
 import time
 
 import _b2
 
 POSTS_MAX = 60
+POST_FILES_MAX = 10
 POST_TYPES = ("elan", "tapsiriq", "muhazire")
+_FID_RE = re.compile(r"^[0-9a-f]{8}$")
 
 POST_FILE_KINDS = {
-    "docx": {"ext": ".docx", "max": 20 * 1024 * 1024, "magic": b"PK",
+    "docx": {"ext": ".docx", "max": 30 * 1024 * 1024, "magic": b"PK",
              "ct": "application/vnd.openxmlformats-officedocument.wordprocessingml.document"},
     # .doc (köhnə Word, OLE konteyner) — müəllimin öz faylıdır; kursant saytda Office viewer ilə baxır
-    "doc": {"ext": ".doc", "max": 20 * 1024 * 1024, "magic": b"\xd0\xcf\x11\xe0",
+    "doc": {"ext": ".doc", "max": 30 * 1024 * 1024, "magic": bytes([0xD0, 0xCF, 0x11, 0xE0]),
             "ct": "application/msword"},
     "pptx": {"ext": ".pptx", "max": 50 * 1024 * 1024, "magic": b"PK",
              "ct": "application/vnd.openxmlformats-officedocument.presentationml.presentation"},
@@ -40,13 +45,12 @@ def _find(db, pid):
     return None
 
 
-def _public(p):
-    """Kursanta/müəllimə göndərilən nüsxə — B2 açarı gizlədilir."""
-    out = {k: v for k, v in p.items() if k not in ("file", "team")}
-    out["teams"] = _teams_of(p)
-    f = p.get("file")
-    out["file"] = {"kind": f.get("kind"), "fname": f.get("fname"), "size": f.get("size")} if f else None
-    return out
+def _files_of(p):
+    """Fayl siyahısı; köhnə tək "file" sahəsi siyahıya çevrilir (fid "main")."""
+    if p.get("files") is None:
+        f = p.pop("file", None)
+        p["files"] = [dict(f, fid="main")] if f else []
+    return p["files"]
 
 
 def _teams_of(p):
@@ -57,8 +61,23 @@ def _teams_of(p):
     return t
 
 
+def _public(p):
+    """Kursanta/müəllimə göndərilən nüsxə — B2 açarları gizlədilir."""
+    out = {k: v for k, v in p.items() if k not in ("file", "files", "team")}
+    out["teams"] = _teams_of(p)
+    out["files"] = [{"fid": f.get("fid"), "kind": f.get("kind"), "fname": f.get("fname"), "size": f.get("size")}
+                    for f in _files_of(p)]
+    return out
+
+
 def _visible(p, role, team):
     return role == "teacher" or not _teams_of(p) or team in _teams_of(p)
+
+
+def _delete_files(p):
+    for f in _files_of(p):
+        if f.get("key"):
+            _b2.delete_object(f["key"])
 
 
 def posts_for(db, role, team):
@@ -99,19 +118,18 @@ def post_save_action(db, body):
     if err:
         return False, {"error": err}, 400
     pid = time.strftime("%Y%m%d%H%M%S") + secrets.token_hex(3)
-    post = dict(fields, id=pid, ts=time.strftime("%d.%m.%Y %H:%M"), ts_epoch=int(time.time()), file=None)
+    post = dict(fields, id=pid, ts=time.strftime("%d.%m.%Y %H:%M"), ts_epoch=int(time.time()), files=[])
     lst = _posts(db)
     lst.insert(0, post)
     for old in lst[POSTS_MAX:]:
-        if old.get("file"):
-            _b2.delete_object(old["file"]["key"])
+        _delete_files(old)
     del lst[POSTS_MAX:]
     return True, {"success": True, "post": _public(post)}, 200
 
 
 def post_update_action(db, body):
-    """Müəllim mövcud paylaşıma düzəliş edir (növ/başlıq/mətn/taqımlar/son tarix);
-    remove_file=true olsa əlavə edilmiş fayl anbardan silinir. Yeni fayl ayrıca post-file-url/confirm ilə qoyulur."""
+    """Müəllim mövcud paylaşıma düzəliş edir (növ/başlıq/mətn/taqımlar/son tarix).
+    Fayllar ayrıca idarə olunur: post-file-url/confirm (əlavə), post-file-delete (sil)."""
     p = _find(db, (body.get("id") or "").strip())
     if not p:
         return False, {"error": "Paylaşım tapılmadı."}, 404
@@ -120,37 +138,38 @@ def post_update_action(db, body):
         return False, {"error": err}, 400
     p.update(fields)
     p.pop("team", None)
-    if body.get("remove_file") is True and p.get("file"):
-        _b2.delete_object(p["file"]["key"])
-        p["file"] = None
     p["edited"] = time.strftime("%d.%m.%Y %H:%M")
     return True, {"success": True, "post": _public(p)}, 200
 
 
 def post_delete_action(db, body):
-    pid = (body.get("id") or "").strip()
-    p = _find(db, pid)
+    """Paylaşım və bütün faylları silinir."""
+    p = _find(db, (body.get("id") or "").strip())
     if not p:
         return False, {"error": "Paylaşım tapılmadı."}, 404
-    if p.get("file"):
-        _b2.delete_object(p["file"]["key"])
+    _delete_files(p)
     _posts(db).remove(p)
     return True, {"success": True}, 200
 
 
 def _spec_for(body):
     kind = (body.get("kind") or "").strip().lower()
-    spec = POST_FILE_KINDS.get(kind)
-    return kind, spec
+    return kind, POST_FILE_KINDS.get(kind)
+
+
+def _key(pid, fid, spec):
+    return f"{_b2.key_prefix()}posts/{pid}-{fid}{spec['ext']}"
 
 
 def post_file_url_action(db, body):
-    """Müəllim paylaşıma fayl əlavə etmək üçün presigned PUT alır."""
+    """Müəllim paylaşıma fayl əlavə etmək üçün presigned PUT alır; fid qaytarılır, confirm-də göndərilir."""
     if not _b2.is_configured():
         return False, {"error": "Fayl anbarı konfiqurasiya olunmayıb."}, 503
     p = _find(db, (body.get("id") or "").strip())
     if not p:
         return False, {"error": "Paylaşım tapılmadı."}, 404
+    if len(_files_of(p)) >= POST_FILES_MAX:
+        return False, {"error": f"Bir paylaşıma ən çoxu {POST_FILES_MAX} fayl qoymaq olar."}, 400
     kind, spec = _spec_for(body)
     if not spec:
         return False, {"error": "Yalnız .docx, .doc, .pptx və .pdf faylı qəbul edilir."}, 400
@@ -165,20 +184,23 @@ def post_file_url_action(db, body):
         return False, {"error": "Fayl boşdur."}, 400
     if size > spec["max"]:
         return False, {"error": f"Fayl {spec['max'] // (1024 * 1024)} MB-dan böyük ola bilməz."}, 400
-    key = f"{_b2.key_prefix()}posts/{p['id']}{spec['ext']}"
-    return False, {"url": _b2.presign_put(key, spec["ct"], expires=900), "key": key}, 200
+    fid = secrets.token_hex(4)
+    key = _key(p["id"], fid, spec)
+    return False, {"url": _b2.presign_put(key, spec["ct"], expires=900), "fid": fid}, 200
 
 
 def post_file_confirm_action(db, body):
+    """Yükləmə bitdi: ölçü + magic yoxlanır, fayl siyahıya əlavə edilir."""
     if not _b2.is_configured():
         return False, {"error": "Fayl anbarı konfiqurasiya olunmayıb."}, 503
     p = _find(db, (body.get("id") or "").strip())
     if not p:
         return False, {"error": "Paylaşım tapılmadı."}, 404
     kind, spec = _spec_for(body)
-    if not spec:
-        return False, {"error": "Fayl növü yanlışdır."}, 400
-    key = f"{_b2.key_prefix()}posts/{p['id']}{spec['ext']}"
+    fid = (body.get("fid") or "").strip()
+    if not spec or not _FID_RE.match(fid):
+        return False, {"error": "Fayl növü və ya identifikatoru yanlışdır."}, 400
+    key = _key(p["id"], fid, spec)
     size, ok = _b2.head_object(key)
     if not ok:
         return False, {"error": "Fayl anbarda tapılmadı — yükləmə tamamlanmayıb."}, 400
@@ -189,12 +211,29 @@ def post_file_confirm_action(db, body):
     if magic != spec["magic"]:
         _b2.delete_object(key)
         return False, {"error": f"Fayl həqiqi {spec['ext']} sənədi deyil — silindi."}, 400
-    old = p.get("file")
-    if old and old.get("key") != key:
-        _b2.delete_object(old["key"])
+    files = _files_of(p)
+    if len(files) >= POST_FILES_MAX:
+        _b2.delete_object(key)
+        return False, {"error": f"Bir paylaşıma ən çoxu {POST_FILES_MAX} fayl qoymaq olar."}, 400
     fname = (body.get("fname") or "").strip()[:120] or f"material{spec['ext']}"
-    p["file"] = {"key": key, "kind": kind, "fname": fname, "size": size}
+    files.append({"fid": fid, "key": key, "kind": kind, "fname": fname, "size": size})
     return True, {"success": True, "post": _public(p)}, 200
+
+
+def post_file_delete_action(db, body):
+    """Müəllim paylaşımdan bir faylı silir (anbardan da)."""
+    p = _find(db, (body.get("id") or "").strip())
+    if not p:
+        return False, {"error": "Paylaşım tapılmadı."}, 404
+    fid = (body.get("fid") or "").strip()
+    files = _files_of(p)
+    for f in files:
+        if f.get("fid") == fid:
+            if f.get("key"):
+                _b2.delete_object(f["key"])
+            files.remove(f)
+            return True, {"success": True, "post": _public(p)}, 200
+    return False, {"error": "Fayl tapılmadı."}, 404
 
 
 def post_file_link_action(db, body, role, team):
@@ -202,9 +241,12 @@ def post_file_link_action(db, body, role, team):
     if not _b2.is_configured():
         return False, {"error": "Fayl anbarı konfiqurasiya olunmayıb."}, 503
     p = _find(db, (body.get("id") or "").strip())
-    if not p or not _visible(p, role, team) or not p.get("file"):
+    if not p or not _visible(p, role, team):
         return False, {"error": "Fayl tapılmadı."}, 404
-    f = p["file"]
+    fid = (body.get("fid") or "").strip()
+    f = next((x for x in _files_of(p) if x.get("fid") == fid), None)
+    if not f:
+        return False, {"error": "Fayl tapılmadı."}, 404
     spec = POST_FILE_KINDS.get(f.get("kind")) or POST_FILE_KINDS["pdf"]
     inline = (body.get("mode") or "view") == "view"
     url = _b2.presign_get(f["key"], expires=3600, filename=f.get("fname") or f"material{spec['ext']}",

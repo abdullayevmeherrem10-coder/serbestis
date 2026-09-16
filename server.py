@@ -34,7 +34,8 @@ from _uploads import (upload_url_action, upload_confirm_action,
                       upload_arxiv_action)
 from _backup import run_backup, read_backup, save_prerestore
 from _posts import (posts_for, post_save_action, post_delete_action, post_update_action,
-                    post_file_url_action, post_file_confirm_action, post_file_link_action)
+                    post_file_url_action, post_file_confirm_action, post_file_link_action,
+                    post_file_delete_action)
 
 # Admin şifrəsi koda yazılmır: əvvəlcə ENV dəyişəni, sonra gitignore-lanmış
 # admin_secret.txt faylı oxunur. Heç biri yoxdursa təsadüfi (bilinməyən)
@@ -520,7 +521,8 @@ class Handler(http.server.BaseHTTPRequestHandler):
             changed, resp, code = post_file_link_action(db, self.read_body(), cred.get("role"), cred.get("team"))
             self.send_json(resp, code)
 
-        elif path in ("/api/post-save", "/api/post-delete", "/api/post-update", "/api/post-file-url", "/api/post-file-confirm"):
+        elif path in ("/api/post-save", "/api/post-delete", "/api/post-update", "/api/post-file-url", "/api/post-file-confirm",
+                      "/api/post-file-delete"):
             # Elanlar və materiallar — yalnız müəllim
             auth = self.headers.get("Authorization", "")
             cid = verify_token(auth[7:].strip()) if auth.startswith("Bearer ") else None
@@ -533,6 +535,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
                 "/api/post-update": post_update_action,
                 "/api/post-file-url": post_file_url_action,
                 "/api/post-file-confirm": post_file_confirm_action,
+                "/api/post-file-delete": post_file_delete_action,
             }[path]
             db = load_db()
             changed, resp, code = action(db, self.read_body())

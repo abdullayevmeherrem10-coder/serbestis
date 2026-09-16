@@ -2220,7 +2220,7 @@
         .post-dl b { font-weight: 800; }
         .post-file { display: inline-flex; align-items: center; gap: 6px; max-width: 100%; padding: 7px 12px; border-radius: 10px; border: 1px solid var(--card-border); background: var(--surface-solid); color: var(--text); font: inherit; font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: all .2s; }
         .post-file:hover { border-color: var(--accent-ink); color: var(--accent-ink); }
-        .post-file span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 260px; }
+        .post-file span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 320px; }
         .post-file small { color: var(--text-dim); font-weight: 600; }
         .post-file-dl { padding: 7px 10px; }
         .post-del { margin-left: auto; }
@@ -2230,8 +2230,13 @@
         .pf-editbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 10px 14px; border-radius: 12px; margin-bottom: 14px; font-size: 0.84rem; font-weight: 700; color: var(--accent-ink); background: var(--pt-elan-bg); border: 1px solid var(--accent); }
         .pf-editbar b { font-weight: 800; }
         .pf-editbar .btn-mini { margin-left: auto; }
-        .pf-file-cur { display: inline-flex; align-items: center; gap: 8px; font-size: 0.8rem; font-weight: 700; color: var(--text); }
-        .pf-file-cur.pf-file-gone { text-decoration: line-through; color: var(--text-dim); }
+        .pf-file-list { display: flex; flex-direction: column; gap: 6px; width: 100%; }
+        .pf-file-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 0.8rem; font-weight: 700; color: var(--text); padding: 6px 10px; border-radius: 10px; background: var(--surface-solid); border: 1px solid var(--card-border); }
+        .pf-file-row small { color: var(--text-dim); font-weight: 600; }
+        .pf-file-row .pf-file-x { margin-left: auto; }
+        .pf-file-row.pf-file-cur { border-style: dashed; }
+        .post-files { display: flex; flex-direction: column; gap: 6px; width: 100%; margin-top: 4px; }
+        .post-file-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
         .post-empty { text-align: center; padding: 28px 12px; color: var(--text-muted); font-size: 0.88rem; font-weight: 600; border: 1px dashed var(--card-border); border-radius: 16px; }
         .post-empty span { display: block; font-size: 1.8rem; margin-bottom: 6px; opacity: 0.7; }
         .post-empty small { display: block; margin-top: 4px; color: var(--text-dim); font-weight: 500; }
@@ -2985,7 +2990,7 @@
     <div class="tab-panel" id="tab-elanlar">
         <div class="card">
             <div class="card-title"><div class="icon">&#128227;</div> <span id="pfFormTitle">Yeni paylaşım</span></div>
-            <p class="cab-scale" style="margin:-8px 0 14px;">Elan, tapşırıq və ya mühazirə materialı paylaşın — kursantlar kabinetlərində dərhal görür. Fayl əlavə etmək olar (.docx, .doc, .pptx, .pdf).</p>
+            <p class="cab-scale" style="margin:-8px 0 14px;">Elan, tapşırıq və ya mühazirə materialı paylaşın — kursantlar kabinetlərində dərhal görür. Fayl əlavə etmək olar (.docx, .doc, .pptx, .pdf), bir paylaşıma bir neçə fayl.</p>
             <div class="pf-editbar" id="pfEditBar" style="display:none"><span>&#9999;&#65039; Düzəliş: <b id="pfEditTitle"></b></span><button class="btn-mini" onclick="tpPostEditCancel()">&#10005; Ləğv et</button></div>
             <div class="pf-types" id="pfTypes">
                 <button class="pf-type active" data-t="elan" onclick="tpPostType('elan')">&#128227; Elan</button>
@@ -3012,11 +3017,10 @@
                 </div>
             </div>
             <div class="pf-file">
-                <input type="file" id="pfFile" accept=".docx,.doc,.pptx,.pdf" style="display:none" onchange="tpPostFileChosen(this)">
+                <input type="file" id="pfFile" accept=".docx,.doc,.pptx,.pdf" multiple style="display:none" onchange="tpPostFileChosen(this)">
                 <button class="btn-mini" onclick="document.getElementById('pfFile').click()">&#128206; Fayl əlavə et</button>
-                <span class="pf-file-name" id="pfFileName">Fayl seçilməyib &#8226; .docx, .doc, .pptx, .pdf</span>
-                <button class="btn-mini" id="pfFileClear" style="display:none" onclick="tpPostFileClear()">&#10005;</button>
-                <span class="pf-file-cur" id="pfFileCur" style="display:none"><span id="pfFileCurName"></span><button class="btn-mini btn-mini-danger" id="pfFileRemoveBtn" onclick="tpPostFileRemove()">&#128465; Faylı sil</button></span>
+                <span class="pf-file-name" id="pfFileName">Bir neçə fayl seçmək olar &#8226; .docx, .doc (30 MB), .pptx (50 MB), .pdf (30 MB) &#8226; ən çoxu 10 fayl</span>
+                <div class="pf-file-list" id="pfFileList"></div>
             </div>
             <div class="dr-row" style="justify-content:flex-end;">
                 <button class="btn btn-primary" id="pfPublish" onclick="tpPostPublish()">&#128227; Paylaş</button>
@@ -5275,9 +5279,11 @@
         }
     }
     // ===== Elanlar və materiallar: db["posts"] — /api/posts, post-save/delete/file-url/file-confirm (müəllim), post-file-link =====
-    let postsData = null, pfType = 'elan', pfFileObj = null, pfTeams = new Set(), pfEditId = null, pfRemoveFile = false;
+    let postsData = null, pfType = 'elan', pfFiles = [], pfTeams = new Set(), pfEditId = null;
     const POST_TYPE_META = { elan: ['&#128227;', 'Elan'], tapsiriq: ['&#128221;', 'Tapşırıq'], muhazire: ['&#128214;', 'Mühazirə'] };
-    const POST_FILE_LIMITS = { docx: 20 * 1048576, doc: 20 * 1048576, pptx: 50 * 1048576, pdf: 30 * 1048576 };
+    const POST_FILE_LIMITS = { docx: 30 * 1048576, doc: 30 * 1048576, pptx: 50 * 1048576, pdf: 30 * 1048576 };
+    const POST_FILES_MAX = 10;
+    function postFileIco(kind) { return kind === 'pptx' ? '&#128202;' : kind === 'pdf' ? '&#128462;' : '&#128196;'; }
     function postAuthHeaders() { return { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.token }; }
     async function loadPosts() {
         try {
@@ -5293,15 +5299,15 @@
     function postCardHtml(p, teacher, seenTs) {
         const m = POST_TYPE_META[p.type] || POST_TYPE_META.elan;
         const isNew = !teacher && seenTs != null && (p.ts_epoch || 0) > seenTs;
-        const f = p.file;
-        const fileIco = f ? (f.kind === 'pptx' ? '&#128202;' : '&#128196;') : '';
+        const files = p.files || [];
+        const filesHtml = files.length ? `<div class="post-files">${files.map(f => `<div class="post-file-row"><button class="post-file" onclick="postOpen('${esc(p.id)}', '${esc(f.fid)}', 'view')" title="Bax">${postFileIco(f.kind)} <span>${esc(f.fname || '')}</span><small>${fmtSize(f.size || 0)}</small></button><button class="post-file post-file-dl" onclick="postOpen('${esc(p.id)}', '${esc(f.fid)}', 'download')" title="Endir">&#11015;</button></div>`).join('')}</div>` : '';
         const tl = p.teams || [];
         const teamHtml = teacher
             ? `<span class="post-team">${tl.length ? esc(tl.join(', ')) : 'Bütün taqımlar'}</span>`
             : (tl.length ? '<span class="post-team">Taqımınız üçün</span>' : '');
-        const foot = (p.deadline || f || teacher) ? `<div class="post-foot">
+        const foot = (p.deadline || files.length || teacher) ? `<div class="post-foot">
                 ${p.deadline ? `<span class="post-dl">&#9200; Son tarix: <b>${esc(p.deadline)}</b></span>` : ''}
-                ${f ? `<button class="post-file" onclick="postOpen('${esc(p.id)}', 'view')" title="Bax">${fileIco} <span>${esc(f.fname || '')}</span><small>${fmtSize(f.size || 0)}</small></button><button class="post-file post-file-dl" onclick="postOpen('${esc(p.id)}', 'download')" title="Endir">&#11015;</button>` : ''}
+                ${filesHtml}
                 ${teacher ? `<button class="btn-mini post-del" onclick="tpPostEdit('${esc(p.id)}')">&#9999;&#65039; Düzəliş et</button><button class="btn-mini btn-mini-danger" onclick="tpPostDelete('${esc(p.id)}')">&#128465; Sil</button>` : ''}
             </div>` : '';
         return `<article class="post post-${esc(p.type)}${isNew ? ' post-is-new' : ''}${teacher && pfEditId === p.id ? ' post-editing' : ''}" id="post-${esc(p.id)}">
@@ -5358,22 +5364,47 @@
         pfType = t;
         document.querySelectorAll('#pfTypes .pf-type').forEach(b => b.classList.toggle('active', b.dataset.t === t));
     }
+    // Bir neçə fayl seçilə bilər; hər biri növ və ölçü üzrə yoxlanır, uyğun olmayanlar səbəbi ilə bildirilir
     function tpPostFileChosen(input) {
-        const f = input.files[0];
-        if (!f) return;
-        const ext = (f.name.split('.').pop() || '').toLowerCase();
-        if (!POST_FILE_LIMITS[ext]) { showToast('Yalnız .docx, .doc, .pptx və .pdf faylı qəbul edilir!', 'error'); input.value = ''; return; }
-        if (f.size > POST_FILE_LIMITS[ext]) { showToast('Fayl ' + (POST_FILE_LIMITS[ext] / 1048576) + ' MB limitindən böyükdür!', 'error'); input.value = ''; return; }
-        pfFileObj = f;
-        document.getElementById('pfFileName').textContent = f.name + ' \u2022 ' + fmtSize(f.size);
-        document.getElementById('pfFileClear').style.display = '';
-        if (pfRemoveFile) tpPostFileRemove();
+        const chosen = Array.from(input.files || []);
+        input.value = '';
+        const skipped = [];
+        const curCount = pfEditId ? (((postsData || []).find(x => x.id === pfEditId) || {}).files || []).length : 0;
+        for (const f of chosen) {
+            const ext = (f.name.split('.').pop() || '').toLowerCase();
+            if (!POST_FILE_LIMITS[ext]) { skipped.push(f.name + ' (yalnız .docx, .doc, .pptx, .pdf)'); continue; }
+            if (f.size > POST_FILE_LIMITS[ext]) { skipped.push(f.name + ' (' + fmtSize(f.size) + ' > ' + (POST_FILE_LIMITS[ext] / 1048576) + ' MB)'); continue; }
+            if (pfFiles.some(x => x.name === f.name && x.size === f.size)) continue;
+            if (curCount + pfFiles.length >= POST_FILES_MAX) { skipped.push(f.name + ' (ən çoxu ' + POST_FILES_MAX + ' fayl)'); continue; }
+            pfFiles.push(f);
+        }
+        renderPfFiles();
+        if (skipped.length) showToast('Qəbul edilmədi: ' + skipped.join('; '), 'error');
     }
-    function tpPostFileClear() {
-        pfFileObj = null;
-        document.getElementById('pfFile').value = '';
-        document.getElementById('pfFileName').innerHTML = 'Fayl seçilməyib &#8226; .docx, .doc, .pptx, .pdf';
-        document.getElementById('pfFileClear').style.display = 'none';
+    function tpPostFileRemoveNew(i) { pfFiles.splice(i, 1); renderPfFiles(); }
+    function tpPostFileClear() { pfFiles = []; renderPfFiles(); }
+    // Forma altındakı siyahı: düzəlişdə mövcud fayllar (dərhal silinir) + yeni seçilənlər (yadda saxlayanda yüklənir)
+    function renderPfFiles() {
+        const box = document.getElementById('pfFileList');
+        if (!box) return;
+        const cur = pfEditId ? (((postsData || []).find(x => x.id === pfEditId) || {}).files || []) : [];
+        box.innerHTML = cur.map(f => `<div class="pf-file-row pf-file-cur">${postFileIco(f.kind)} ${esc(f.fname || '')} <small>${fmtSize(f.size || 0)} \u2022 yüklənib</small><button class="btn-mini btn-mini-danger pf-file-x" onclick="tpPostFileDeleteCur('${esc(f.fid)}')">&#128465; Sil</button></div>`).join('')
+            + pfFiles.map((f, i) => `<div class="pf-file-row">${postFileIco((f.name.split('.').pop() || '').toLowerCase())} ${esc(f.name)} <small>${fmtSize(f.size)} \u2022 yeni</small><button class="btn-mini pf-file-x" onclick="tpPostFileRemoveNew(${i})">&#10005;</button></div>`).join('');
+    }
+    // Düzəlişdə mövcud faylı sil — dərhal anbardan silinir
+    async function tpPostFileDeleteCur(fid) {
+        if (!pfEditId) return;
+        if (!confirm('Bu fayl paylaşımdan və anbardan silinsin?')) return;
+        try {
+            const r = await fetch('/api/post-file-delete', { method: 'POST', headers: postAuthHeaders(), body: JSON.stringify({ id: pfEditId, fid: fid }) });
+            const d = await r.json();
+            if (!r.ok) throw d.error || 0;
+            const i = (postsData || []).findIndex(x => x.id === pfEditId);
+            if (i >= 0) postsData[i] = d.post;
+            renderPfFiles();
+            renderPostsTeacher();
+            showToast('Fayl silindi', 'success');
+        } catch(e) { showToast(typeof e === 'string' ? e : 'Fayl silinə bilmədi!', 'error'); }
     }
     // Paylaş: əvvəl mətn yazılır (post-save), sonra fayl varsa presigned PUT ilə birbaşa B2-yə → post-file-confirm
     async function tpPostPublish() {
@@ -5387,17 +5418,21 @@
         btn.disabled = true;
         try {
             const payload = { type: pfType, title: title, text: text, teams: teams, deadline: deadline };
-            if (editing) { payload.id = pfEditId; payload.remove_file = pfRemoveFile && !pfFileObj; }
+            if (editing) payload.id = pfEditId;
             const r = await fetch(editing ? '/api/post-update' : '/api/post-save', { method: 'POST', headers: postAuthHeaders(), body: JSON.stringify(payload) });
             if (r.status === 401) { cabinetLogout(); showToast('Sessiya bitib — yenidən daxil olun.', 'error'); return; }
             const d = await r.json();
             if (!r.ok) throw d.error || 0;
-            let fileErr = null;
-            if (pfFileObj) fileErr = await postUploadFile(d.post.id, pfFileObj, t => { btn.textContent = t; });
+            const errs = [];
+            for (let i = 0; i < pfFiles.length; i++) {
+                const f = pfFiles[i];
+                const err = await postUploadFile(d.post.id, f, t => { btn.textContent = 'Fayl ' + (i + 1) + '/' + pfFiles.length + ': ' + t; });
+                if (err) errs.push(f.name + ' — ' + err);
+            }
             pfResetForm();
             await loadPosts();
-            showToast(fileErr ? (editing ? 'Düzəliş yadda saxlandı' : 'Paylaşım yaradıldı') + ', amma fayl yüklənmədi: ' + fileErr + ' — "Düzəliş et" ilə yenidən cəhd edin.'
-                : (editing ? 'Düzəliş yadda saxlandı — kursantlar yenilənmiş halını görür' : 'Paylaşıldı — kursantlar artıq görür'), fileErr ? 'error' : 'success');
+            showToast(errs.length ? (editing ? 'Düzəliş yadda saxlandı' : 'Paylaşım yaradıldı') + ', amma bu fayllar yüklənmədi: ' + errs.join('; ') + ' — "Düzəliş et" ilə yenidən cəhd edin.'
+                : (editing ? 'Düzəliş yadda saxlandı — kursantlar yenilənmiş halını görür' : 'Paylaşıldı — kursantlar artıq görür'), errs.length ? 'error' : 'success');
         } catch(e) {
             showToast(typeof e === 'string' ? e : (editing ? 'Düzəliş yadda saxlanmadı!' : 'Paylaşıla bilmədi!'), 'error');
         } finally {
@@ -5407,7 +5442,7 @@
     }
     // Formanı sıfırla (yeni paylaşım rejimi)
     function pfResetForm() {
-        pfEditId = null; pfRemoveFile = false;
+        pfEditId = null;
         document.getElementById('pfTitle').value = '';
         document.getElementById('pfText').value = '';
         document.getElementById('pfDeadline').value = '';
@@ -5415,7 +5450,6 @@
         pfTeams.clear();
         tpPostType('elan');
         document.getElementById('pfEditBar').style.display = 'none';
-        document.getElementById('pfFileCur').style.display = 'none';
         document.getElementById('pfFormTitle').textContent = 'Yeni paylaşım';
         document.getElementById('pfPublish').innerHTML = '&#128227; Paylaş';
         renderPfTeams();
@@ -5436,25 +5470,12 @@
         document.getElementById('pfEditTitle').textContent = p.title || '';
         document.getElementById('pfFormTitle').textContent = 'Paylaşıma düzəliş';
         document.getElementById('pfPublish').innerHTML = '&#128190; Yadda saxla';
-        const cur = document.getElementById('pfFileCur');
-        if (p.file) {
-            cur.style.display = '';
-            cur.classList.remove('pf-file-gone');
-            document.getElementById('pfFileCurName').textContent = 'Cari fayl: ' + (p.file.fname || '') + ' \u2022 ' + fmtSize(p.file.size || 0);
-            document.getElementById('pfFileRemoveBtn').innerHTML = '&#128465; Faylı sil';
-        } else cur.style.display = 'none';
+        renderPfFiles();
         renderPostsTeacher();
         document.getElementById('tab-elanlar').scrollIntoView({ behavior: 'smooth', block: 'start' });
         document.getElementById('pfTitle').focus();
     }
     function tpPostEditCancel() { pfResetForm(); renderPostsTeacher(); }
-    // Düzəlişdə cari faylı silmək (yadda saxlayanda tətbiq olunur); yeni fayl seçilsə onsuz da əvəz edir
-    function tpPostFileRemove() {
-        pfRemoveFile = !pfRemoveFile;
-        const cur = document.getElementById('pfFileCur');
-        cur.classList.toggle('pf-file-gone', pfRemoveFile);
-        document.getElementById('pfFileRemoveBtn').innerHTML = pfRemoveFile ? '&#8634; Saxla' : '&#128465; Faylı sil';
-    }
     // Fayl yükləməsi: post-file-url → presigned PUT (birbaşa B2) → post-file-confirm. Xəta mətni qaytarır (uğurda null).
     async function postUploadFile(postId, f, progress) {
         const kind = (f.name.split('.').pop() || '').toLowerCase();
@@ -5472,7 +5493,7 @@
                 xhr.send(f);
             });
             progress('Yoxlanılır…');
-            const r2 = await fetch('/api/post-file-confirm', { method: 'POST', headers: postAuthHeaders(), body: JSON.stringify({ id: postId, kind: kind, fname: f.name }) });
+            const r2 = await fetch('/api/post-file-confirm', { method: 'POST', headers: postAuthHeaders(), body: JSON.stringify({ id: postId, fid: d1.fid, kind: kind, fname: f.name }) });
             const d2 = await r2.json().catch(() => ({}));
             if (!r2.ok) throw (d2.error || ('server ' + r2.status)) + ' (3)';
             return null;
@@ -5481,7 +5502,7 @@
     async function tpPostDelete(id) {
         const p = (postsData || []).find(x => x.id === id);
         if (!p) return;
-        if (!confirm('"' + p.title + '" silinsin?' + (p.file ? '\n\nƏlavə edilmiş fayl da anbardan silinəcək.' : ''))) return;
+        if (!confirm('"' + p.title + '" silinsin?' + ((p.files || []).length ? '\n\nƏlavə edilmiş ' + p.files.length + ' fayl da anbardan silinəcək.' : ''))) return;
         try {
             const r = await fetch('/api/post-delete', { method: 'POST', headers: postAuthHeaders(), body: JSON.stringify({ id: id }) });
             const d = await r.json();
@@ -5491,9 +5512,9 @@
         } catch(e) { showToast(typeof e === 'string' ? e : 'Silinə bilmədi!', 'error'); }
     }
     // Fayl: docx/pptx saytdaxili Office viewer-də, pdf yeni vərəqdə; endirmə presigned GET ilə
-    async function postOpen(id, mode) {
+    async function postOpen(id, fid, mode) {
         try {
-            const r = await fetch('/api/post-file-link', { method: 'POST', headers: postAuthHeaders(), body: JSON.stringify({ id: id, mode: mode }) });
+            const r = await fetch('/api/post-file-link', { method: 'POST', headers: postAuthHeaders(), body: JSON.stringify({ id: id, fid: fid, mode: mode }) });
             const d = await r.json();
             if (!r.ok) throw d.error || 0;
             if (mode === 'download') triggerDownload(d.url);
