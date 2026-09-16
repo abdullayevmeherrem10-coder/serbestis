@@ -2616,6 +2616,62 @@
         @media (max-width: 768px) {
             .theme-toggle { top: 10px; right: 10px; width: 38px; height: 38px; font-size: 1rem; }
         }
+        /* ===== Mobil / planşet responsivlik ===== */
+        /* Sürüşən cədvəl: üstündə yapışqan işarə (JS .has-scroll qoyur) */
+        @media (max-width: 1024px) {
+            .results-table-wrap.has-scroll::before {
+                content: '\2194  Cədvəli sağa-sola sürüşdürün'; display: block; position: sticky; left: 0;
+                padding: 6px 12px; font-size: 0.7rem; font-weight: 700; color: var(--text-dim);
+                background: var(--surface-solid); border-bottom: 1px dashed var(--border);
+            }
+            .results-table-wrap { max-height: none; }
+        }
+        /* Planşet */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .tp-table th, .tp-table td { padding-left: 10px; padding-right: 10px; }
+            .app-sem-label { position: static; transform: none; flex: 1 0 100%; order: 5; text-align: center; white-space: normal; font-size: 0.8rem; margin-top: 2px; }
+            .cb-hero-side { margin-left: 0; width: 100%; }
+            .cb-lit-note { max-width: none; width: 100%; }
+        }
+        /* Telefon */
+        @media (max-width: 768px) {
+            .header { padding: 0 48px; }                      /* tema düyməsi başlığın üstünə düşməsin */
+            .header h1 { font-size: 1.35rem; line-height: 1.25; }
+            /* iOS: fokusda avtomatik böyütmə olmasın */
+            .input-wrapper input, .select-wrapper select, textarea, .tp-search input, .cab-login-card input { font-size: 16px; }
+            /* Müəllim cədvəlləri: № gizli, ad sütunu yapışqan, uzun ad kəsilir */
+            .tp-table th:first-child, .tp-table td:first-child { display: none; }
+            .tp-table th:nth-child(2), .tp-table td:nth-child(2) {
+                position: sticky; left: 0; z-index: 2; background: var(--surface-solid);
+                box-shadow: 2px 0 0 var(--border); max-width: 168px;
+            }
+            .tp-table th:nth-child(2) { background: var(--table-head); z-index: 3; }
+            .tp-table td:nth-child(2) .tp-row-name { display: block; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+            .tp-table th, .tp-table td { padding-left: 10px; padding-right: 10px; }
+            /* Müəllim üst sətri */
+            .topbar-right { width: 100%; justify-content: flex-end; }
+            .tp-teambar { width: 100%; margin-left: 0; }
+            .tp-teambar .tp-search { flex: 1 0 100%; }
+            /* Modallar */
+            .rules-content { padding: 22px 16px; max-height: 92vh; }
+            .viewer-modal { padding: 8px; }
+            .cb-card { padding: 18px 16px; }
+        }
+        /* Kiçik telefon: sərbəst işlər cədvəli kart-siyahıya çevrilir */
+        @media (max-width: 640px) {
+            #tab-serbest .results-table thead { display: none; }
+            #tab-serbest .results-table, #tab-serbest .results-table tbody, #tab-serbest .results-table tr { display: block; width: 100%; }
+            #tab-serbest .results-table tr { position: relative; padding: 10px 12px 10px 46px; border-bottom: 1px solid var(--border); }
+            #tab-serbest .results-table tr:last-child { border-bottom: 0; }
+            #tab-serbest .results-table td { display: block; width: auto; padding: 2px 0; border: 0; background: none; box-shadow: none; position: static; max-width: none; }
+            #tab-serbest .results-table td.col-num {
+                display: flex; align-items: center; justify-content: center; position: absolute; left: 10px; top: 11px;
+                width: 28px; height: 28px; border-radius: 8px; background: var(--table-head); color: var(--accent); font-weight: 700; font-size: 0.74rem;
+            }
+            #tab-serbest .results-table td:nth-child(2) { font-weight: 600; line-height: 1.4; padding-right: 36px; }
+            #tab-serbest .results-table td:nth-child(3) { display: inline-block; margin-top: 4px; }
+            #tab-serbest .results-table td.col-bal:last-child { display: block; position: absolute; right: 8px; top: 8px; width: auto; text-align: right; }
+        }
     </style>
 </head>
 <body class="loading">
@@ -3472,6 +3528,10 @@
 
     // Search works
     document.addEventListener('DOMContentLoaded', () => {
+        if (window.ResizeObserver) {
+            const ro = new ResizeObserver(() => markScrollables());
+            document.querySelectorAll('.results-table-wrap table').forEach(t => ro.observe(t));
+        }
         document.getElementById('workSearch').addEventListener('input', function() {
             const q = this.value.toLowerCase();
             document.querySelectorAll('.work-item').forEach(el => {
@@ -3612,12 +3672,18 @@
     }
 
     // Tab navigation
+    // Üfüqi sürüşən cədvəllərə .has-scroll qoyur (mobil/planşetdə üstündə işarə çıxır)
+    function markScrollables() {
+        document.querySelectorAll('.results-table-wrap').forEach(w => w.classList.toggle('has-scroll', w.scrollWidth > w.clientWidth + 12));
+    }
+    window.addEventListener('resize', markScrollables);
     function switchTab(name, btn) {
         document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         const panel = document.getElementById('tab-' + name);
         if (panel) panel.classList.add('active');
         if (btn) btn.classList.add('active');
+        setTimeout(markScrollables, 60);
         // Mobil/planşetdə üfüqi naviqasiyada aktiv düyməni tam görünməsi üçün mərkəzə sürüşdür
         if (btn) {
             const nav = btn.closest('.tab-nav');
