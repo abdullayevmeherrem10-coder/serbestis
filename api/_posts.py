@@ -6,7 +6,7 @@ db["posts"] = [ {id, type, title, text, teams ([] = hamı), deadline, ts, ts_epo
 
 Fayl əlavəsi kursant faylları kimi B2-yə presigned PUT ilə birbaşa gedir
 (post-file-url → PUT → post-file-confirm: ölçü + magic yoxlanışı). Açar: posts/<id><ext>.
-docx/pptx makrosuz formatlardır; pdf brauzerdə yeni vərəqdə açılır (viewer iframe yalnız Office üçündür).
+docx/pptx makrosuz formatlardır, .doc yalnız müəllimdən gəlir; pdf brauzerdə yeni vərəqdə açılır (viewer iframe yalnız Office üçündür).
 """
 import secrets
 import time
@@ -19,6 +19,9 @@ POST_TYPES = ("elan", "tapsiriq", "muhazire")
 POST_FILE_KINDS = {
     "docx": {"ext": ".docx", "max": 20 * 1024 * 1024, "magic": b"PK",
              "ct": "application/vnd.openxmlformats-officedocument.wordprocessingml.document"},
+    # .doc (köhnə Word, OLE konteyner) — müəllimin öz faylıdır; kursant saytda Office viewer ilə baxır
+    "doc": {"ext": ".doc", "max": 20 * 1024 * 1024, "magic": b"\xd0\xcf\x11\xe0",
+            "ct": "application/msword"},
     "pptx": {"ext": ".pptx", "max": 50 * 1024 * 1024, "magic": b"PK",
              "ct": "application/vnd.openxmlformats-officedocument.presentationml.presentation"},
     "pdf": {"ext": ".pdf", "max": 30 * 1024 * 1024, "magic": b"%PDF",
@@ -62,37 +65,41 @@ def posts_for(db, role, team):
     return [_public(p) for p in _posts(db) if _visible(p, role, team)]
 
 
-def post_save_action(db, body):
-    """Müəllim yeni paylaşım yaradır. (changed, resp, status)"""
+def _fields(db, body):
+    """Paylaşım sahələrini yoxlayır: (dict, None) və ya (None, xəta_mətni)."""
     ptype = (body.get("type") or "elan").strip()
     if ptype not in POST_TYPES:
-        return False, {"error": "Paylaşım növü yanlışdır."}, 400
+        return None, "Paylaşım növü yanlışdır."
     title = (body.get("title") or "").strip()[:120]
     text = (body.get("text") or "").strip()[:4000]
     if not title:
-        return False, {"error": "Başlıq boş ola bilməz."}, 400
+        return None, "Başlıq boş ola bilməz."
     raw = body.get("teams")
     if raw is None:
         raw = [body.get("team")] if body.get("team") else []
     if not isinstance(raw, list):
-        return False, {"error": "Taqım siyahısı yanlışdır."}, 400
+        return None, "Taqım siyahısı yanlışdır."
     teams = []
     for t in raw:
         t = (t or "").strip() if isinstance(t, str) else ""
         if not t or t in teams:
             continue
         if t not in db.get("teams", {}):
-            return False, {"error": "Taqım tapılmadı: " + t}, 400
+            return None, "Taqım tapılmadı: " + t
         teams.append(t)
     if len(teams) == len(db.get("teams", {})):
         teams = []  # hamısı seçilibsə = bütün taqımlar
     deadline = (body.get("deadline") or "").strip()[:40]
+    return {"type": ptype, "title": title, "text": text, "teams": teams, "deadline": deadline}, None
+
+
+def post_save_action(db, body):
+    """Müəllim yeni paylaşım yaradır. (changed, resp, status)"""
+    fields, err = _fields(db, body)
+    if err:
+        return False, {"error": err}, 400
     pid = time.strftime("%Y%m%d%H%M%S") + secrets.token_hex(3)
-    post = {
-        "id": pid, "type": ptype, "title": title, "text": text, "teams": teams,
-        "deadline": deadline, "ts": time.strftime("%d.%m.%Y %H:%M"), "ts_epoch": int(time.time()),
-        "file": None,
-    }
+    post = dict(fields, id=pid, ts=time.strftime("%d.%m.%Y %H:%M"), ts_epoch=int(time.time()), file=None)
     lst = _posts(db)
     lst.insert(0, post)
     for old in lst[POSTS_MAX:]:
@@ -100,6 +107,24 @@ def post_save_action(db, body):
             _b2.delete_object(old["file"]["key"])
     del lst[POSTS_MAX:]
     return True, {"success": True, "post": _public(post)}, 200
+
+
+def post_update_action(db, body):
+    """Müəllim mövcud paylaşıma düzəliş edir (növ/başlıq/mətn/taqımlar/son tarix);
+    remove_file=true olsa əlavə edilmiş fayl anbardan silinir. Yeni fayl ayrıca post-file-url/confirm ilə qoyulur."""
+    p = _find(db, (body.get("id") or "").strip())
+    if not p:
+        return False, {"error": "Paylaşım tapılmadı."}, 404
+    fields, err = _fields(db, body)
+    if err:
+        return False, {"error": err}, 400
+    p.update(fields)
+    p.pop("team", None)
+    if body.get("remove_file") is True and p.get("file"):
+        _b2.delete_object(p["file"]["key"])
+        p["file"] = None
+    p["edited"] = time.strftime("%d.%m.%Y %H:%M")
+    return True, {"success": True, "post": _public(p)}, 200
 
 
 def post_delete_action(db, body):
@@ -128,7 +153,7 @@ def post_file_url_action(db, body):
         return False, {"error": "Paylaşım tapılmadı."}, 404
     kind, spec = _spec_for(body)
     if not spec:
-        return False, {"error": "Yalnız .docx, .pptx və .pdf faylı qəbul edilir."}, 400
+        return False, {"error": "Yalnız .docx, .doc, .pptx və .pdf faylı qəbul edilir."}, 400
     fname = (body.get("fname") or "").strip()[:120]
     if not fname.lower().endswith(spec["ext"]):
         return False, {"error": f"Yalnız {spec['ext']} faylı qəbul edilir."}, 400

@@ -22,7 +22,7 @@ from _uploads import (upload_url_action, upload_confirm_action,
                       upload_review_action, vt_check_action, vt_status_action,
                       upload_arxiv_action)
 from _backup import run_backup, read_backup, save_prerestore
-from _posts import (posts_for, post_save_action, post_delete_action,
+from _posts import (posts_for, post_save_action, post_delete_action, post_update_action,
                     post_file_url_action, post_file_confirm_action, post_file_link_action)
 
 app = Flask(__name__)
@@ -832,6 +832,7 @@ def post_file_link():
 
 @app.route('/api/post-save', methods=['POST'])
 @app.route('/api/post-delete', methods=['POST'])
+@app.route('/api/post-update', methods=['POST'])
 @app.route('/api/post-file-url', methods=['POST'])
 @app.route('/api/post-file-confirm', methods=['POST'])
 def post_teacher_ops():
@@ -841,6 +842,7 @@ def post_teacher_ops():
     action = {
         '/api/post-save': post_save_action,
         '/api/post-delete': post_delete_action,
+        '/api/post-update': post_update_action,
         '/api/post-file-url': post_file_url_action,
         '/api/post-file-confirm': post_file_confirm_action,
     }[request.path]
