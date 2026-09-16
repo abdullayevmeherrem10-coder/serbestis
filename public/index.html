@@ -1805,23 +1805,55 @@
 
         /* ===== Kursant kabineti — sakit, premium üslub (cb-*) ===== */
         #cabinetView .app-topbar { padding-right: 56px; }   /* sağ üstdəki tema düyməsi Çıxış-ı örtməsin */
+        /* Kabinet başlığı (hero): qatlı gradient + yumşaq işıq ləkələri + nöqtə toxuması, şüşə çiplər */
         .cb-hero {
-            display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
-            padding: 22px 26px; border-radius: 20px; margin-bottom: 14px; color: #fff;
-            background: radial-gradient(120% 160% at 0% 0%, #5f8370 0%, #455f51 55%, #3a5245 100%);
-            box-shadow: 0 14px 40px rgba(69,95,81,0.28);
-            position: relative; z-index: 1;
+            display: flex; align-items: center; gap: 20px; flex-wrap: wrap;
+            padding: 26px 28px; border-radius: 24px; margin-bottom: 14px; color: #fff;
+            background: linear-gradient(115deg, #3a5245 0%, #455f51 45%, #5f8370 100%);
+            box-shadow: 0 18px 48px rgba(69,95,81,0.30), inset 0 1px 0 rgba(255,255,255,0.18);
+            position: relative; z-index: 1; overflow: hidden; isolation: isolate;
+        }
+        .cb-hero::before {
+            content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+            background:
+                radial-gradient(420px 220px at 88% -20%, rgba(255,255,255,0.22), transparent 70%),
+                radial-gradient(300px 200px at -5% 120%, rgba(143,179,160,0.35), transparent 70%),
+                radial-gradient(rgba(255,255,255,0.10) 1px, transparent 1.4px);
+            background-size: auto, auto, 18px 18px;
+        }
+        .cb-hero::after {
+            content: ''; position: absolute; right: -60px; top: -80px; width: 260px; height: 260px; border-radius: 50%; z-index: -1;
+            border: 1.5px solid rgba(255,255,255,0.10); box-shadow: 0 0 0 40px rgba(255,255,255,0.04), 0 0 0 90px rgba(255,255,255,0.025);
+            pointer-events: none;
         }
         .cb-avatar {
-            width: 56px; height: 56px; border-radius: 16px; flex-shrink: 0;
-            background: rgba(255,255,255,0.14); border: 1px solid rgba(255,255,255,0.3);
+            width: 66px; height: 66px; border-radius: 50%; flex-shrink: 0; position: relative;
+            background: linear-gradient(145deg, rgba(255,255,255,0.28), rgba(255,255,255,0.08));
+            border: 1px solid rgba(255,255,255,0.4);
             display: flex; align-items: center; justify-content: center;
-            font-weight: 800; font-size: 1.15rem; letter-spacing: 1px; backdrop-filter: blur(6px);
+            font-weight: 800; font-size: 1.3rem; letter-spacing: 1px; backdrop-filter: blur(8px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.35);
         }
-        .cb-who { flex: 1; min-width: 200px; }
-        .cb-who h2 { margin: 0 0 5px; font-size: 1.25rem; color: #fff; letter-spacing: -0.01em; }
-        .cb-meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 0.78rem; font-weight: 600; color: rgba(255,255,255,0.78); }
-        .cb-dot { width: 4px; height: 4px; border-radius: 50%; background: rgba(255,255,255,0.5); }
+        .cb-avatar::after {
+            content: ''; position: absolute; inset: -5px; border-radius: 50%; z-index: -1;
+            background: conic-gradient(from 200deg, rgba(255,255,255,0.55), rgba(255,255,255,0.05) 40%, rgba(164,196,179,0.6) 70%, rgba(255,255,255,0.55));
+            -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 1.5px));
+            mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 1.5px));
+        }
+        .cb-who { flex: 1; min-width: 220px; }
+        .cb-eyebrow { font-size: 0.66rem; font-weight: 800; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(255,255,255,0.62); margin-bottom: 4px; }
+        .cb-who h2 { margin: 0 0 10px; font-size: 1.45rem; font-weight: 800; color: #fff; letter-spacing: -0.02em; line-height: 1.2; text-shadow: 0 1px 2px rgba(0,0,0,0.12); }
+        .cb-meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 0.76rem; font-weight: 700; color: rgba(255,255,255,0.9); }
+        .cb-chip {
+            display: inline-flex; align-items: center; gap: 6px; padding: 5px 11px; border-radius: 99px;
+            background: rgba(255,255,255,0.13); border: 1px solid rgba(255,255,255,0.22); backdrop-filter: blur(6px);
+            white-space: nowrap;
+        }
+        .cb-chip-ico { opacity: 0.85; font-size: 0.8rem; }
+        .cb-chip-sem { color: rgba(255,255,255,0.85); font-weight: 600; white-space: normal; }
+        .cb-dot { display: none; }
+        /* Sağ tərəf: ədəbiyyat düyməsi (s1) və ya kitabxana kartı (s2) */
+        .cb-hero-side { display: flex; align-items: center; gap: 10px; margin-left: auto; }
         .cb-btn {
             display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 11px;
             font-family: inherit; font-size: 0.8rem; font-weight: 700; cursor: pointer; text-decoration: none;
@@ -1834,9 +1866,23 @@
         .cb-btn-danger { color: var(--danger); }
         .cb-btn-danger:hover { border-color: var(--danger); color: var(--danger); background: var(--danger-bg); }
         .cb-btn:disabled { opacity: 0.6; cursor: default; transform: none; }
-        .cb-hero-btn { color: #fff; border-color: rgba(255,255,255,0.35); background: rgba(255,255,255,0.12); }
-        .cb-hero-btn:hover { color: #fff; border-color: rgba(255,255,255,0.6); background: rgba(255,255,255,0.22); }
-        .cb-lit-note { display: inline-flex; align-items: center; gap: 6px; padding: 8px 12px; border-radius: 10px; font-size: 13px; font-weight: 600; color: #fff; border: 1px dashed rgba(255,255,255,0.45); background: rgba(255,255,255,0.10); }
+        .cb-hero-btn {
+            color: #3a5245; border-color: transparent; background: #fff; padding: 11px 18px; border-radius: 14px; font-size: 0.84rem;
+            box-shadow: 0 8px 22px rgba(0,0,0,0.18);
+        }
+        .cb-hero-btn:hover { color: #3a5245; background: #f2f7f4; transform: translateY(-2px); box-shadow: 0 12px 28px rgba(0,0,0,0.22); }
+        .cb-lit-note {
+            display: inline-flex; align-items: center; gap: 12px; padding: 11px 16px 11px 12px; border-radius: 16px; max-width: 340px;
+            color: #fff; background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.26); backdrop-filter: blur(8px);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.2);
+        }
+        .cb-lit-ico {
+            width: 40px; height: 40px; border-radius: 12px; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+            font-size: 1.15rem; background: rgba(255,255,255,0.18); border: 1px solid rgba(255,255,255,0.28);
+        }
+        .cb-lit-txt { display: flex; flex-direction: column; gap: 2px; line-height: 1.3; }
+        .cb-lit-txt b { font-size: 0.8rem; font-weight: 800; letter-spacing: 0.02em; }
+        .cb-lit-txt span { font-size: 0.74rem; font-weight: 600; color: rgba(255,255,255,0.82); }
         .lit-note { width: 100%; margin-top: 8px; padding: 12px 14px; border-radius: 12px; font-size: 14px; font-weight: 600; text-align: center; color: var(--accent-ink); border: 1px dashed var(--card-border); background: var(--surface-90); }
         .cb-dl {
             display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 10px 16px; border-radius: 14px;
@@ -1905,7 +1951,10 @@
             .cb-stats { grid-template-columns: 1fr; }
             .cb-stat { padding: 10px 0; border-left: none; border-top: 1px solid var(--border); }
             .cb-stat:first-child { border-top: none; padding-top: 0; }
-            .cb-hero { padding: 18px; }
+            .cb-hero { padding: 20px 18px; gap: 14px; }
+            .cb-hero-side { margin-left: 0; width: 100%; }
+            .cb-hero-btn, .cb-lit-note { width: 100%; max-width: none; justify-content: center; }
+            .cb-who h2 { font-size: 1.25rem; }
             .cb-card { padding: 18px; }
             .cb-step { gap: 12px; }
         }
@@ -2187,6 +2236,12 @@
         .pf-textarea { width: 100%; padding: 14px 18px; background: var(--surface-solid); border: 1.5px solid var(--input-border); border-radius: var(--radius-sm); color: var(--text); font-size: 0.95rem; font-family: inherit; outline: none; resize: vertical; min-height: 110px; line-height: 1.55; transition: all .3s; }
         .pf-textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(69,95,81,0.1); }
         .pf-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+        .pf-teams { display: flex; gap: 8px; flex-wrap: wrap; }
+        .pf-team { padding: 8px 14px; border-radius: 99px; border: 1.5px solid var(--input-border); background: var(--surface-solid); color: var(--text-muted); font: inherit; font-size: 0.82rem; font-weight: 700; cursor: pointer; transition: all .2s; }
+        .pf-team:hover { border-color: var(--accent); color: var(--text); }
+        .pf-team.active { border-color: var(--accent); background: var(--accent-ink); color: #fff; }
+        .pf-team.active::before { content: '¹3  '; }
+        .pf-teams-hint { margin-top: 6px; font-size: 0.72rem; color: var(--text-dim); font-weight: 600; }
         @media (max-width: 640px) { .pf-row { grid-template-columns: 1fr; } }
         .pf-file { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 12px 14px; border: 1px dashed var(--card-border); border-radius: 12px; background: var(--surface-90); margin-bottom: 4px; }
         .pf-file-name { font-size: 0.8rem; color: var(--text-dim); font-weight: 600; flex: 1; min-width: 160px; }
@@ -2596,11 +2651,21 @@
     <div class="cb-hero">
         <div class="cb-avatar" id="cabAvatar"></div>
         <div class="cb-who">
+            <div class="cb-eyebrow" id="cabGreeting">Kursant kabineti</div>
             <h2 id="cabName"></h2>
-            <div class="cb-meta"><span id="cabTeamBadge"></span><span class="cb-dot"></span><span id="cabIdBadge"></span></div>
+            <div class="cb-meta">
+                <span class="cb-chip"><span class="cb-chip-ico">&#128101;</span><span id="cabTeamBadge"></span></span>
+                <span class="cb-chip"><span class="cb-chip-ico">&#127380;</span><span id="cabIdBadge"></span></span>
+                <span class="cb-chip cb-chip-sem"><span class="cb-chip-ico">&#128197;</span><span id="cabSemChip"></span></span>
+            </div>
         </div>
-        <a href="kitab.html" class="cb-btn cb-hero-btn" id="cabLitBtn" title="Fənn üzrə ədəbiyyat (elektron kitab)">&#128214; Ədəbiyyat</a>
-        <span class="cb-lit-note" id="cabLitNote" style="display:none">&#128218; Fənlə əlaqəli ədəbiyyatı kitabxanadan əldə et</span>
+        <div class="cb-hero-side">
+            <a href="kitab.html" class="cb-btn cb-hero-btn" id="cabLitBtn" title="Fənn üzrə ədəbiyyat (elektron kitab)">&#128214; Ədəbiyyat</a>
+            <div class="cb-lit-note" id="cabLitNote" style="display:none">
+                <div class="cb-lit-ico">&#128218;</div>
+                <div class="cb-lit-txt"><b>Ədəbiyyat</b><span>Fənlə əlaqəli ədəbiyyatı kitabxanadan əldə edin</span></div>
+            </div>
+        </div>
     </div>
 
     <div class="cb-dl" role="alert" id="cabDeadlineBanner" style="display:none">
@@ -2930,7 +2995,8 @@
             <div class="pf-row">
                 <div class="input-wrapper">
                     <label>Kimə</label>
-                    <div class="select-wrapper"><select id="pfTeam"><option value="">Bütün taqımlar</option></select></div>
+                    <div class="pf-teams" id="pfTeams"></div>
+                    <div class="pf-teams-hint" id="pfTeamsHint">Heç biri seçilməyibsə bütün taqımlar görür.</div>
                 </div>
                 <div class="input-wrapper">
                     <label>Son tarix (istəyə görə)</label>
@@ -3714,7 +3780,9 @@
         document.getElementById('cabName').textContent = name;
         document.getElementById('cabAvatar').textContent = name.split(' ').slice(0, 2).map(w => w[0] || '').join('');
         document.getElementById('cabTeamBadge').textContent = cabData.team || '';
-        document.getElementById('cabIdBadge').textContent = 'ID: ' + (session.id || '');
+        document.getElementById('cabIdBadge').textContent = 'ID ' + (session.id || '');
+        const h = new Date().getHours();
+        document.getElementById('cabGreeting').textContent = (h < 12 ? 'Sabahınız xeyir' : h < 18 ? 'Xoş gördük' : 'Axşamınız xeyir') + ' \u2022 Kursant kabineti';
         let liveK = [null, null, null];
         try { liveK = await fetchLiveKollok(cabData.team, name); } catch(e) {}
         buildPersonalCards(cabData.results || {}, liveK);
@@ -4011,7 +4079,7 @@
         if (ls) ls.textContent = full;
         document.querySelectorAll('.app-sem-label').forEach(el => { el.textContent = full; });
         const chip = document.getElementById('cabSemChip');
-        if (chip) chip.textContent = semInfo.semester;
+        if (chip) chip.textContent = semInfo.semester + ' \u2022 ' + semInfo.subject;
         // Ədəbiyyat: s1 (Hərbi Mühəndis Texnikası) → elektron kitab linki; s2 (Hərbi Mühəndis Hazırlığı) → kitabxana qeydi
         const litIsLib = curSubj() === 's2';
         // Hazırlanma qaydası modalı: data-subj="s1|s2" olan hissələr yalnız həmin fənndə görünür
@@ -5200,7 +5268,7 @@
         }
     }
     // ===== Elanlar və materiallar: db["posts"] — /api/posts, post-save/delete/file-url/file-confirm (müəllim), post-file-link =====
-    let postsData = null, pfType = 'elan', pfFileObj = null;
+    let postsData = null, pfType = 'elan', pfFileObj = null, pfTeams = new Set();
     const POST_TYPE_META = { elan: ['&#128227;', 'Elan'], tapsiriq: ['&#128221;', 'Tapşırıq'], muhazire: ['&#128214;', 'Mühazirə'] };
     const POST_FILE_LIMITS = { docx: 20 * 1048576, pptx: 50 * 1048576, pdf: 30 * 1048576 };
     function postAuthHeaders() { return { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.token }; }
@@ -5220,9 +5288,10 @@
         const isNew = !teacher && seenTs != null && (p.ts_epoch || 0) > seenTs;
         const f = p.file;
         const fileIco = f ? (f.kind === 'pptx' ? '&#128202;' : '&#128196;') : '';
+        const tl = p.teams || [];
         const teamHtml = teacher
-            ? `<span class="post-team">${p.team ? esc(p.team) : 'Bütün taqımlar'}</span>`
-            : (p.team ? '<span class="post-team">Taqımınız üçün</span>' : '');
+            ? `<span class="post-team">${tl.length ? esc(tl.join(', ')) : 'Bütün taqımlar'}</span>`
+            : (tl.length ? '<span class="post-team">Taqımınız üçün</span>' : '');
         const foot = (p.deadline || f || teacher) ? `<div class="post-foot">
                 ${p.deadline ? `<span class="post-dl">&#9200; Son tarix: <b>${esc(p.deadline)}</b></span>` : ''}
                 ${f ? `<button class="post-file" onclick="postOpen('${esc(p.id)}', 'view')" title="Bax">${fileIco} <span>${esc(f.fname || '')}</span><small>${fmtSize(f.size || 0)}</small></button><button class="post-file post-file-dl" onclick="postOpen('${esc(p.id)}', 'download')" title="Endir">&#11015;</button>` : ''}
@@ -5259,12 +5328,24 @@
         if (cnt) cnt.textContent = posts.length || '';
         list.innerHTML = posts.length ? posts.map(p => postCardHtml(p, true, null)).join('')
             : '<div class="post-empty"><span>&#128227;</span>Hələ paylaşım yoxdur.<small>Yuxarıdakı formadan elan, tapşırıq və ya mühazirə paylaşın.</small></div>';
-        const sel = document.getElementById('pfTeam');
-        if (sel && document.activeElement !== sel) {
-            const cur = sel.value;
-            sel.innerHTML = '<option value="">Bütün taqımlar</option>' + Object.keys((cabData && cabData.teams) || {}).map(t => `<option value="${esc(t)}">${esc(t)}</option>`).join('');
-            sel.value = cur;
-        }
+        renderPfTeams();
+    }
+    // Hədəf taqımlar: çiplər (bir və ya bir neçə seçilir; "Bütün taqımlar" seçimi təmizləyir)
+    function renderPfTeams() {
+        const box = document.getElementById('pfTeams');
+        if (!box) return;
+        const all = Object.keys((cabData && cabData.teams) || {});
+        pfTeams.forEach(t => { if (!all.includes(t)) pfTeams.delete(t); });
+        box.innerHTML = `<button type="button" class="pf-team${pfTeams.size ? '' : ' active'}" onclick="tpPostTeam('')">Bütün taqımlar</button>` +
+            all.map(t => `<button type="button" class="pf-team${pfTeams.has(t) ? ' active' : ''}" onclick="tpPostTeam('${esc(t)}')">${esc(t)}</button>`).join('');
+        const hint = document.getElementById('pfTeamsHint');
+        if (hint) hint.textContent = pfTeams.size ? 'Yalnız seçilmiş taqımlar görəcək: ' + [...pfTeams].join(', ') : 'Heç biri seçilməyibsə bütün taqımlar görür.';
+    }
+    function tpPostTeam(t) {
+        if (!t) pfTeams.clear();
+        else if (pfTeams.has(t)) pfTeams.delete(t);
+        else pfTeams.add(t);
+        renderPfTeams();
     }
     function tpPostType(t) {
         pfType = t;
@@ -5290,13 +5371,13 @@
     async function tpPostPublish() {
         const title = document.getElementById('pfTitle').value.trim();
         const text = document.getElementById('pfText').value.trim();
-        const team = document.getElementById('pfTeam').value;
+        const teams = [...pfTeams];
         const deadline = document.getElementById('pfDeadline').value.trim();
         if (!title) { showToast('Başlıq yazın!', 'error'); return; }
         const btn = document.getElementById('pfPublish');
         btn.disabled = true;
         try {
-            const r = await fetch('/api/post-save', { method: 'POST', headers: postAuthHeaders(), body: JSON.stringify({ type: pfType, title: title, text: text, team: team, deadline: deadline }) });
+            const r = await fetch('/api/post-save', { method: 'POST', headers: postAuthHeaders(), body: JSON.stringify({ type: pfType, title: title, text: text, teams: teams, deadline: deadline }) });
             if (r.status === 401) { cabinetLogout(); showToast('Sessiya bitib — yenidən daxil olun.', 'error'); return; }
             const d = await r.json();
             if (!r.ok) throw d.error || 0;
@@ -5326,6 +5407,7 @@
             document.getElementById('pfText').value = '';
             document.getElementById('pfDeadline').value = '';
             tpPostFileClear();
+            pfTeams.clear();
             await loadPosts();
             showToast(fileErr ? 'Paylaşım yaradıldı, amma ' + fileErr : 'Paylaşıldı — kursantlar artıq görür', fileErr ? 'error' : 'success');
         } catch(e) {

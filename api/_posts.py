@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Elanlar və materiallar — müəllim paylaşır (elan / tapşırıq / mühazirə), kursant kabinetində görür.
 
-db["posts"] = [ {id, type, title, text, team ("" = hamı), deadline, ts, ts_epoch,
+db["posts"] = [ {id, type, title, text, teams ([] = hamı), deadline, ts, ts_epoch,
                  file: {key, kind, fname, size} | None}, ... ]  — ən yenisi əvvəldə, ən çoxu POSTS_MAX.
 
 Fayl əlavəsi kursant faylları kimi B2-yə presigned PUT ilə birbaşa gedir
@@ -39,14 +39,23 @@ def _find(db, pid):
 
 def _public(p):
     """Kursanta/müəllimə göndərilən nüsxə — B2 açarı gizlədilir."""
-    out = {k: v for k, v in p.items() if k != "file"}
+    out = {k: v for k, v in p.items() if k not in ("file", "team")}
+    out["teams"] = _teams_of(p)
     f = p.get("file")
     out["file"] = {"kind": f.get("kind"), "fname": f.get("fname"), "size": f.get("size")} if f else None
     return out
 
 
+def _teams_of(p):
+    """Hədəf taqımlar; köhnə qeydlərdə tək "team" sahəsi ola bilər."""
+    t = p.get("teams")
+    if t is None:
+        t = [p["team"]] if p.get("team") else []
+    return t
+
+
 def _visible(p, role, team):
-    return role == "teacher" or not p.get("team") or p.get("team") == team
+    return role == "teacher" or not _teams_of(p) or team in _teams_of(p)
 
 
 def posts_for(db, role, team):
@@ -62,13 +71,25 @@ def post_save_action(db, body):
     text = (body.get("text") or "").strip()[:4000]
     if not title:
         return False, {"error": "Başlıq boş ola bilməz."}, 400
-    team = (body.get("team") or "").strip()
-    if team and team not in db.get("teams", {}):
-        return False, {"error": "Taqım tapılmadı."}, 400
+    raw = body.get("teams")
+    if raw is None:
+        raw = [body.get("team")] if body.get("team") else []
+    if not isinstance(raw, list):
+        return False, {"error": "Taqım siyahısı yanlışdır."}, 400
+    teams = []
+    for t in raw:
+        t = (t or "").strip() if isinstance(t, str) else ""
+        if not t or t in teams:
+            continue
+        if t not in db.get("teams", {}):
+            return False, {"error": "Taqım tapılmadı: " + t}, 400
+        teams.append(t)
+    if len(teams) == len(db.get("teams", {})):
+        teams = []  # hamısı seçilibsə = bütün taqımlar
     deadline = (body.get("deadline") or "").strip()[:40]
     pid = time.strftime("%Y%m%d%H%M%S") + secrets.token_hex(3)
     post = {
-        "id": pid, "type": ptype, "title": title, "text": text, "team": team,
+        "id": pid, "type": ptype, "title": title, "text": text, "teams": teams,
         "deadline": deadline, "ts": time.strftime("%d.%m.%Y %H:%M"), "ts_epoch": int(time.time()),
         "file": None,
     }
