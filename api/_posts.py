@@ -6,7 +6,7 @@ db["posts"] = [ {id, type, title, text, teams ([] = hamı), deadline, ts, ts_epo
 (Köhnə qeydlərdə tək "file" sahəsi ola bilər — _files_of() onu siyahıya çevirir.)
 
 Fayl əlavəsi kursant faylları kimi B2-yə presigned PUT ilə birbaşa gedir
-(post-file-url → PUT → post-file-confirm: ölçü + magic yoxlanışı). Açar: posts/<id>-<fid><ext>.
+(post-file-url → PUT → post-file-confirm: yalnız ölçü yoxlanışı, məzmun yoxlanmır — müəllimin öz faylıdır). Açar: posts/<id>-<fid><ext>.
 Bir paylaşıma ən çoxu POST_FILES_MAX fayl. docx/pptx makrosuz formatlardır, .doc yalnız müəllimdən gəlir;
 pdf brauzerdə yeni vərəqdə açılır (viewer iframe yalnız Office üçündür).
 """
@@ -190,7 +190,7 @@ def post_file_url_action(db, body):
 
 
 def post_file_confirm_action(db, body):
-    """Yükləmə bitdi: ölçü + magic yoxlanır, fayl siyahıya əlavə edilir."""
+    """Yükləmə bitdi: fayl anbardadır və ölçü limitdədir — siyahıya əlavə edilir."""
     if not _b2.is_configured():
         return False, {"error": "Fayl anbarı konfiqurasiya olunmayıb."}, 503
     p = _find(db, (body.get("id") or "").strip())
@@ -207,10 +207,7 @@ def post_file_confirm_action(db, body):
     if size > spec["max"]:
         _b2.delete_object(key)
         return False, {"error": f"Fayl {spec['max'] // (1024 * 1024)} MB limitini aşır — silindi."}, 400
-    magic = _b2.read_head_bytes(key, len(spec["magic"]))
-    if magic != spec["magic"]:
-        _b2.delete_object(key)
-        return False, {"error": f"Fayl həqiqi {spec['ext']} sənədi deyil — silindi."}, 400
+    # Müəllimin öz faylıdır — məzmun (magic) yoxlaması aparılmır; yalnız mövcudluq və ölçü
     files = _files_of(p)
     if len(files) >= POST_FILES_MAX:
         _b2.delete_object(key)
