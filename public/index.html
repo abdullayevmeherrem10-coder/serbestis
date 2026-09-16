@@ -5303,7 +5303,7 @@
         const m = POST_TYPE_META[p.type] || POST_TYPE_META.elan;
         const isNew = !teacher && seenTs != null && (p.ts_epoch || 0) > seenTs;
         const files = p.files || [];
-        const filesHtml = files.length ? `<div class="post-files">${files.map(f => `<div class="post-file-row"><span class="post-file post-file-name">${postFileIco(f.kind)} <span>${esc(f.fname || '')}</span><small>${fmtSize(f.size || 0)}</small></span><button class="post-file post-file-dl" onclick="postOpen('${esc(p.id)}', '${esc(f.fid)}', 'download')" title="Faylı endir">&#11015; Yüklə</button></div>`).join('')}</div>` : '';
+        const filesHtml = files.length ? `<div class="post-files">${files.map(f => `<div class="post-file-row"><span class="post-file post-file-name">${postFileIco(f.kind)} <span>${esc(f.fname || '')}</span><small>${fmtSize(f.size || 0)}</small></span><button class="post-file post-file-dl" onclick="postOpen('${esc(p.id)}', '${esc(f.fid)}', 'download')" title="Faylı endir">&#11015; Endir</button></div>`).join('')}</div>` : '';
         const tl = p.teams || [];
         const teamHtml = teacher
             ? `<span class="post-team">${tl.length ? esc(tl.join(', ')) : 'Bütün taqımlar'}</span>`
