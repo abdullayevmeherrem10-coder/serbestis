@@ -2147,6 +2147,49 @@
         .dr-subj > b { display: block; font-size: 0.78rem; color: var(--text-muted); margin-bottom: 4px; }
         .dr-subj .btn-mini { margin-top: 6px; }
         .dr-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+        /* ===== Elanlar və materiallar (müəllim paylaşır, kursant görür) ===== */
+        :root { --pt-elan: #455f51; --pt-tapsiriq: #b26a00; --pt-muhazire: #2e5aac; --pt-elan-bg: rgba(69,95,81,0.08); --pt-tapsiriq-bg: rgba(178,106,0,0.08); --pt-muhazire-bg: rgba(46,90,172,0.08); }
+        html[data-theme="dark"] { --pt-elan: #a4c4b3; --pt-tapsiriq: #e0a458; --pt-muhazire: #7ea6e0; --pt-elan-bg: rgba(164,196,179,0.12); --pt-tapsiriq-bg: rgba(224,164,88,0.12); --pt-muhazire-bg: rgba(126,166,224,0.12); }
+        .post-list { display: flex; flex-direction: column; gap: 12px; }
+        .post { position: relative; display: flex; border: 1px solid var(--card-border); border-radius: 16px; background: var(--surface-90); overflow: hidden; transition: transform .2s, box-shadow .2s; }
+        .post:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(69,95,81,0.10); }
+        .post::before { content: ''; width: 4px; flex: none; background: var(--pt-c); }
+        .post-elan { --pt-c: var(--pt-elan); --pt-bg: var(--pt-elan-bg); }
+        .post-tapsiriq { --pt-c: var(--pt-tapsiriq); --pt-bg: var(--pt-tapsiriq-bg); }
+        .post-muhazire { --pt-c: var(--pt-muhazire); --pt-bg: var(--pt-muhazire-bg); }
+        .post-body { flex: 1; min-width: 0; padding: 14px 18px 14px 16px; }
+        .post-top { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 6px; font-size: 0.72rem; }
+        .post-type { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 99px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; color: var(--pt-c); background: var(--pt-bg); }
+        .post-team { padding: 3px 9px; border-radius: 99px; font-weight: 700; color: var(--text-muted); border: 1px solid var(--card-border); }
+        .post-new { padding: 3px 9px; border-radius: 99px; font-weight: 800; color: #fff; background: var(--danger); }
+        .post-date { margin-left: auto; color: var(--text-dim); font-weight: 600; font-variant-numeric: tabular-nums; }
+        .post-title { margin: 0 0 4px; font-size: 1.02rem; font-weight: 800; color: var(--text); letter-spacing: -0.01em; }
+        .post-text { margin: 0; font-size: 0.88rem; line-height: 1.6; color: var(--text-muted); word-break: break-word; }
+        .post-text a { color: var(--accent-ink); font-weight: 600; }
+        .post-foot { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+        .post-dl { font-size: 0.78rem; font-weight: 600; color: var(--danger); }
+        .post-dl b { font-weight: 800; }
+        .post-file { display: inline-flex; align-items: center; gap: 6px; max-width: 100%; padding: 7px 12px; border-radius: 10px; border: 1px solid var(--card-border); background: var(--surface-solid); color: var(--text); font: inherit; font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: all .2s; }
+        .post-file:hover { border-color: var(--accent-ink); color: var(--accent-ink); }
+        .post-file span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 260px; }
+        .post-file small { color: var(--text-dim); font-weight: 600; }
+        .post-file-dl { padding: 7px 10px; }
+        .post-del { margin-left: auto; }
+        .post-is-new { box-shadow: 0 0 0 2px var(--pt-bg); }
+        .post-empty { text-align: center; padding: 28px 12px; color: var(--text-muted); font-size: 0.88rem; font-weight: 600; border: 1px dashed var(--card-border); border-radius: 16px; }
+        .post-empty span { display: block; font-size: 1.8rem; margin-bottom: 6px; opacity: 0.7; }
+        .post-empty small { display: block; margin-top: 4px; color: var(--text-dim); font-weight: 500; }
+        /* Müəllim: yeni paylaşım forması */
+        .pf-types { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+        .pf-type { padding: 9px 16px; border-radius: 12px; border: 1.5px solid var(--input-border); background: var(--surface-solid); color: var(--text-muted); font: inherit; font-size: 0.86rem; font-weight: 700; cursor: pointer; transition: all .2s; }
+        .pf-type:hover { border-color: var(--accent); color: var(--text); }
+        .pf-type.active { border-color: var(--accent); background: var(--pt-elan-bg); color: var(--accent-ink); box-shadow: 0 0 0 3px rgba(69,95,81,0.1); }
+        .pf-textarea { width: 100%; padding: 14px 18px; background: var(--surface-solid); border: 1.5px solid var(--input-border); border-radius: var(--radius-sm); color: var(--text); font-size: 0.95rem; font-family: inherit; outline: none; resize: vertical; min-height: 110px; line-height: 1.55; transition: all .3s; }
+        .pf-textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(69,95,81,0.1); }
+        .pf-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+        @media (max-width: 640px) { .pf-row { grid-template-columns: 1fr; } }
+        .pf-file { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 12px 14px; border: 1px dashed var(--card-border); border-radius: 12px; background: var(--surface-90); margin-bottom: 4px; }
+        .pf-file-name { font-size: 0.8rem; color: var(--text-dim); font-weight: 600; flex: 1; min-width: 160px; }
         /* Fayl arxivi (müəllim paneli, Arxiv kartı) */
         .fa-wrap { margin-top: 16px; padding-top: 14px; border-top: 1px dashed var(--card-border); }
         .fa-batch { border: 1px solid var(--card-border); border-radius: 12px; padding: 8px 12px; margin-bottom: 8px; background: var(--surface-90); }
@@ -2565,6 +2608,12 @@
         <span>Sərbəst işin son təhvil və müdafiə tarixi:<strong class="dl-date" id="cabDlDate"></strong><span id="cabDlCount"></span></span>
     </div>
 
+    <!-- Elanlar və materiallar: müəllimin paylaşdığı elan / tapşırıq / mühazirə (fayl əlavəsi ilə) -->
+    <section class="cb-card" id="cabPostsCard">
+        <div class="cb-card-head"><span class="cb-label">Elanlar və materiallar</span><span class="cb-hint" id="cabPostsHint"></span></div>
+        <div class="post-list" id="cabPostsList"><span class="spinner"></span></div>
+    </section>
+
     <!-- Nəticələr: üç böyük rəqəm (Kollokvium / Mənimsəmə / İmtahan) + alt detallar -->
     <section class="cb-card">
         <div class="cb-card-head"><span class="cb-label">Nəticələr</span><span class="cb-hint" id="cabResultsHint"></span></div>
@@ -2641,6 +2690,7 @@
         <button class="tab-btn active" onclick="switchTab('kursantlar', this)"><span class="tab-ico">&#128101;</span> Kursantlar</button>
         <button class="tab-btn" onclick="switchTab('ballar', this)"><span class="tab-ico">&#128202;</span> Ballar</button>
         <button class="tab-btn" onclick="switchTab('serbest', this)"><span class="tab-ico">&#128218;</span> Sərbəst işlər</button>
+        <button class="tab-btn" onclick="switchTab('elanlar', this)"><span class="tab-ico">&#128227;</span> Elanlar</button>
         <button class="tab-btn" onclick="switchTab('parametrler', this)"><span class="tab-ico">&#9881;</span> Parametrlər</button>
     </div>
     <div class="tp-teambar" id="tpTeamBar">
@@ -2859,6 +2909,49 @@
     </div><!-- /tab-ballar -->
 
     <!-- ===================== TAB: Parametrlər (müəllim) ===================== -->
+    <!-- ===================== TAB: Elanlar və materiallar ===================== -->
+    <div class="tab-panel" id="tab-elanlar">
+        <div class="card">
+            <div class="card-title"><div class="icon">&#128227;</div> Yeni paylaşım</div>
+            <p class="cab-scale" style="margin:-8px 0 14px;">Elan, tapşırıq və ya mühazirə materialı paylaşın — kursantlar kabinetlərində dərhal görür. Fayl əlavə etmək olar (.docx, .pptx, .pdf).</p>
+            <div class="pf-types" id="pfTypes">
+                <button class="pf-type active" data-t="elan" onclick="tpPostType('elan')">&#128227; Elan</button>
+                <button class="pf-type" data-t="tapsiriq" onclick="tpPostType('tapsiriq')">&#128221; Tapşırıq</button>
+                <button class="pf-type" data-t="muhazire" onclick="tpPostType('muhazire')">&#128214; Mühazirə</button>
+            </div>
+            <div class="input-wrapper">
+                <label>Başlıq</label>
+                <input type="text" id="pfTitle" maxlength="120" placeholder="Məs: Növbəti dərsə hazırlıq">
+            </div>
+            <div class="input-wrapper">
+                <label>Mətn (istəyə görə)</label>
+                <textarea id="pfText" class="pf-textarea" maxlength="4000" placeholder="Ətraflı izah, tapşırığın şərtləri, mühazirənin qısa məzmunu..."></textarea>
+            </div>
+            <div class="pf-row">
+                <div class="input-wrapper">
+                    <label>Kimə</label>
+                    <div class="select-wrapper"><select id="pfTeam"><option value="">Bütün taqımlar</option></select></div>
+                </div>
+                <div class="input-wrapper">
+                    <label>Son tarix (istəyə görə)</label>
+                    <input type="text" id="pfDeadline" maxlength="40" placeholder="Məs: 20.10.2026">
+                </div>
+            </div>
+            <div class="pf-file">
+                <input type="file" id="pfFile" accept=".docx,.pptx,.pdf" style="display:none" onchange="tpPostFileChosen(this)">
+                <button class="btn-mini" onclick="document.getElementById('pfFile').click()">&#128206; Fayl əlavə et</button>
+                <span class="pf-file-name" id="pfFileName">Fayl seçilməyib &#8226; .docx, .pptx, .pdf</span>
+                <button class="btn-mini" id="pfFileClear" style="display:none" onclick="tpPostFileClear()">&#10005;</button>
+            </div>
+            <div class="dr-row" style="justify-content:flex-end;">
+                <button class="btn btn-primary" id="pfPublish" onclick="tpPostPublish()">&#128227; Paylaş</button>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-title"><div class="icon">&#128451;</div> <span>Paylaşılanlar <span class="bal bal-mid" id="tpPostsCount"></span></span></div>
+            <div class="post-list" id="tpPostsList"></div>
+        </div>
+    </div>
     <div class="tab-panel" id="tab-parametrler">
         <div class="card">
             <div class="card-title"><div class="icon">&#128197;</div> Semestr və fənn</div>
@@ -3628,6 +3721,7 @@
         renderCabSerbest();
         renderUploads();
         setDeadlineText(cabData.deadline);
+        loadPosts();
         document.getElementById('cabinetView').style.display = '';
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
@@ -3896,6 +3990,7 @@
         enrichTeacherLive();
         loadKollokTopics();
         loadFileArxiv(true);
+        loadPosts();
     }
     function appBack() {
         if (session && session.role === 'student') {
@@ -5104,6 +5199,166 @@
             showToast('Bal yadda saxlanıla bilmədi!', 'error');
         }
     }
+    // ===== Elanlar və materiallar: db["posts"] — /api/posts, post-save/delete/file-url/file-confirm (müəllim), post-file-link =====
+    let postsData = null, pfType = 'elan', pfFileObj = null;
+    const POST_TYPE_META = { elan: ['&#128227;', 'Elan'], tapsiriq: ['&#128221;', 'Tapşırıq'], muhazire: ['&#128214;', 'Mühazirə'] };
+    const POST_FILE_LIMITS = { docx: 20 * 1048576, pptx: 50 * 1048576, pdf: 30 * 1048576 };
+    function postAuthHeaders() { return { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.token }; }
+    async function loadPosts() {
+        try {
+            const res = await fetch('/api/posts', { headers: { 'Authorization': 'Bearer ' + session.token } });
+            if (!res.ok) throw 0;
+            postsData = (await res.json()).posts || [];
+        } catch(e) { postsData = postsData || []; }
+        if (cabData && cabData.role === 'teacher') renderPostsTeacher(); else renderPostsStudent();
+    }
+    function postTextHtml(t) {
+        return esc(t).replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener">$1</a>').replace(/\n/g, '<br>');
+    }
+    function postCardHtml(p, teacher, seenTs) {
+        const m = POST_TYPE_META[p.type] || POST_TYPE_META.elan;
+        const isNew = !teacher && seenTs != null && (p.ts_epoch || 0) > seenTs;
+        const f = p.file;
+        const fileIco = f ? (f.kind === 'pptx' ? '&#128202;' : '&#128196;') : '';
+        const teamHtml = teacher
+            ? `<span class="post-team">${p.team ? esc(p.team) : 'Bütün taqımlar'}</span>`
+            : (p.team ? '<span class="post-team">Taqımınız üçün</span>' : '');
+        const foot = (p.deadline || f || teacher) ? `<div class="post-foot">
+                ${p.deadline ? `<span class="post-dl">&#9200; Son tarix: <b>${esc(p.deadline)}</b></span>` : ''}
+                ${f ? `<button class="post-file" onclick="postOpen('${esc(p.id)}', 'view')" title="Bax">${fileIco} <span>${esc(f.fname || '')}</span><small>${fmtSize(f.size || 0)}</small></button><button class="post-file post-file-dl" onclick="postOpen('${esc(p.id)}', 'download')" title="Endir">&#11015;</button>` : ''}
+                ${teacher ? `<button class="btn-mini btn-mini-danger post-del" onclick="tpPostDelete('${esc(p.id)}')">&#128465; Sil</button>` : ''}
+            </div>` : '';
+        return `<article class="post post-${esc(p.type)}${isNew ? ' post-is-new' : ''}">
+            <div class="post-body">
+                <div class="post-top">
+                    <span class="post-type">${m[0]} ${m[1]}</span>${teamHtml}${isNew ? '<span class="post-new">Yeni</span>' : ''}
+                    <span class="post-date">${esc(p.ts || '')}</span>
+                </div>
+                <h4 class="post-title">${esc(p.title || '')}</h4>
+                ${p.text ? `<p class="post-text">${postTextHtml(p.text)}</p>` : ''}
+                ${foot}
+            </div>
+        </article>`;
+    }
+    function renderPostsStudent() {
+        const list = document.getElementById('cabPostsList'), hint = document.getElementById('cabPostsHint');
+        if (!list) return;
+        const posts = postsData || [];
+        let seen = 0;
+        try { seen = parseInt(localStorage.getItem('sapyor_posts_seen') || '0', 10) || 0; } catch(e) { seen = 0; }
+        const fresh = posts.filter(p => (p.ts_epoch || 0) > seen).length;
+        if (hint) hint.textContent = posts.length ? (fresh ? fresh + ' yeni' : posts.length + ' paylaşım') : '';
+        list.innerHTML = posts.length ? posts.map(p => postCardHtml(p, false, seen)).join('')
+            : '<div class="post-empty"><span>&#128227;</span>Hələ elan və ya material paylaşılmayıb.<small>Müəllim paylaşanda burada görünəcək.</small></div>';
+        try { localStorage.setItem('sapyor_posts_seen', String(Math.floor(Date.now() / 1000))); } catch(e) {}
+    }
+    function renderPostsTeacher() {
+        const list = document.getElementById('tpPostsList'), cnt = document.getElementById('tpPostsCount');
+        if (!list) return;
+        const posts = postsData || [];
+        if (cnt) cnt.textContent = posts.length || '';
+        list.innerHTML = posts.length ? posts.map(p => postCardHtml(p, true, null)).join('')
+            : '<div class="post-empty"><span>&#128227;</span>Hələ paylaşım yoxdur.<small>Yuxarıdakı formadan elan, tapşırıq və ya mühazirə paylaşın.</small></div>';
+        const sel = document.getElementById('pfTeam');
+        if (sel && document.activeElement !== sel) {
+            const cur = sel.value;
+            sel.innerHTML = '<option value="">Bütün taqımlar</option>' + Object.keys((cabData && cabData.teams) || {}).map(t => `<option value="${esc(t)}">${esc(t)}</option>`).join('');
+            sel.value = cur;
+        }
+    }
+    function tpPostType(t) {
+        pfType = t;
+        document.querySelectorAll('#pfTypes .pf-type').forEach(b => b.classList.toggle('active', b.dataset.t === t));
+    }
+    function tpPostFileChosen(input) {
+        const f = input.files[0];
+        if (!f) return;
+        const ext = (f.name.split('.').pop() || '').toLowerCase();
+        if (!POST_FILE_LIMITS[ext]) { showToast('Yalnız .docx, .pptx və .pdf faylı qəbul edilir!', 'error'); input.value = ''; return; }
+        if (f.size > POST_FILE_LIMITS[ext]) { showToast('Fayl ' + (POST_FILE_LIMITS[ext] / 1048576) + ' MB limitindən böyükdür!', 'error'); input.value = ''; return; }
+        pfFileObj = f;
+        document.getElementById('pfFileName').textContent = f.name + ' \u2022 ' + fmtSize(f.size);
+        document.getElementById('pfFileClear').style.display = '';
+    }
+    function tpPostFileClear() {
+        pfFileObj = null;
+        document.getElementById('pfFile').value = '';
+        document.getElementById('pfFileName').innerHTML = 'Fayl seçilməyib &#8226; .docx, .pptx, .pdf';
+        document.getElementById('pfFileClear').style.display = 'none';
+    }
+    // Paylaş: əvvəl mətn yazılır (post-save), sonra fayl varsa presigned PUT ilə birbaşa B2-yə → post-file-confirm
+    async function tpPostPublish() {
+        const title = document.getElementById('pfTitle').value.trim();
+        const text = document.getElementById('pfText').value.trim();
+        const team = document.getElementById('pfTeam').value;
+        const deadline = document.getElementById('pfDeadline').value.trim();
+        if (!title) { showToast('Başlıq yazın!', 'error'); return; }
+        const btn = document.getElementById('pfPublish');
+        btn.disabled = true;
+        try {
+            const r = await fetch('/api/post-save', { method: 'POST', headers: postAuthHeaders(), body: JSON.stringify({ type: pfType, title: title, text: text, team: team, deadline: deadline }) });
+            if (r.status === 401) { cabinetLogout(); showToast('Sessiya bitib — yenidən daxil olun.', 'error'); return; }
+            const d = await r.json();
+            if (!r.ok) throw d.error || 0;
+            let fileErr = null;
+            if (pfFileObj) {
+                const f = pfFileObj, kind = (f.name.split('.').pop() || '').toLowerCase();
+                try {
+                    btn.textContent = 'Fayl yüklənir… 0%';
+                    const r1 = await fetch('/api/post-file-url', { method: 'POST', headers: postAuthHeaders(), body: JSON.stringify({ id: d.post.id, kind: kind, fname: f.name, size: f.size }) });
+                    const d1 = await r1.json();
+                    if (!r1.ok) throw d1.error || 0;
+                    await new Promise((resolve, reject) => {
+                        const xhr = new XMLHttpRequest();
+                        xhr.open('PUT', d1.url);
+                        xhr.upload.onprogress = e => { if (e.lengthComputable) btn.textContent = 'Fayl yüklənir… ' + Math.round(e.loaded / e.total * 100) + '%'; };
+                        xhr.onload = () => (xhr.status >= 200 && xhr.status < 300) ? resolve() : reject(0);
+                        xhr.onerror = () => reject(0);
+                        xhr.send(f);
+                    });
+                    btn.textContent = 'Yoxlanılır…';
+                    const r2 = await fetch('/api/post-file-confirm', { method: 'POST', headers: postAuthHeaders(), body: JSON.stringify({ id: d.post.id, kind: kind, fname: f.name }) });
+                    const d2 = await r2.json();
+                    if (!r2.ok) throw d2.error || 0;
+                } catch(e) { fileErr = typeof e === 'string' ? e : 'fayl yüklənə bilmədi'; }
+            }
+            document.getElementById('pfTitle').value = '';
+            document.getElementById('pfText').value = '';
+            document.getElementById('pfDeadline').value = '';
+            tpPostFileClear();
+            await loadPosts();
+            showToast(fileErr ? 'Paylaşım yaradıldı, amma ' + fileErr : 'Paylaşıldı — kursantlar artıq görür', fileErr ? 'error' : 'success');
+        } catch(e) {
+            showToast(typeof e === 'string' ? e : 'Paylaşıla bilmədi!', 'error');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '&#128227; Paylaş';
+        }
+    }
+    async function tpPostDelete(id) {
+        const p = (postsData || []).find(x => x.id === id);
+        if (!p) return;
+        if (!confirm('"' + p.title + '" silinsin?' + (p.file ? '\n\nƏlavə edilmiş fayl da anbardan silinəcək.' : ''))) return;
+        try {
+            const r = await fetch('/api/post-delete', { method: 'POST', headers: postAuthHeaders(), body: JSON.stringify({ id: id }) });
+            const d = await r.json();
+            if (!r.ok) throw d.error || 0;
+            await loadPosts();
+            showToast('Paylaşım silindi', 'success');
+        } catch(e) { showToast(typeof e === 'string' ? e : 'Silinə bilmədi!', 'error'); }
+    }
+    // Fayl: docx/pptx saytdaxili Office viewer-də, pdf yeni vərəqdə; endirmə presigned GET ilə
+    async function postOpen(id, mode) {
+        try {
+            const r = await fetch('/api/post-file-link', { method: 'POST', headers: postAuthHeaders(), body: JSON.stringify({ id: id, mode: mode }) });
+            const d = await r.json();
+            if (!r.ok) throw d.error || 0;
+            if (mode === 'download') triggerDownload(d.url);
+            else if (d.kind === 'pdf') window.open(d.url, '_blank', 'noopener');
+            else openViewer(d.url, d.fname);
+        } catch(e) { showToast(typeof e === 'string' ? e : 'Fayl açıla bilmədi!', 'error'); }
+    }
+
     // ===== Fayl arxivi (müəllim): db["file_arxiv"], B2 "arxiv/<partiya>/" qovluğu; /api/upload-arxiv =====
     let fileArxiv = null;
     async function fileArxivApi(body) {

@@ -22,6 +22,8 @@ from _uploads import (upload_url_action, upload_confirm_action,
                       upload_review_action, vt_check_action, vt_status_action,
                       upload_arxiv_action)
 from _backup import run_backup, read_backup, save_prerestore
+from _posts import (posts_for, post_save_action, post_delete_action,
+                    post_file_url_action, post_file_confirm_action, post_file_link_action)
 
 app = Flask(__name__)
 
@@ -804,6 +806,46 @@ def upload_arxiv():
         return jsonify({"error": "Giriş tələb olunur."}), 401
     changed, resp, code = upload_arxiv_action(
         db, request.get_json(silent=True) or {}, cred.get('role'), cred.get('name'))
+    if changed:
+        save_db(db)
+    return jsonify(resp), code
+
+
+# ===== Elanlar və materiallar (müəllim paylaşır, kursant görür) =====
+@app.route('/api/posts')
+def posts_list():
+    db, cred = _upload_auth()
+    if not cred:
+        return jsonify({"error": "Giriş tələb olunur."}), 401
+    return jsonify({"posts": posts_for(db, cred.get('role'), cred.get('team'))})
+
+
+@app.route('/api/post-file-link', methods=['POST'])
+def post_file_link():
+    db, cred = _upload_auth()
+    if not cred:
+        return jsonify({"error": "Giriş tələb olunur."}), 401
+    changed, resp, code = post_file_link_action(
+        db, request.get_json(silent=True) or {}, cred.get('role'), cred.get('team'))
+    return jsonify(resp), code
+
+
+@app.route('/api/post-save', methods=['POST'])
+@app.route('/api/post-delete', methods=['POST'])
+@app.route('/api/post-file-url', methods=['POST'])
+@app.route('/api/post-file-confirm', methods=['POST'])
+def post_teacher_ops():
+    """Müəllim: paylaşım yarat / sil / fayl əlavə et (bax _posts.py)."""
+    if not teacher_from_request():
+        return jsonify({"error": "İcazə yoxdur."}), 401
+    action = {
+        '/api/post-save': post_save_action,
+        '/api/post-delete': post_delete_action,
+        '/api/post-file-url': post_file_url_action,
+        '/api/post-file-confirm': post_file_confirm_action,
+    }[request.path]
+    db = load_db()
+    changed, resp, code = action(db, request.get_json(silent=True) or {})
     if changed:
         save_db(db)
     return jsonify(resp), code

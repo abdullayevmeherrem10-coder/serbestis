@@ -27,6 +27,7 @@ api/_subjects.py    Sərbəst iş fənnləri (cari fənn = semestr parametri): s
 api/_fbauth.py      Firebase service-account token
 api/_b2.py          B2 SigV4 imzalama (stdlib), key_prefix() → lokalda "dev/"
 api/_uploads.py     Fayl yükləmə: url/confirm/link/delete/review + VT; fayl arxivi (upload-arxiv)
+api/_posts.py       Elanlar/materiallar: müəllim paylaşır (elan/tapşırıq/mühazirə + docx/pptx/pdf), kursant kabinetində görür
 api/_vt.py          VirusTotal
 api/_backup.py      Gündəlik B2 nüsxə (cron 01:00 UTC → /api/backup)
 server.py           Lokal dev server (api/index.py-ın sadə ekvivalenti)

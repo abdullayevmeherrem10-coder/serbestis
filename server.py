@@ -33,6 +33,8 @@ from _uploads import (upload_url_action, upload_confirm_action,
                       upload_review_action, vt_check_action, vt_status_action,
                       upload_arxiv_action)
 from _backup import run_backup, read_backup, save_prerestore
+from _posts import (posts_for, post_save_action, post_delete_action,
+                    post_file_url_action, post_file_confirm_action, post_file_link_action)
 
 # Admin şifrəsi koda yazılmır: əvvəlcə ENV dəyişəni, sonra gitignore-lanmış
 # admin_secret.txt faylı oxunur. Heç biri yoxdursa təsadüfi (bilinməyən)
@@ -249,6 +251,16 @@ class Handler(http.server.BaseHTTPRequestHandler):
                 self.send_json({"error": "İcazə yoxdur."}, 401)
                 return
             self.send_json({"semestrler": arxiv_entries(load_db())})
+
+        elif path == "/api/posts":
+            auth = self.headers.get("Authorization", "")
+            cid = verify_token(auth[7:].strip()) if auth.startswith("Bearer ") else None
+            db = load_db()
+            cred = resolve_cred(cid, db) if cid else None
+            if not cred:
+                self.send_json({"error": "Giriş tələb olunur."}, 401)
+                return
+            self.send_json({"posts": posts_for(db, cred.get("role"), cred.get("team"))})
 
         elif path == "/api/cabinet-data":
             auth = self.headers.get("Authorization", "")
@@ -496,6 +508,36 @@ class Handler(http.server.BaseHTTPRequestHandler):
             save_prerestore(load_db())
             save_db(snap)
             self.send_json({"success": True, "date": date})
+
+        elif path == "/api/post-file-link":
+            auth = self.headers.get("Authorization", "")
+            cid = verify_token(auth[7:].strip()) if auth.startswith("Bearer ") else None
+            db = load_db()
+            cred = resolve_cred(cid, db) if cid else None
+            if not cred:
+                self.send_json({"error": "Giriş tələb olunur."}, 401)
+                return
+            changed, resp, code = post_file_link_action(db, self.read_body(), cred.get("role"), cred.get("team"))
+            self.send_json(resp, code)
+
+        elif path in ("/api/post-save", "/api/post-delete", "/api/post-file-url", "/api/post-file-confirm"):
+            # Elanlar və materiallar — yalnız müəllim
+            auth = self.headers.get("Authorization", "")
+            cid = verify_token(auth[7:].strip()) if auth.startswith("Bearer ") else None
+            if not cid or CREDENTIALS.get(cid, {}).get("role") != "teacher":
+                self.send_json({"error": "İcazə yoxdur."}, 401)
+                return
+            action = {
+                "/api/post-save": post_save_action,
+                "/api/post-delete": post_delete_action,
+                "/api/post-file-url": post_file_url_action,
+                "/api/post-file-confirm": post_file_confirm_action,
+            }[path]
+            db = load_db()
+            changed, resp, code = action(db, self.read_body())
+            if changed:
+                save_db(db)
+            self.send_json(resp, code)
 
         elif path in ("/api/upload-url", "/api/upload-confirm", "/api/upload-link",
                       "/api/upload-delete", "/api/upload-review", "/api/vt-check", "/api/vt-status",
