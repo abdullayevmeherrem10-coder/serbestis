@@ -893,13 +893,14 @@
         }
 
         .toast.success {
-            background: rgba(46,125,50,0.15);
+            /* rəngli çalar + tam qeyri-şəffaf zəmin — altdakı yazı görünməsin */
+            background: linear-gradient(rgba(46,125,50,0.12), rgba(46,125,50,0.12)), var(--surface-solid);
             border: 1px solid rgba(46,125,50,0.3);
             color: var(--success);
         }
 
         .toast.error {
-            background: rgba(198,40,40,0.15);
+            background: linear-gradient(rgba(198,40,40,0.10), rgba(198,40,40,0.10)), var(--surface-solid);
             border: 1px solid rgba(198,40,40,0.3);
             color: var(--danger);
         }
@@ -2542,7 +2543,7 @@
             color: var(--text-dim);
             font-size: 0.8rem;
             letter-spacing: 0.3px;
-            padding: 30px 16px 10px;
+            padding: 30px 16px 84px;   /* alt boşluq: aşağı-mərkəz bildirişi altbilginin üstünə düşməsin */
             margin-top: 16px;
         }
 
