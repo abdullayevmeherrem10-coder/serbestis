@@ -2808,7 +2808,7 @@
                 <div class="cb-step-main">
                     <div class="cb-step-title">Hazırlıq</div>
                     <div class="cb-step-body cb-actions">
-                        <a href="%C3%9CZL%C3%9CK.docx" download class="cb-btn">&#11015; Titul vərəqi</a>
+                        <a href="uzluk-hmt.docx" download="ÜZLÜK.docx" data-uzluk class="cb-btn">&#11015; Titul vərəqi</a>
                         <button class="cb-btn" onclick="document.getElementById('rulesModal').classList.add('active')">&#128220; Hazırlanma qaydası</button>
                     </div>
                 </div>
@@ -2907,7 +2907,7 @@
         <div class="download-section" style="display:flex;gap:14px;flex-wrap:wrap;justify-content:center;">
             <div style="flex:1;min-width:250px;">
                 <p>Sərbəst iş üzlüyü sənədini yükləyin</p>
-                <a href="%C3%9CZL%C3%9CK.docx" download class="btn btn-download" style="width:100%;margin-top:8px;">
+                <a href="uzluk-hmt.docx" download="ÜZLÜK.docx" data-uzluk class="btn btn-download" style="width:100%;margin-top:8px;">
                     &#11015; Sərbəst iş titul vərəqini yüklə
                 </a>
             </div>
@@ -2994,7 +2994,7 @@
             </div>
             <div class="download-section" style="margin-top:24px;">
                 <p>Sərbəst iş üzlüyü sənədini yükləyin</p>
-                <a href="%C3%9CZL%C3%9CK.docx" download class="btn btn-download">
+                <a href="uzluk-hmt.docx" download="ÜZLÜK.docx" data-uzluk class="btn btn-download">
                     &#11015; Sərbəst iş titul vərəqini yüklə
                 </a>
             </div>
@@ -4197,6 +4197,8 @@
         if (chip) chip.textContent = semInfo.semester + ' \u2022 ' + semInfo.subject;
         // Ədəbiyyat: s1 (Hərbi Mühəndis Texnikası) → elektron kitab linki; s2 (Hərbi Mühəndis Hazırlığı) → kitabxana qeydi
         const litIsLib = curSubj() === 's2';
+        // Titul vərəqi (üzlük) fənnə görə: s1 → Hərbi Mühəndis Texnikası, s2 → Hərbi Mühəndis Hazırlığı
+        document.querySelectorAll('a[data-uzluk]').forEach(a => { a.setAttribute('href', litIsLib ? 'uzluk-hmh.docx' : 'uzluk-hmt.docx'); });
         // Hazırlanma qaydası modalı: data-subj="s1|s2" olan hissələr yalnız həmin fənndə görünür
         document.querySelectorAll('#rulesModal [data-subj]').forEach(el => { el.style.display = el.dataset.subj === curSubj() ? '' : 'none'; });
         [['cabLitBtn','cabLitNote'],['pubLitBtn','pubLitNote']].forEach(([b,n]) => {
