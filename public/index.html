@@ -1927,6 +1927,16 @@
         .cb-stat-sub b { color: var(--text); font-weight: 800; }
         .cb-stat-sub .live-dot { margin-left: 4px; }
         .cb-note { margin: 14px 0 0; font-size: 0.74rem; color: var(--text-dim); line-height: 1.5; }
+        /* Rəsmi bildiriş: Word elektron qəbul edilmir — çap olunub müəllimə təqdim edilir */
+        .cb-official {
+            display: flex; gap: 12px; align-items: flex-start; padding: 12px 14px; margin: 0 0 12px; border-radius: 12px;
+            background: rgba(198,40,40,0.06); border: 1px solid rgba(198,40,40,0.28); border-left: 4px solid var(--danger);
+            font-size: 0.82rem; line-height: 1.55; color: var(--text);
+        }
+        .cb-official b { display: block; color: var(--danger); font-weight: 800; letter-spacing: 0.06em; margin-bottom: 2px; }
+        .cb-official-ico { font-size: 1.1rem; line-height: 1.3; color: var(--danger); }
+        .cb-official.flash { animation: cbOfficialFlash 0.9s ease 2; }
+        @keyframes cbOfficialFlash { 50% { background: rgba(198,40,40,0.18); box-shadow: 0 0 0 4px rgba(198,40,40,0.12); } }
         .cb-steps { display: flex; flex-direction: column; }
         .cb-step { display: flex; gap: 16px; padding: 16px 0; border-top: 1px solid var(--border); }
         .cb-step:first-child { border-top: none; padding-top: 4px; }
@@ -2818,11 +2828,12 @@
                 <div class="cb-step-main">
                     <div class="cb-step-title">Təhvil</div>
                     <div class="cb-step-body">
+                        <div class="cb-official" id="upDocxNotice" role="note"><span class="cb-official-ico">&#9888;</span><span><b>DİQQƏT!</b>Sərbəst işin mətn (Word) variantının elektron qaydada qəbulu Tədris şöbəsi ilə razılaşdırılmadığından, iş çap olunaraq fənn müəlliminə şəxsən təqdim edilməlidir. Təqdimat (PowerPoint) faylı sistem vasitəsilə təhvil verilə bilər.</span></div>
                         <div class="cb-file" id="upRow-docx">
                             <span class="cb-file-kind">&#128196; Word</span>
                             <span class="cb-file-status" id="upStatus-docx">Yüklənməyib</span>
                             <span class="cb-actions">
-                                <button class="cb-btn" onclick="upPick('docx')" id="upBtn-docx">&#11014; Yüklə</button>
+                                <button class="cb-btn" onclick="upDocxBlocked()" id="upBtn-docx">&#128424; Çap edib təqdim edin</button>
                                 <button class="cb-btn" onclick="upOpen('docx', 'view')" id="upView-docx" style="display:none">&#128065; Bax</button>
                                 <button class="cb-btn cb-btn-danger" onclick="upDelete('docx')" id="upDel-docx" style="display:none">Sil</button>
                             </span>
@@ -3272,6 +3283,7 @@
 
         <div class="note">&#128221; <strong>Qeyd 1:</strong> Süni intellekt yoxlaması aparılacaqdır.</div>
         <div class="note">&#128197; <strong>Qeyd 2:</strong> Sərbəst işlərin qəbulu və qiymətləndirilməsi müəllim tərəfindən DƏRSDƏN KƏNAR vaxtda həyata keçirilir.</div>
+        <div class="note">&#128424; <strong>Qeyd 3:</strong> Sərbəst işin mətn (Word) variantının elektron qaydada qəbulu Tədris şöbəsi ilə razılaşdırılmadığından, iş çap olunaraq fənn müəlliminə şəxsən təqdim edilməlidir. Təqdimat (PowerPoint) faylı sistem vasitəsilə təhvil verilə bilər.</div>
 
         <div style="text-align:center;margin-top:24px;">
             <button class="btn btn-primary" onclick="document.getElementById('rulesModal').classList.remove('active')">Bağla</button>
@@ -3326,8 +3338,10 @@
     function subjPick(sid) { const x = subjList().find(o => o.id === sid); return x ? x.pick : 1; }
     // Cari fənn (Parametrlər → Fənn): bütün taqımlar bu fənnin sərbəst işlərini görür
     function curSubj() { return (cabData && cabData.subject_id) || semInfo.subjectId || 's2'; }
-    // s2 (Hərbi Mühəndis Hazırlığı) — təqdimat (pptx) tələb olunmur; yalnız Word
-    function needsPptx() { return curSubj() !== 's2'; }
+    // Təqdimat (pptx) hər iki fənndə sistemlə təhvil verilir. Word elektron qəbul edilmir (Tədris şöbəsi ilə
+    // razılaşdırılmayıb) — çap olunub müəllimə təqdim edilir; əvvəl yüklənmiş Word faylları görünməyə davam edir.
+    function needsPptx() { return true; }
+    const DOCX_ONLINE = false;
     function curPick() { return subjPick(curSubj()); }
     // Kollokvium Firebase açarları: s1 → sessions/K1_YT_23A1, topics/K1; s2 → sessions/s2_K1_YT_23A1, topics/s2_K1
     function kPre() { return curSubj() === 's2' ? 's2_' : ''; }
@@ -4128,13 +4142,13 @@
         if (s.some(x => !x) || !cabData) return;
         const sel = (cabData.selections || []).length >= curPick();
         const ups = cabData.uploads || {};
-        const both = !!(ups.docx && (ups.pptx || !needsPptx()));
+        const both = DOCX_ONLINE ? !!(ups.docx && ups.pptx) : !!ups.pptx;
         s.forEach(x => x.classList.remove('active', 'done'));
         if (sel) s[0].classList.add('done'); else s[0].classList.add('active');
         if (both) { s[1].classList.add('done'); s[2].classList.add('done'); }
         else if (sel) { s[1].classList.add('active'); s[2].classList.add('active'); }
         const hint = document.getElementById('cabStepHint');
-        if (hint) hint.textContent = both ? 'Hər şey təhvil verilib' : sel ? (needsPptx() && (ups.docx || ups.pptx) ? 'Bir fayl qalıb' : 'Növbəti: hazırlayıb təhvil verin') : 'Növbəti: mövzu seçin';
+        if (hint) hint.textContent = both ? 'Təqdimat təhvil verilib \u2022 mətni çap edib müəllimə təqdim edin' : sel ? 'Növbəti: təqdimatı yükləyin, mətni çap edib təqdim edin' : 'Növbəti: mövzu seçin';
     }
     function startSerbestFlow() {
         flowSubject = curSubj();
@@ -4934,7 +4948,7 @@
         const pr = document.getElementById('upRow-pptx');
         if (pr) pr.style.display = pptxOn ? '' : 'none';
         const un = document.getElementById('upNote');
-        if (un) un.textContent = pptxOn ? 'Word .docx (maks 10 MB) və PowerPoint .pptx (maks 20 səhifə, 25 MB).' : 'Word .docx (maks 10 MB). Bu fənn üzrə təqdimat tələb olunmur.';
+        if (un) un.textContent = 'PowerPoint .pptx (maks 20 səhifə, 25 MB). Mətn (Word) variantı çap olunaraq müəllimə təqdim edilir.';
         ['docx', 'pptx'].forEach(k => {
             const meta = (cabData.uploads || {})[k];
             const st = document.getElementById('upStatus-' + k);
@@ -4958,11 +4972,21 @@
                 v.style.display = 'none';
                 d.style.display = 'none';
             }
+            if (k === 'docx' && !DOCX_ONLINE) {
+                if (!meta) st.textContent = 'Elektron qəbul edilmir — çap olunaraq müəllimə təqdim edilir';
+                btn.innerHTML = '&#128424; Çap edib təqdim edin';
+            }
         });
         updateStepStates();
     }
 
-    function upPick(kind) { document.getElementById('upFile-' + kind).click(); }
+    function upPick(kind) { if (kind === 'docx' && !DOCX_ONLINE) { upDocxBlocked(); return; } document.getElementById('upFile-' + kind).click(); }
+    // Word elektron qəbul edilmir: rəsmi bildirişi vurğula
+    function upDocxBlocked() {
+        const n = document.getElementById('upDocxNotice');
+        if (n) { n.classList.remove('flash'); void n.offsetWidth; n.classList.add('flash'); n.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+        showToast('DİQQƏT! Mətn (Word) variantı elektron qəbul edilmir — çap olunaraq fənn müəlliminə təqdim edilməlidir.', 'error');
+    }
 
     async function upSelected(kind, input) {
         const f = input.files[0];

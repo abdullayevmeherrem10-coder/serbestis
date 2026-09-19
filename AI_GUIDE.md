@@ -196,6 +196,7 @@ Dil: **Azərbaycan dili** (bütün UI və kod şərhləri AZ dilindədir).
 
 ### Fayl yükləmə (kursant, bax §18)
 - `POST /api/upload-url` `{kind: docx|pptx, fname, size}` → presigned PUT URL (kursant-only).
+  - **Word (docx) elektron qəbul edilmir** (Tədris şöbəsi ilə razılaşdırılmayıb): `_uploads.DOCX_ONLINE = False` → docx üçün 403; frontend `DOCX_ONLINE = false` → Təhvil-də rəsmi bildiriş, Word düyməsi "Çap edib təqdim edin". Təqdimat (pptx) hər iki fənndə yüklənir (`needsPptx()` həmişə true). Razılıq alınsa hər iki sabiti True/true edin.
 - `POST /api/upload-confirm` `{kind, fname}` → yükləmədən sonra yoxlama + metadata (kursant-only).
 - `POST /api/upload-link` `{name?, kind, mode: view|download}` → presigned GET URL
   (kursant yalnız özününkü; müəllim hamısını).

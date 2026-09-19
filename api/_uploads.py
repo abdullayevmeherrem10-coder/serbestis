@@ -43,8 +43,15 @@ def _student_in_teams(db, name):
     return any(name in members for members in db.get("teams", {}).values())
 
 
+# Word (docx) elektron qəbul edilmir — Tədris şöbəsi ilə razılaşdırılmayıb; iş çap olunub müəllimə təqdim edilir.
+# Təqdimat (pptx) sistemlə təhvil verilir. Razılıq alınsa True edin (frontend: DOCX_ONLINE).
+DOCX_ONLINE = False
+
+
 def upload_url_action(db, body, name):
     """Kursant öz faylı üçün presigned PUT URL alır. (changed, resp, status)"""
+    if (body.get("kind") or "") == "docx" and not DOCX_ONLINE:
+        return False, {"error": "Mətn (Word) variantı elektron qəbul edilmir — çap olunaraq fənn müəlliminə təqdim edilməlidir."}, 403
     if not _b2.is_configured():
         return False, {"error": "Fayl anbarı konfiqurasiya olunmayıb."}, 503
     kind = body.get("kind") or ""
